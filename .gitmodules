@@ -1,0 +1,3 @@
+[submodule "thirdparty/google-test"]
+	path = thirdparty/google-test
+	url = acggrid01.seas.upenn.edu:/home1/a/audupa/work/gitroot/google-test.git
