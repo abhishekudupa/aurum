@@ -1,5 +1,5 @@
-// FNV.cpp ---
-// Filename: FNV.cpp
+// FNVHash.cpp ---
+// Filename: FNVHash.cpp
 // Author: Abhishek Udupa
 // Created: Mon Feb 16 16:40:25 2015 (-0500)
 //
@@ -35,7 +35,7 @@
 
 // Code:
 
-#include "FNV.hpp"
+#include "FNVHash.hpp"
 
 namespace aurum {
 namespace utils {
@@ -153,4 +153,4 @@ fnv_64a_str(const char *str, Fnv64_t hval)
 } /* end namespace aurum */
 
 //
-// FNV.cpp ends here
+// FNVHash.cpp ends here

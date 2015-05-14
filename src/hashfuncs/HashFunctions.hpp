@@ -42,7 +42,7 @@
 
 #include "CityHash.hpp"
 #include "CityCRC.hpp"
-#include "FNV.hpp"
+#include "FNVHash.hpp"
 #include "MurmurHash.hpp"
 #include "SpookyHash.hpp"
 

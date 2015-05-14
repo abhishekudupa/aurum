@@ -1,8 +1,8 @@
-// PrimeGeneratorTest.cpp ---
+// test-lto.cpp ---
 //
-// Filename: PrimeGeneratorTest.cpp
+// Filename: test-lto.cpp
 // Author: Abhishek Udupa
-// Created: Mon Mar 16 18:14:03 2015 (-0400)
+// Created: Thu Feb 19 17:26:01 2015 (-0500)
 //
 //
 // Copyright (c) 2015, Abhishek Udupa, University of Pennsylvania
@@ -37,39 +37,16 @@
 
 // Code:
 
-#include "../../src/primeutils/PrimeGenerator.hpp"
-#include "../../thirdparty/google-test/include/gtest/gtest.h"
-#include <random>
+#include <iostream>
+#include <cstdlib>
 
-using aurum::utils::PrimeGenerator;
+using namespace std;
 
-using aurum::u32;
-using aurum::u64;
-
-#define MAX_TEST_SIZE ((u64)(1 << 12))
-
-TEST(PrimeGenerator, Functional)
+int main()
 {
-    u64 cur_prime = 2;
-    while (cur_prime < MAX_TEST_SIZE) {
-        auto prime_from_stateless = PrimeGenerator::get_next_prime(cur_prime, true);
-        auto prime_from_stateful = PrimeGenerator::get_next_prime(cur_prime);
-        EXPECT_EQ(prime_from_stateless, prime_from_stateful);
-        cur_prime = prime_from_stateless;
-    }
-
-    // generate random primes now
-    PrimeGenerator::trim_table();
-    std::default_random_engine generator;
-    std::uniform_int_distribution<u32> distribution(0, 1 << 26);
-
-    for (u64 i = 0; i < MAX_TEST_SIZE; ++i) {
-        auto lower_bound = distribution(generator);
-        auto prime_from_stateless = PrimeGenerator::get_next_prime(lower_bound, true);
-        auto prime_from_stateful = PrimeGenerator::get_next_prime(lower_bound);
-        EXPECT_EQ(prime_from_stateless, prime_from_stateful);
-    }
+    cout << "LTO Builds seem to work fine" << endl;
+    exit(0);
 }
 
 //
-// PrimeGeneratorTest.cpp ends here
+// test-lto.cpp ends here

@@ -46,6 +46,7 @@ namespace containers {
 namespace ordered_set_detail_ {
 
 namespace aa = aurum::allocators;
+namespace au = aurum::utils;
 
 template <typename T, typename HashFunction, typename EqualsFunction, typename LessFunction>
 class OrderedSetBase
@@ -531,8 +532,8 @@ public:
 } /* end namespace ordered_set_detail_ */
 
 // Some useful typedefs
-template <typename T, typename HashFunction = ku::Hasher<T>,
-          typename EqualsFunction = ku::Equal<T>, typename LessFunction = ku::Less<T> >
+template <typename T, typename HashFunction = au::Hasher<T>,
+          typename EqualsFunction = au::Equal<T>, typename LessFunction = au::Less<T> >
 using OrderedSet = ordered_set_detail_::OrderedSetBase<T, HashFunction,
                                                        EqualsFunction, LessFunction>;
 

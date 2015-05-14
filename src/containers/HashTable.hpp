@@ -54,6 +54,7 @@ namespace hash_table_detail_ {
 
 namespace aa = aurum::allocators;
 namespace au = aurum::utils;
+namespace ac = aurum::containers;
 
 class HashTableBase
 {
@@ -888,12 +889,12 @@ public:
 template <typename T, typename HashFunction, typename EqualsFunction>
 class UnifiedHashTable
     : protected HashTableImplBase<T, HashFunction, EqualsFunction,
-                                  kc::hash_table_detail_::UnifiedHashTable,
+                                  ac::hash_table_detail_::UnifiedHashTable,
                                   UnifiedHashTableEntry<T> >
 {
 private:
     typedef HashTableImplBase<T, HashFunction, EqualsFunction,
-                              kc::hash_table_detail_::UnifiedHashTable,
+                              ac::hash_table_detail_::UnifiedHashTable,
                               UnifiedHashTableEntry<T> > BaseType;
     friend BaseType;
 
@@ -1118,11 +1119,11 @@ public:
 template <typename T, typename HashFunction, typename EqualsFunction>
 class SegregatedHashTable
     : protected HashTableImplBase<T, HashFunction, EqualsFunction,
-                                  kc::hash_table_detail_::SegregatedHashTable, T>
+                                  ac::hash_table_detail_::SegregatedHashTable, T>
 {
 private:
     typedef HashTableImplBase<T, HashFunction, EqualsFunction,
-                              kc::hash_table_detail_::SegregatedHashTable, T> BaseType;
+                              ac::hash_table_detail_::SegregatedHashTable, T> BaseType;
     friend BaseType;
     typedef T EntryType;
 
@@ -1401,12 +1402,12 @@ public:
 template <typename T, typename HashFunction, typename EqualsFunction>
 class RestrictedHashTable
     : protected HashTableImplBase<T, HashFunction, EqualsFunction,
-                                  kc::hash_table_detail_::RestrictedHashTable, T>
+                                  ac::hash_table_detail_::RestrictedHashTable, T>
 {
 private:
     typedef T EntryType;
     typedef HashTableImplBase<T, HashFunction, EqualsFunction,
-                              kc::hash_table_detail_::RestrictedHashTable, T> BaseType;
+                              ac::hash_table_detail_::RestrictedHashTable, T> BaseType;
     friend BaseType;
 
     T m_deleted_value;

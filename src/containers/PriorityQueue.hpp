@@ -48,7 +48,7 @@
 namespace aurum {
 namespace containers {
 
-namespace ka = aurum::allocators;
+namespace aa = aurum::allocators;
 
 template <typename T, typename Comparator = std::less<T>,
           typename HeapType = BinaryHeap<T, Comparator> >

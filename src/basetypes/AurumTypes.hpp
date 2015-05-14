@@ -50,10 +50,12 @@ namespace aurum {
 // A base class for objects
 class AurumObject
 {
+public:
     static void* operator new(std::size_t sz);
     static void* operator new[](std::size_t count);
     static void operator delete(void* ptr, std::size_t sz);
     static void operator delete[](void* ptr, std::size_t sz);
+    AurumObject();
     virtual ~AurumObject();
 };
 

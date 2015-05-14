@@ -69,6 +69,11 @@ AurumObject::~AurumObject()
     // Nothing here
 }
 
+AurumObject::AurumObject()
+{
+    // Nothing here
+}
+
 } /* end namespace aurum */
 
 //

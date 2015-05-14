@@ -75,8 +75,8 @@
 
 // audupa: adapted for use with aurum
 
-#if !defined AURUM_HASHFUNCS_FNV_HPP_
-#define AURUM_HASHFUNCS_FNV_HPP_
+#if !defined AURUM_HASHFUNCS_FNV_HASH_HPP_
+#define AURUM_HASHFUNCS_FNV_HASH_HPP_
 
 #include <sys/types.h>
 #include <cstdint>
@@ -182,4 +182,4 @@ static inline u64 fnv_hash_64a(const void* data, u64 length, u64 seed)
 } /* end namespace utils */
 } /* end namespace aurum */
 
-#endif /* AURUM_HASHFUNCS_FNV_HPP_ */
+#endif /* AURUM_HASHFUNCS_FNV_HASH_HPP_ */
