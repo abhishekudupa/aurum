@@ -35,17 +35,17 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_ORDERED_MAP_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_ORDERED_MAP_HPP_
+#if !defined AURUM_CONTAINERS_ORDERED_MAP_HPP_
+#define AURUM_CONTAINERS_ORDERED_MAP_HPP_
 
 #include "OrderedSet.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 namespace ordered_map_detail_ {
 
-namespace kc = kinara::containers;
-namespace ka = kinara::allocators;
+namespace ac = aurum::containers;
+namespace aa = aurum::allocators;
 
 // forward declaration for use in iterator
 template <typename KeyType, typename MappedType, typename KeyHash,
@@ -63,9 +63,9 @@ class OMIterator : public std::iterator<std::bidirectional_iterator_tag, ValueTy
                                                                   ValueType&>::type>
 {
     friend OrderedMapType;
-    friend class kc::ordered_map_detail_::OMIterator<ValueType, OrderedMapType,
+    friend class ac::ordered_map_detail_::OMIterator<ValueType, OrderedMapType,
                                                      ListIteratorType, false>;
-    friend class kc::ordered_map_detail_::OMIterator<ValueType, OrderedMapType,
+    friend class ac::ordered_map_detail_::OMIterator<ValueType, OrderedMapType,
                                                      ListIteratorType, true>;
 
 private:
@@ -95,7 +95,7 @@ public:
     }
 
     template <bool OISCONST>
-    inline OMIterator(const kc::ordered_map_detail_::OMIterator<ValueType, OrderedMapType,
+    inline OMIterator(const ac::ordered_map_detail_::OMIterator<ValueType, OrderedMapType,
                                                                 ListIteratorType,
                                                                 OISCONST>& other)
         : m_ordered_map(other.m_ordered_map), m_list_iterator(other.m_list_iterator)
@@ -116,7 +116,7 @@ public:
 
     template <bool OISCONST>
     inline OMIterator&
-    operator = (const kc::ordered_map_detail_::OMIterator<ValueType, OrderedMapType,
+    operator = (const ac::ordered_map_detail_::OMIterator<ValueType, OrderedMapType,
                                                           ListIteratorType, OISCONST>& other)
     {
         static_assert(!OISCONST || ISCONST,
@@ -128,7 +128,7 @@ public:
 
     template <bool OISCONST>
     inline bool
-    operator == (const kc::ordered_map_detail_::OMIterator<ValueType, OrderedMapType,
+    operator == (const ac::ordered_map_detail_::OMIterator<ValueType, OrderedMapType,
                                                            ListIteratorType, OISCONST>& other)
         const
     {
@@ -137,7 +137,7 @@ public:
 
     template <bool OISCONST>
     inline bool
-    operator != (const kc::ordered_map_detail_::OMIterator<ValueType, OrderedMapType,
+    operator != (const ac::ordered_map_detail_::OMIterator<ValueType, OrderedMapType,
                                                            ListIteratorType, OISCONST>& other)
         const
     {
@@ -251,7 +251,7 @@ private:
     RestrictedUnorderedSet<HashTableValueType, HashTableHashFunction, HashTableEqualsFunction>
     HashTableType;
 
-    ka::PoolAllocator* m_pool_allocator;
+    aa::PoolAllocator* m_pool_allocator;
     mutable ListType m_sorted_list;
     mutable ListType m_insertion_list;
     HashTableType m_hash_table;
@@ -267,7 +267,7 @@ public:
     typedef ConstReverseIterator const_reverse_iterator;
 
     OrderedMapBase()
-        : m_pool_allocator(ka::allocate_object_raw<ka::PoolAllocator>(ListType::sc_node_size)),
+        : m_pool_allocator(aa::allocate_object_raw<aa::PoolAllocator>(ListType::sc_node_size)),
           m_sorted_list(m_pool_allocator), m_insertion_list(m_pool_allocator),
           m_hash_table(m_sorted_list.end(), HashTableValueType())
     {
@@ -310,7 +310,7 @@ public:
         m_sorted_list.clear();
         m_insertion_list.clear();
         if (m_pool_allocator != nullptr) {
-            ka::deallocate_object_raw(m_pool_allocator, sizeof(ka::PoolAllocator));
+            aa::deallocate_object_raw(m_pool_allocator, sizeof(aa::PoolAllocator));
         }
         m_hash_table.clear();
     }
@@ -465,7 +465,7 @@ public:
     {
         auto it = find(key);
         if (it == end()) {
-            throw std::out_of_range("Key not found in Kinara::UnorderedMap::at()");
+            throw std::out_of_range("Key not found in aurum::UnorderedMap::at()");
         }
         return it->second;
     }
@@ -474,7 +474,7 @@ public:
     {
         auto it = find(key);
         if (it == end()) {
-            throw std::out_of_range("Key not found in Kinara::UnorderedMap::at()");
+            throw std::out_of_range("Key not found in aurum::UnorderedMap::at()");
         }
         return it->second;
     }
@@ -733,9 +733,9 @@ using OrderedMap = ordered_map_detail_::OrderedMapBase<KeyType, MappedType,
                                                        KeyHash, KeyEquals, KeyLess>;
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_ORDERED_MAP_HPP_ */
+#endif /* AURUM_CONTAINERS_ORDERED_MAP_HPP_ */
 
 //
 // OrderedMap.hpp ends here

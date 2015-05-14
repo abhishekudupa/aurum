@@ -35,16 +35,13 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_STACK_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_STACK_HPP_
+#if !defined AURUM_CONTAINERS_STACK_HPP_
+#define AURUM_CONTAINERS_STACK_HPP_
 
 #include "Deque.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
-
-namespace ka = kinara::allocators;
-namespace kc = kinara::containers;
 
 template <typename T, typename ContainerType_ = Deque<T>>
 class Stack final
@@ -207,9 +204,9 @@ class String;
 typedef Stack<String> StringStack;
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_STACK_HPP_ */
+#endif /* AURUM_CONTAINERS_STACK_HPP_ */
 
 //
 // Stack.hpp ends here

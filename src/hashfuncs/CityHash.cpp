@@ -27,14 +27,14 @@
 // possible hash functions, by using SIMD instructions, or by
 // compromising on hash quality.
 
-// audupa: adapted from the code from google for use in kinara
+// audupa: adapted from the code from google for use in aurum
 
 #include "CityHash.hpp"
 
 #include <algorithm>
 #include <string.h>  // for memcpy and memset
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 namespace cityhash_detail_ {
 
@@ -623,4 +623,4 @@ uint128 CityHashCrc128(const char *s, size_t len) {
 
 } /* end namespace cityhash_detail_ */
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */

@@ -7,11 +7,11 @@
 // compile and run any of them on any platform, but your performance with the
 // non-native version will be less than optimal.
 
-// audupa: adapted from public domain source code for use in kinara
+// audupa: adapted from public domain source code for use in aurum
 
 #include "MurmurHash.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 namespace murmur_hash_detail_ {
 
@@ -335,4 +335,4 @@ void MurmurHash3_x64_128(const void* key, const u64 len,
 //-----------------------------------------------------------------------------
 } /* end namespace murmur_hash_detail_ */
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */

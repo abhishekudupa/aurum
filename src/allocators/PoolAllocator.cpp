@@ -37,12 +37,12 @@
 
 #include <functional>
 
-#include "../basetypes/KinaraTypes.hpp"
+#include "../basetypes/AurumTypes.hpp"
 
 #include "MemoryManager.hpp"
 #include "PoolAllocator.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace allocators {
 
 PoolAllocator::PoolAllocator(u32 object_size, u32 num_objects)
@@ -50,7 +50,7 @@ PoolAllocator::PoolAllocator(u32 object_size, u32 num_objects)
       m_page_size(0), m_free_list(nullptr), m_chunk_list(nullptr),
       m_bytes_claimed(0), m_bytes_allocated(0)
 {
-    KINARA_ASSERT(object_size > 0);
+    AURUM_ASSERT(object_size > 0);
 
     const u32 round_multiple = 1 << sc_alignment;
     const u32 remainder = m_object_size % round_multiple;
@@ -153,7 +153,7 @@ void PoolAllocator::merge(PoolAllocator* other, bool collect_garbage)
     // we need the other pool to have the same
     // object size
     if (other->m_object_size != m_object_size) {
-        throw KinaraException("Object sizes must match for pools to be merged");
+        throw AurumException("Object sizes must match for pools to be merged");
     }
 
     // empty out the first chunk
@@ -325,7 +325,7 @@ u64 PoolAllocator::get_num_objects_at_once() const
 }
 
 } /* end namespace allocators */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
 //
 // PoolAllocator.cpp ends here

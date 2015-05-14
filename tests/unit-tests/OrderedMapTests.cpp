@@ -37,7 +37,7 @@
 
 // Code:
 
-#include "../../projects/kinara-common/src/containers/OrderedMap.hpp"
+#include "../../src/containers/OrderedMap.hpp"
 
 #include <utility>
 #include <random>
@@ -48,27 +48,27 @@
 
 #include "../../thirdparty/gtest/include/gtest/gtest.h"
 
-using kinara::u32;
-using kinara::u64;
-using kinara::i32;
-using kinara::i64;
+using aurum::u32;
+using aurum::u64;
+using aurum::i32;
+using aurum::i64;
 
 const u64 max_insertion_value = (1 << 16);
 const u64 max_test_iterations = (1 << 4);
 
-using kinara::containers::OrderedMap;
+using aurum::containers::OrderedMap;
 
 typedef OrderedMap<u64, u64> u64u64OrderedMap;
 
-static inline bool test_equal(const u64u64OrderedMap& kinara_map, const std::map<u64, u64>& std_map)
+static inline bool test_equal(const u64u64OrderedMap& aurum_map, const std::map<u64, u64>& std_map)
 {
-    if (kinara_map.size() != std_map.size()) {
+    if (aurum_map.size() != std_map.size()) {
         return false;
     }
 
-    auto it1 = kinara_map.begin();
+    auto it1 = aurum_map.begin();
     auto it2 = std_map.begin();
-    auto end1 = kinara_map.end();
+    auto end1 = aurum_map.end();
     auto end2 = std_map.end();
 
     while (it1 != end1 && it2 != end2) {
@@ -183,7 +183,7 @@ TEST(OrderedMapTest, Functional)
 {
     typedef u64u64OrderedMap MapType;
 
-    MapType kinara_map;
+    MapType aurum_map;
     std::map<u64, u64> std_map;
 
     std::default_random_engine generator;
@@ -191,58 +191,58 @@ TEST(OrderedMapTest, Functional)
 
     for (u64 i = 0; i < max_test_iterations; ++i) {
         std_map.clear();
-        kinara_map.clear();
+        aurum_map.clear();
 
         for (u64 j = 0; j < max_insertion_value; ++j) {
             auto flip = (distribution(generator) == 1);
             if (flip) {
                 std_map[j] = j + 42;
-                kinara_map[j] = j + 42;
+                aurum_map[j] = j + 42;
 
-                EXPECT_EQ(std_map.size(), kinara_map.size());
+                EXPECT_EQ(std_map.size(), aurum_map.size());
             }
         }
 
-        EXPECT_TRUE(test_equal(kinara_map, std_map));
+        EXPECT_TRUE(test_equal(aurum_map, std_map));
 
         // erase some random elements
         for (u64 j = 0; j < max_insertion_value; ++j) {
             auto flip = (distribution(generator) == 1);
             if (flip) {
                 std_map.erase(j);
-                kinara_map.erase(j);
+                aurum_map.erase(j);
 
-                EXPECT_EQ(std_map.size(), kinara_map.size());
+                EXPECT_EQ(std_map.size(), aurum_map.size());
             }
         }
 
-        EXPECT_TRUE(test_equal(kinara_map, std_map));
+        EXPECT_TRUE(test_equal(aurum_map, std_map));
 
         // repeat the above two steps
         for (u64 j = 0; j < max_insertion_value; ++j) {
             auto flip = (distribution(generator) == 1);
             if (flip) {
                 std_map[j] = j + 42;
-                kinara_map[j] = j + 42;
+                aurum_map[j] = j + 42;
 
-                EXPECT_EQ(std_map.size(), kinara_map.size());
+                EXPECT_EQ(std_map.size(), aurum_map.size());
             }
         }
 
-        EXPECT_TRUE(test_equal(kinara_map, std_map));
+        EXPECT_TRUE(test_equal(aurum_map, std_map));
 
         // erase some random elements
         for (u64 j = 0; j < max_insertion_value; ++j) {
             auto flip = (distribution(generator) == 1);
             if (flip) {
                 std_map.erase(j);
-                kinara_map.erase(j);
+                aurum_map.erase(j);
 
-                EXPECT_EQ(std_map.size(), kinara_map.size());
+                EXPECT_EQ(std_map.size(), aurum_map.size());
             }
         }
 
-        EXPECT_TRUE(test_equal(kinara_map, std_map));
+        EXPECT_TRUE(test_equal(aurum_map, std_map));
     }
 }
 
@@ -250,21 +250,21 @@ TEST(OrderedMapTest, Performance)
 {
     typedef u64u64OrderedMap MapType;
 
-    MapType kinara_map;
+    MapType aurum_map;
 
     std::default_random_engine generator;
     std::uniform_int_distribution<u64> distribution(0, 1);
 
     for (u64 j = 0; j < (1 << 4); ++j) {
-        kinara_map.clear();
+        aurum_map.clear();
 
         for (u64 i = 0; i < 64 * max_insertion_value; ++i) {
-            kinara_map[i] = i + 42;
+            aurum_map[i] = i + 42;
         }
 
         for (u64 i = 0; i < 64 * max_insertion_value; ++i) {
             if (distribution(generator) == 1) {
-                kinara_map.erase(i);
+                aurum_map.erase(i);
             }
         }
     }

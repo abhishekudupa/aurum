@@ -35,18 +35,17 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_ORDERED_SET_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_ORDERED_SET_HPP_
+#if !defined AURUM_CONTAINERS_ORDERED_SET_HPP_
+#define AURUM_CONTAINERS_ORDERED_SET_HPP_
 
 #include "UnorderedSet.hpp"
 #include "DList.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 namespace ordered_set_detail_ {
 
-namespace kc = kinara::containers;
-namespace ka = kinara::allocators;
+namespace aa = aurum::allocators;
 
 template <typename T, typename HashFunction, typename EqualsFunction, typename LessFunction>
 class OrderedSetBase
@@ -94,7 +93,7 @@ private:
     RestrictedUnorderedSet<HashTableValueType, HashTableHashFunction, HashTableEqualsFunction>
     HashTableType;
 
-    ka::PoolAllocator* m_pool_allocator;
+    aa::PoolAllocator* m_pool_allocator;
     mutable ListType m_sorted_list;
     mutable ListType m_insertion_list;
     HashTableType m_hash_table;
@@ -202,7 +201,7 @@ public:
     typedef ConstReverseIterator const_reverse_iterator;
 
     OrderedSetBase()
-        : m_pool_allocator(ka::allocate_object_raw<ka::PoolAllocator>(ListType::sc_node_size)),
+        : m_pool_allocator(aa::allocate_object_raw<aa::PoolAllocator>(ListType::sc_node_size)),
           m_sorted_list(m_pool_allocator), m_insertion_list(m_pool_allocator),
           m_hash_table(m_sorted_list.end(), HashTableValueType())
     {
@@ -245,7 +244,7 @@ public:
         m_sorted_list.clear();
         m_insertion_list.clear();
         if (m_pool_allocator != nullptr) {
-            ka::deallocate_object_raw(m_pool_allocator, sizeof(ka::PoolAllocator));
+            aa::deallocate_object_raw(m_pool_allocator, sizeof(aa::PoolAllocator));
         }
         m_hash_table.clear();
     }
@@ -548,9 +547,9 @@ typedef OrderedSet<i32> i32OrderedSet;
 typedef OrderedSet<i64> i64OrderedSet;
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_ORDERED_SET_HPP_ */
+#endif /* AURUM_CONTAINERS_ORDERED_SET_HPP_ */
 
 //
 // OrderedSet.hpp ends here

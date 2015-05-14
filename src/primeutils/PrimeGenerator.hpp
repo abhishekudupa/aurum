@@ -35,16 +35,16 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_PRIMEUTILS_PRIME_GENERATOR_HPP_
-#define KINARA_KINARA_COMMON_PRIMEUTILS_PRIME_GENERATOR_HPP_
+#if !defined AURUM_PRIMEUTILS_PRIME_GENERATOR_HPP_
+#define AURUM_PRIMEUTILS_PRIME_GENERATOR_HPP_
 
-#include "../basetypes/KinaraBase.hpp"
+#include "../basetypes/AurumBase.hpp"
 #include "../containers/Vector.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 
-namespace kc = kinara::containers;
+namespace ac = aurum::containers;
 
 class PrimeGenerator
 {
@@ -56,7 +56,7 @@ private:
     static inline void process_next_k(u64 k);
     static inline u64 find_smallest_prime(u64 lower_bound);
     static inline u64 find_next_prime(u64 lower_bound);
-    static inline kc::u64Vector*& get_prime_table();
+    static inline ac::u64Vector*& get_prime_table();
     static inline bool is_prime(u64 candidate);
 
 public:
@@ -74,9 +74,9 @@ public:
 };
 
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_PRIMEUTILS_PRIME_GENERATOR_HPP_ */
+#endif /* AURUM_PRIMEUTILS_PRIME_GENERATOR_HPP_ */
 
 //
 // PrimeGenerator.hpp ends here

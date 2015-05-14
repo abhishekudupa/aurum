@@ -37,29 +37,28 @@
 
 // Custom vector class
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_VECTOR_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_VECTOR_HPP_
+#if !defined AURUM_CONTAINERS_VECTOR_HPP_
+#define AURUM_CONTAINERS_VECTOR_HPP_
 
 #include <cstring>
 #include <initializer_list>
 #include <algorithm>
 #include <functional>
 
-#include "../basetypes/KinaraBase.hpp"
-#include "../basetypes/KinaraTypes.hpp"
+#include "../basetypes/AurumBase.hpp"
+#include "../basetypes/AurumTypes.hpp"
 #include "../allocators/MemoryManager.hpp"
 
 #include "ContainersBase.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 
 // custom vector class. API compatible with
 // the C++ stl vector, except for the allocators
 // bit, which we tailor to use our allocator
 
-namespace ka = kinara::allocators;
-namespace kc = kinara::containers;
+namespace aa = aurum::allocators;
 
 template <typename T>
 class VectorBase final
@@ -147,14 +146,14 @@ private:
     inline T* allocate_data(u64 num_elements, std::true_type is_trivial_value)
     {
         auto retval =
-            ka::casted_allocate_raw_cleared<T>(sizeof(T) * num_elements + sc_array_overhead);
+            aa::casted_allocate_raw_cleared<T>(sizeof(T) * num_elements + sc_array_overhead);
         auto retval_as_ptr_to_u64 = static_cast<u64*>(static_cast<void*>(retval));
         return static_cast<T*>(static_cast<void*>(retval_as_ptr_to_u64 + 2));;
     }
 
     inline T* allocate_data(u64 num_elements, std::false_type is_trivial_value)
     {
-        auto buffer = ka::casted_allocate_raw<T>(sizeof(T) * num_elements + sc_array_overhead);
+        auto buffer = aa::casted_allocate_raw<T>(sizeof(T) * num_elements + sc_array_overhead);
         auto buffer_as_ptr_to_u64 = static_cast<u64*>(static_cast<void*>(buffer));
         auto retval = static_cast<T*>(static_cast<void*>(buffer_as_ptr_to_u64 + 2));
         for (auto cur_ptr = retval, last = retval + num_elements; cur_ptr != last; ++cur_ptr) {
@@ -174,7 +173,7 @@ private:
         if (m_data == nullptr) {
             return;
         }
-        ka::deallocate_raw(get_array_ptr(), get_array_size());
+        aa::deallocate_raw(get_array_ptr(), get_array_size());
         m_data = nullptr;
     }
 
@@ -985,9 +984,9 @@ typedef Vector<u64> u64Vector;
 typedef Vector<i64> i64Vector;
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_VECTOR_HPP_ */
+#endif /* AURUM_CONTAINERS_VECTOR_HPP_ */
 
 //
 // Vector.hpp ends here

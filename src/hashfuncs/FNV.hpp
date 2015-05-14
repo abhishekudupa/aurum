@@ -73,17 +73,17 @@
  * Share and Enjoy!	:-)
  */
 
-// audupa: adapted for use with kinara
+// audupa: adapted for use with aurum
 
-#if !defined KINARA_KINARA_COMMON_HASHFUNCS_FNV_HPP_
-#define KINARA_KINARA_COMMON_HASHFUNCS_FNV_HPP_
+#if !defined AURUM_HASHFUNCS_FNV_HPP_
+#define AURUM_HASHFUNCS_FNV_HPP_
 
 #include <sys/types.h>
 #include <cstdint>
 
-#include "../basetypes/KinaraBase.hpp"
+#include "../basetypes/AurumBase.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 namespace fnv_hash_detail_ {
 /*
@@ -180,6 +180,6 @@ static inline u64 fnv_hash_64a(const void* data, u64 length, u64 seed)
 }
 
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_HASHFUNCS_FNV_HPP_ */
+#endif /* AURUM_HASHFUNCS_FNV_HPP_ */

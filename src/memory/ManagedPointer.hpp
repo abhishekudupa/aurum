@@ -37,17 +37,17 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_MEMORY_MANAGED_POINTER_HPP_
-#define KINARA_KINARA_COMMON_MEMORY_MANAGED_POINTER_HPP_
+#if !defined AURUM_MEMORY_MANAGED_POINTER_HPP_
+#define AURUM_MEMORY_MANAGED_POINTER_HPP_
 
 #include <type_traits>
 #include <utility>
 
-#include "../basetypes/KinaraBase.hpp"
+#include "../basetypes/AurumBase.hpp"
 
 #include "RefCountable.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace memory {
 
 // base class for managed pointers (for type traits)
@@ -58,7 +58,7 @@ class ManagedPointerEBC
 
 namespace detail {
 
-namespace kmd = kinara::memory::detail;
+namespace amd = aurum::memory::detail;
 
 template <typename T, bool CONSTPOINTER>
 class ManagedPointerBase : private ManagedPointerEBC
@@ -78,7 +78,7 @@ private:
     RawPointerType m_ptr;
 
     template <typename U, bool OTHERCONSTPOINTER>
-    inline i64 compare_(const kmd::ManagedPointerBase<U, OTHERCONSTPOINTER>&
+    inline i64 compare_(const amd::ManagedPointerBase<U, OTHERCONSTPOINTER>&
                         other_managed_ptr) const;
 
     template <typename U>
@@ -94,14 +94,14 @@ public:
     inline ManagedPointerBase(const ManagedPointerBase& other_managed_ptr);
 
     template <bool OTHERCONSTPOINTER>
-    inline ManagedPointerBase(const kmd::ManagedPointerBase<T, OTHERCONSTPOINTER>&
+    inline ManagedPointerBase(const amd::ManagedPointerBase<T, OTHERCONSTPOINTER>&
                               other_managed_ptr);
 
     // Move constructor
     inline ManagedPointerBase(ManagedPointerBase&& other_managed_ptr);
 
     template <bool OTHERCONSTPOINTER>
-    inline ManagedPointerBase(kmd::ManagedPointerBase<T, OTHERCONSTPOINTER>&&
+    inline ManagedPointerBase(amd::ManagedPointerBase<T, OTHERCONSTPOINTER>&&
                               other_managed_ptr);
 
     // From raw pointer
@@ -120,14 +120,14 @@ public:
     inline ManagedPointerBase& operator = (const ManagedPointerBase& other_managed_ptr);
 
     template <bool OTHERCONSTPOINTER>
-    inline ManagedPointerBase& operator = (const kmd::ManagedPointerBase<T, OTHERCONSTPOINTER>&
+    inline ManagedPointerBase& operator = (const amd::ManagedPointerBase<T, OTHERCONSTPOINTER>&
                                            other_managed_ptr);
 
     // Move assignment operator
     inline ManagedPointerBase& operator = (ManagedPointerBase&& other_managed_ptr);
 
     template <bool OTHERCONSTPOINTER>
-    inline ManagedPointerBase& operator = (kmd::ManagedPointerBase<T, OTHERCONSTPOINTER>&& other);
+    inline ManagedPointerBase& operator = (amd::ManagedPointerBase<T, OTHERCONSTPOINTER>&& other);
 
     // Assignment to raw pointer
     inline ManagedPointerBase& operator = (RawPointerType raw_pointer);
@@ -185,7 +185,7 @@ template <typename T, bool CONSTPOINTER>
 template <typename U, bool OTHERCONSTPOINTER>
 inline i64
 ManagedPointerBase<T, CONSTPOINTER>::compare_
-(const kmd::ManagedPointerBase<U, OTHERCONSTPOINTER>& other_managed_ptr) const
+(const amd::ManagedPointerBase<U, OTHERCONSTPOINTER>& other_managed_ptr) const
 {
     return (i64)(reinterpret_cast<char*>(m_ptr) -
                  reinterpret_cast<char*>(other_managed_ptr.m_ptr));
@@ -220,7 +220,7 @@ template <typename T, bool CONSTPOINTER>
 template <bool OTHERCONSTPOINTER>
 inline
 ManagedPointerBase<T, CONSTPOINTER>::ManagedPointerBase
-(const kmd::ManagedPointerBase<T, OTHERCONSTPOINTER>& other_managed_ptr)
+(const amd::ManagedPointerBase<T, OTHERCONSTPOINTER>& other_managed_ptr)
     : m_ptr(nullptr)
 {
     static_assert((!OTHERCONSTPOINTER || CONSTPOINTER),
@@ -245,7 +245,7 @@ template <typename T, bool CONSTPOINTER>
 template <bool OTHERCONSTPOINTER>
 inline
 ManagedPointerBase<T, CONSTPOINTER>::ManagedPointerBase
-(kmd::ManagedPointerBase<T, OTHERCONSTPOINTER>&& other_managed_ptr)
+(amd::ManagedPointerBase<T, OTHERCONSTPOINTER>&& other_managed_ptr)
     : ManagedPointerBase<T, CONSTPOINTER>()
 {
     static_assert((!OTHERCONSTPOINTER || CONSTPOINTER),
@@ -534,9 +534,9 @@ static inline std::ostream& operator << (std::ostream& out_stream,
     return out_stream;
 }
 
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_MEMORY_MANAGED_POINTER_HPP_ */
+#endif /* AURUM_MEMORY_MANAGED_POINTER_HPP_ */
 
 //
 // ManagedPointer.hpp ends here

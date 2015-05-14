@@ -41,7 +41,7 @@
 #include "MemoryManager.hpp"
 #include "SmallBlockAllocator.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace allocators {
 
 SmallBlockAllocator::SmallBlockAllocator()
@@ -102,7 +102,7 @@ void* SmallBlockAllocator::allocate(u64 size)
     m_bytes_allocated += size;
 
     auto slot_index = get_slot_index_for_size(size);
-    KINARA_ASSERT((slot_index < sc_num_buckets));
+    AURUM_ASSERT((slot_index < sc_num_buckets));
     if (m_free_lists[slot_index] != nullptr) {
         auto retval = m_free_lists[slot_index];
         m_free_lists[slot_index] = retval->m_next;
@@ -236,7 +236,7 @@ void SmallBlockAllocator::garbage_collect()
 }
 
 } /* end namespace allocators */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
 //
 // SmallBlockAllocator.cpp ends here

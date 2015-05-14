@@ -1,8 +1,8 @@
-// KinaraBase.hpp ---
+// AurumTypes.cpp ---
 //
-// Filename: KinaraBase.hpp
+// Filename: AurumTypes.cpp
 // Author: Abhishek Udupa
-// Created: Wed Feb 11 16:48:21 2015 (-0500)
+// Created: Fri Mar 27 12:20:33 2015 (-0400)
 //
 //
 // Copyright (c) 2015, Abhishek Udupa, University of Pennsylvania
@@ -37,40 +37,39 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_BASETYPES_KINARA_BASE_HPP_
-#define KINARA_KINARA_COMMON_BASETYPES_KINARA_BASE_HPP_
+#include "../allocators/MemoryManager.hpp"
+#include "AurumTypes.hpp"
 
-// check that we're on a 64 bit machine
-#if (__SIZEOF_POINTER__ < 8)
-#error "KINARA currently only supports 64-bit architectures"
-#endif /* __SIZEOF_POINTER__ < 8 */
+namespace aurum {
 
-#if !defined __linux__
-#error "KINARA can currently only be built on linux based platforms"
-#endif
+namespace aa = aurum::allocators;
 
-#include <cstdint>
-#include <exception>
-#include <utility>
+void* AurumObject::operator new (std::size_t sz)
+{
+    return aa::allocate_raw(sz);
+}
 
-namespace kinara {
+void* AurumObject::operator new[] (std::size_t sz)
+{
+    return aa::allocate_raw(sz);
+}
 
-typedef std::uint8_t  u08;
-typedef std::uint16_t u16;
-typedef std::uint32_t u32;
-typedef std::uint64_t u64;
+void AurumObject::operator delete(void* ptr, std::size_t sz)
+{
+    aa::deallocate_raw(ptr, sz);
+}
 
-typedef std::pair<u64, u64> u128;
+void AurumObject::operator delete[] (void* ptr, std::size_t sz)
+{
+    aa::deallocate_raw(ptr, sz);
+}
 
-typedef std::int8_t   i08;
-typedef std::int16_t  i16;
-typedef std::int32_t  i32;
-typedef std::int64_t  i64;
+AurumObject::~AurumObject()
+{
+    // Nothing here
+}
 
-} /* end namespace kinara */
-
-
-#endif /* KINARA_KINARA_COMMON_BASETYPES_KINARA_BASE_HPP_ */
+} /* end namespace aurum */
 
 //
-// KinaraBase.hpp ends here
+// AurumTypes.cpp ends here

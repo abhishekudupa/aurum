@@ -59,17 +59,17 @@
 // of a+b is easily derived from the hashes of a and b.  This property
 // doesn't hold for any hash functions in this file.
 
-// audupa: adapted from the sources by google for use in kinara
+// audupa: adapted from the sources by google for use in aurum
 
-#if !defined KINARA_KINARA_COMMON_HASHFUNCS_CITY_HASH_HPP_
-#define KINARA_KINARA_COMMON_HASHFUNCS_CITY_HASH_HPP_
+#if !defined AURUM_HASHFUNCS_CITY_HASH_HPP_
+#define AURUM_HASHFUNCS_CITY_HASH_HPP_
 
 #include <cstdlib>
 #include <utility>
 
-#include "../basetypes/KinaraBase.hpp"
+#include "../basetypes/AurumBase.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 namespace cityhash_detail_ {
 
@@ -153,6 +153,6 @@ static inline u128 city_hash_128_with_seed(const void* data, u64 length,
 }
 
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif  /* KINARA_KINARA_COMMON_HASHFUNCS_CITY_HASH_HPP_ */
+#endif  /* AURUM_HASHFUNCS_CITY_HASH_HPP_ */

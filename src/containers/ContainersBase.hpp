@@ -37,15 +37,15 @@
 
 // Code:
 
-#if !defined KINARA_CONTAINERS_CONTAINERS_BASE_HPP_
-#define KINARA_CONTAINERS_CONTAINERS_BASE_HPP_
+#if !defined AURUM_CONTAINERS_CONTAINERS_BASE_HPP_
+#define AURUM_CONTAINERS_CONTAINERS_BASE_HPP_
 
 #include <ostream>
 #include <algorithm>
 
-#include "../basetypes/KinaraBase.hpp"
+#include "../basetypes/AurumBase.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 
 
@@ -64,9 +64,9 @@ static inline void print_iterable(std::ostream& out_stream,
 }
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_CONTAINERS_CONTAINERS_BASE_HPP_ */
+#endif /* AURUM_CONTAINERS_CONTAINERS_BASE_HPP_ */
 
 //
 // ContainersBase.hpp ends here

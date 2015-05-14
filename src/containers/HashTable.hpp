@@ -35,25 +35,25 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_HASH_TABLE_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_HASH_TABLE_HPP_
+#if !defined AURUM_CONTAINERS_HASH_TABLE_HPP_
+#define AURUM_CONTAINERS_HASH_TABLE_HPP_
 
 #include <initializer_list>
 #include <iterator>
 #include <string>
 
-#include "../basetypes/KinaraTypes.hpp"
+#include "../basetypes/AurumTypes.hpp"
 #include "../allocators/MemoryManager.hpp"
 #include "../primeutils/PrimeGenerator.hpp"
 
 #include "BitSet.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 namespace hash_table_detail_ {
 
-namespace ka = kinara::allocators;
-namespace ku = kinara::utils;
+namespace aa = aurum::allocators;
+namespace au = aurum::utils;
 
 class HashTableBase
 {
@@ -121,7 +121,7 @@ protected:
     inline void deallocate_table()
     {
         if (m_table != nullptr) {
-            ka::deallocate_array_raw(m_table, m_table_size);
+            aa::deallocate_array_raw(m_table, m_table_size);
             m_table = nullptr;
             m_table_size = 0;
             m_table_used = 0;
@@ -209,7 +209,7 @@ protected:
 
         // destroy the old table and update the books
         if (m_table != nullptr) {
-            ka::deallocate_array_raw(m_table, m_table_size);
+            aa::deallocate_array_raw(m_table, m_table_size);
         } else {
             m_first_used_index = new_capacity;
         }
@@ -235,9 +235,9 @@ protected:
         auto required_capacity = (u64)(new_size * sc_resize_factor);
         auto initial_table_size = sc_initial_table_size;
         required_capacity = std::max(required_capacity, initial_table_size);
-        required_capacity = ku::PrimeGenerator::get_next_prime(required_capacity);
+        required_capacity = au::PrimeGenerator::get_next_prime(required_capacity);
 
-        auto new_table = ka::allocate_array_raw<EntryType>(required_capacity);
+        auto new_table = aa::allocate_array_raw<EntryType>(required_capacity);
         rebuild_table(new_table, required_capacity);
     }
 
@@ -249,10 +249,10 @@ protected:
         if (((float)m_table_used / (float)m_table_size) < sc_min_load_factor) {
             new_table_size = (u64)(m_table_used * sc_resize_factor);
             new_table_size = std::max(new_table_size, initial_table_size);
-            new_table_size = ku::PrimeGenerator::get_next_prime(new_table_size);
+            new_table_size = au::PrimeGenerator::get_next_prime(new_table_size);
         }
 
-        auto new_table = ka::allocate_array_raw<EntryType>(new_table_size);
+        auto new_table = aa::allocate_array_raw<EntryType>(new_table_size);
         rebuild_table(new_table, new_table_size);
     }
 
@@ -427,8 +427,8 @@ protected:
         auto initial_table_size = sc_initial_table_size;
         auto actual_capacity = std::max((u64)(initial_capacity * sc_resize_factor),
                                         initial_table_size);
-        actual_capacity = ku::PrimeGenerator::get_next_prime(actual_capacity);
-        m_table = ka::allocate_array_raw<EntryType>(actual_capacity);
+        actual_capacity = au::PrimeGenerator::get_next_prime(actual_capacity);
+        m_table = aa::allocate_array_raw<EntryType>(actual_capacity);
         m_table_size = actual_capacity;
         m_first_used_index = m_table_size;
         this_as_impl()->initialize_new_table(m_table, m_table_size);
@@ -494,8 +494,8 @@ protected:
         auto initial_table_size = sc_initial_table_size;
         u64 actual_capacity = (u64)ceil(other.m_table_used * sc_resize_factor);
         actual_capacity = std::max(actual_capacity, initial_table_size);
-        actual_capacity = ku::PrimeGenerator::get_next_prime(actual_capacity);
-        m_table = ka::allocate_array_raw<EntryType>(actual_capacity);
+        actual_capacity = au::PrimeGenerator::get_next_prime(actual_capacity);
+        m_table = aa::allocate_array_raw<EntryType>(actual_capacity);
         m_table_size = actual_capacity;
         m_first_used_index = m_table_size;
 
@@ -558,7 +558,7 @@ protected:
     {
         auto initial_table_size = sc_initial_table_size;
         auto actual_capacity = std::max(initial_table_size, new_capacity);
-        actual_capacity = ku::PrimeGenerator::get_next_prime(actual_capacity);
+        actual_capacity = au::PrimeGenerator::get_next_prime(actual_capacity);
         expand_table(actual_capacity);
     }
 
@@ -736,13 +736,13 @@ protected:
         new_size += 3;
         auto initial_table_size = sc_initial_table_size;
         new_size = std::max(new_size, initial_table_size);
-        new_size = ku::PrimeGenerator::get_next_prime(new_size);
+        new_size = au::PrimeGenerator::get_next_prime(new_size);
 
         if (new_size == m_table_size) {
             return;
         }
 
-        auto new_table = ka::allocate_array_raw<EntryType>(new_size);
+        auto new_table = aa::allocate_array_raw<EntryType>(new_size);
         rebuild_table(new_table, new_size);
     }
 };
@@ -1597,8 +1597,8 @@ public:
                                const InputIterator& last)
     {
         if (!std::is_pointer<T>::value) {
-            throw KinaraException((std::string)"Restricted hash tables cannot be constructed " +
-                                  "merely from a range");
+            throw AurumException((std::string)"Restricted hash tables cannot be constructed " +
+                                 "merely from a range");
         }
     }
 
@@ -1625,8 +1625,8 @@ public:
     inline RestrictedHashTable(std::initializer_list<T> init_list)
     {
         if (!std::is_pointer<T>::value) {
-            throw KinaraException((std::string)"Restricted hash tables cannot be constructed " +
-                                  "merely from an initializer list");
+            throw AurumException((std::string)"Restricted hash tables cannot be constructed " +
+                                 "merely from an initializer list");
         }
     }
 
@@ -1704,9 +1704,9 @@ public:
 
 } /* end namespace hash_table_detail_ */
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_HASH_TABLE_HPP_ */
+#endif /* AURUM_CONTAINERS_HASH_TABLE_HPP_ */
 
 //
 // HashTable.hpp ends here

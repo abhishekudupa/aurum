@@ -37,28 +37,28 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_DEQUE_TYPES_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_DEQUE_TYPES_HPP_
+#if !defined AURUM_CONTAINERS_DEQUE_TYPES_HPP_
+#define AURUM_CONTAINERS_DEQUE_TYPES_HPP_
 
 #include <iostream>
 #include <iterator>
 #include <cstring>
 
-#include "../basetypes/KinaraBase.hpp"
+#include "../basetypes/AurumBase.hpp"
 #include "../allocators/MemoryManager.hpp"
-#include "../basetypes/KinaraErrors.hpp"
+#include "../basetypes/AurumErrors.hpp"
 
 #include "ContainersBase.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 
 template <typename T> class DequeBase;
 
 namespace deque_detail_ {
 
-namespace kc = kinara::containers;
-namespace ka = kinara::allocators;
+namespace ac = aurum::containers;
+namespace aa = aurum::allocators;
 
 // A class representing a block in a deque
 template <typename T>
@@ -136,10 +136,10 @@ class IteratorBase :
                              typename std::conditional<ISCONST, const T*, T*>::type,
                              typename std::conditional<ISCONST, const T&, T&>::type>
 {
-    friend class kc::deque_detail_::IteratorBase<T, true>;
-    friend class kc::deque_detail_::IteratorBase<T, false>;
-    friend class kc::deque_detail_::DequeInternal<T>;
-    friend class kc::DequeBase<T>;
+    friend class ac::deque_detail_::IteratorBase<T, true>;
+    friend class ac::deque_detail_::IteratorBase<T, false>;
+    friend class ac::deque_detail_::DequeInternal<T>;
+    friend class ac::DequeBase<T>;
 
 private:
     typedef typename std::conditional<ISCONST, const T*, T*>::type ValPtrType;
@@ -180,7 +180,7 @@ public:
     }
 
     template <bool OISCONST>
-    inline IteratorBase(const kc::deque_detail_::IteratorBase<T, OISCONST>& other)
+    inline IteratorBase(const ac::deque_detail_::IteratorBase<T, OISCONST>& other)
         : m_current(other.m_current), m_block_array_ptr(other.m_block_array_ptr)
     {
         static_assert(!OISCONST || ISCONST,
@@ -204,7 +204,7 @@ public:
 
     template <bool OISCONST>
     inline IteratorBase&
-    operator = (const kc::deque_detail_::IteratorBase<T, OISCONST>& other)
+    operator = (const ac::deque_detail_::IteratorBase<T, OISCONST>& other)
     {
         static_assert(!OISCONST || ISCONST,
                       "Cannot construct non-const iterator from const iterator");
@@ -219,14 +219,14 @@ public:
 
     template <bool OISCONST>
     inline bool
-    operator == (const kc::deque_detail_::IteratorBase<T, OISCONST>& other) const
+    operator == (const ac::deque_detail_::IteratorBase<T, OISCONST>& other) const
     {
         return (m_current == other.m_current);
     }
 
     template <bool OISCONST>
     inline bool
-    operator != (const kc::deque_detail_::IteratorBase<T, OISCONST>& other) const
+    operator != (const ac::deque_detail_::IteratorBase<T, OISCONST>& other) const
     {
         return (!((*this) == other));
     }
@@ -314,7 +314,7 @@ public:
 
     template <bool OISCONST>
     inline i64
-    operator - (const kc::deque_detail_::IteratorBase<T, OISCONST>& other) const
+    operator - (const ac::deque_detail_::IteratorBase<T, OISCONST>& other) const
     {
         i64 retval = (get_offset_from_begin() - other.get_offset_from_begin());
         retval += ((m_block_array_ptr - other.m_block_array_ptr) * BlockType::get_block_size());
@@ -323,28 +323,28 @@ public:
 
     template <bool OISCONST>
     inline bool
-    operator < (const kc::deque_detail_::IteratorBase<T, OISCONST>& other) const
+    operator < (const ac::deque_detail_::IteratorBase<T, OISCONST>& other) const
     {
         return (((*this) - other) < 0);
     }
 
     template <bool OISCONST>
     inline bool
-    operator <= (const kc::deque_detail_::IteratorBase<T, OISCONST>& other) const
+    operator <= (const ac::deque_detail_::IteratorBase<T, OISCONST>& other) const
     {
         return (((*this) - other) <= 0);
     }
 
     template <bool OISCONST>
     inline bool
-    operator > (const kc::deque_detail_::IteratorBase<T, OISCONST>& other) const
+    operator > (const ac::deque_detail_::IteratorBase<T, OISCONST>& other) const
     {
         return (((*this) - other) > 0);
     }
 
     template <bool OISCONST>
     inline bool
-    operator >= (const kc::deque_detail_::IteratorBase<T, OISCONST>& other) const
+    operator >= (const ac::deque_detail_::IteratorBase<T, OISCONST>& other) const
     {
         return (((*this) - other) >= 0);
     }
@@ -433,14 +433,14 @@ protected:
     // allocates and default constructs the block
     inline BlockPtrType allocate_block()
     {
-        auto retval = BlockType::construct(ka::allocate_raw(sizeof(BlockType)));
+        auto retval = BlockType::construct(aa::allocate_raw(sizeof(BlockType)));
         return retval;
     }
 
     inline void deallocate_block(BlockPtrType block_ptr)
     {
         block_ptr->~BlockType();
-        ka::deallocate_raw(block_ptr, sizeof(BlockType));
+        aa::deallocate_raw(block_ptr, sizeof(BlockType));
     }
 
     inline void create_blocks(BlockPtrType* block_array_begin, BlockPtrType* block_array_end)
@@ -517,7 +517,7 @@ protected:
             auto new_block_array_size = m_block_array_size +
                 std::max(m_block_array_size, new_num_blocks) + 2;
             auto new_block_array =
-                ka::casted_allocate_raw_cleared<BlockPtrType>(sizeof(BlockPtrType) *
+                aa::casted_allocate_raw_cleared<BlockPtrType>(sizeof(BlockPtrType) *
                                                               new_block_array_size);
             new_block_array_start =
                 new_block_array + ((new_block_array_size - new_num_blocks) / 2);
@@ -526,7 +526,7 @@ protected:
             }
             memmove(new_block_array_start, m_start.m_block_array_ptr,
                     old_num_blocks * sizeof(BlockPtrType));
-            ka::deallocate_raw(m_block_array, sizeof(BlockPtrType) * m_block_array_size);
+            aa::deallocate_raw(m_block_array, sizeof(BlockPtrType) * m_block_array_size);
             m_block_array = new_block_array;
             m_block_array_size = new_block_array_size;
         }
@@ -535,7 +535,7 @@ protected:
         m_start.m_block_array_ptr = new_block_array_start;
         m_finish.m_block_array_ptr = (new_block_array_start + old_num_blocks - 1);
 
-        // KINARA_ASSERT(rep_ok());
+        // AURUM_ASSERT(rep_ok());
     }
 
     inline void expand_block_array_at_front(u64 num_blocks)
@@ -829,21 +829,21 @@ protected:
             // yes, so resize
             auto const new_block_array_size = block_limit;
             auto new_block_array =
-                ka::casted_allocate_raw_cleared<BlockPtrType>(sizeof(BlockPtrType) *
+                aa::casted_allocate_raw_cleared<BlockPtrType>(sizeof(BlockPtrType) *
                                                               new_block_array_size);
             auto start_block_ptr = new_block_array + ((new_block_array_size - blocks_in_use) / 2);
 
             memcpy(start_block_ptr, m_start.m_block_array_ptr,
                    sizeof(BlockPtrType) * blocks_in_use);
 
-            ka::deallocate_raw(m_block_array, sizeof(BlockPtrType) * m_block_array_size);
+            aa::deallocate_raw(m_block_array, sizeof(BlockPtrType) * m_block_array_size);
             m_block_array = new_block_array;
             m_block_array_size = new_block_array_size;
             m_start.m_block_array_ptr = start_block_ptr;
             m_finish.m_block_array_ptr = (start_block_ptr + blocks_in_use) - 1;
         }
 
-        // KINARA_ASSERT(rep_ok());
+        // AURUM_ASSERT(rep_ok());
     }
 
     // initialize storage for num_elements
@@ -858,7 +858,7 @@ protected:
         m_block_array_size = std::max(initial_size, num_nodes + 2);
 
         m_block_array =
-            ka::casted_allocate_raw_cleared<BlockPtrType>(sizeof(BlockPtrType) *
+            aa::casted_allocate_raw_cleared<BlockPtrType>(sizeof(BlockPtrType) *
                                                           m_block_array_size);
 
         auto start_block_ptr = m_block_array + ((m_block_array_size - num_nodes) / 2);
@@ -888,7 +888,7 @@ protected:
                 *block_ptr = nullptr;
             }
         }
-        ka::deallocate_raw(m_block_array, sizeof(BlockPtrType) * m_block_array_size);
+        aa::deallocate_raw(m_block_array, sizeof(BlockPtrType) * m_block_array_size);
         initialize(0);
     }
 
@@ -927,7 +927,7 @@ protected:
                 *block_ptr = nullptr;
             }
         }
-        ka::deallocate_raw(m_block_array, sizeof(BlockPtrType) * m_block_array_size);
+        aa::deallocate_raw(m_block_array, sizeof(BlockPtrType) * m_block_array_size);
     }
 
     inline void assign(DequeInternal&& other)
@@ -952,9 +952,9 @@ protected:
 } /* end namespace deque_detail_ */
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_DEQUE_TYPES_HPP_ */
+#endif /* AURUM_CONTAINERS_DEQUE_TYPES_HPP_ */
 
 //
 // DequeTypes.hpp ends here

@@ -35,24 +35,24 @@
 
 // Code:
 
-#include "../basetypes/KinaraTypes.hpp"
+#include "../basetypes/AurumTypes.hpp"
 
 #include "PrecomputedPrimeList.hpp"
 #include "PrimeGenerator.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 
-namespace kc = kinara::containers;
-namespace ka = kinara::allocators;
+namespace ac = aurum::containers;
+namespace aa = aurum::allocators;
 
-inline kc::u64Vector*& PrimeGenerator::get_prime_table()
+inline ac::u64Vector*& PrimeGenerator::get_prime_table()
 {
     // TODO: fix up with a precomputed list of initial primes
-    static kc::u64Vector* s_prime_table = nullptr;
+    static ac::u64Vector* s_prime_table = nullptr;
 
     if (s_prime_table == nullptr) {
-        s_prime_table = ka::allocate_object_raw<kc::u64Vector>();
+        s_prime_table = aa::allocate_object_raw<ac::u64Vector>();
         for(u64 i = 0; i < sc_init_pull_size; ++i) {
             s_prime_table->push_back(precomputed_primes::precomputed_prime_list[i]);
         }
@@ -72,7 +72,7 @@ inline void PrimeGenerator::process_next_k(u64 k)
         --k;
     }
 
-    kc::u64Vector work_list(k/2 + 1);
+    ac::u64Vector work_list(k/2 + 1);
     auto first = prime_table.back() + 2;
     auto last = first + k;
     u64 tmp_index = 0;
@@ -82,7 +82,7 @@ inline void PrimeGenerator::process_next_k(u64 k)
     work_list.resize(tmp_index);
 
     if (prime_table.size() > sc_max_prime_list_size) {
-        throw KinaraException("Exceeded maximum size for prime generator");
+        throw AurumException("Exceeded maximum size for prime generator");
     }
 
     u64 next_prime_index = 1;
@@ -182,7 +182,7 @@ inline u64 PrimeGenerator::find_next_prime(u64 lower_bound)
             return candidate;
         }
     }
-    throw KinaraException("Exceeded maximum size for prime generator");
+    throw AurumException("Exceeded maximum size for prime generator");
 }
 
 u64 PrimeGenerator::get_next_prime(u64 lower_bound, bool stateless)
@@ -237,7 +237,7 @@ void PrimeGenerator::trim_table()
 void PrimeGenerator::finalize()
 {
     auto& prime_table_ptr = get_prime_table();
-    ka::deallocate_object_raw(prime_table_ptr, sizeof(kc::u64Vector));
+    aa::deallocate_object_raw(prime_table_ptr, sizeof(ac::u64Vector));
     prime_table_ptr = nullptr;
 }
 
@@ -247,7 +247,7 @@ __attribute__ ((destructor)) void finalize_prime_generator()
 }
 
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
 //
 // PrimeGenerator.cpp ends here

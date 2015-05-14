@@ -37,22 +37,22 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_DLIST_TYPES_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_DLIST_TYPES_HPP_
+#if !defined AURUM_CONTAINERS_DLIST_TYPES_HPP_
+#define AURUM_CONTAINERS_DLIST_TYPES_HPP_
 
 #include <iterator>
 
-#include "../basetypes/KinaraBase.hpp"
+#include "../basetypes/AurumBase.hpp"
 #include "ContainersBase.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 
 template <typename T, bool USEPOOLS> class DListBase;
 
 namespace dlist_detail_ {
 
-namespace kc = kinara::containers;
+namespace ac = aurum::containers;
 
 struct DListNodeBase
 {
@@ -140,8 +140,8 @@ class IteratorBase
 {
     friend class DListBase<T, true>;
     friend class DListBase<T, false>;
-    friend class kc::dlist_detail_::IteratorBase<T, true>;
-    friend class kc::dlist_detail_::IteratorBase<T, false>;
+    friend class ac::dlist_detail_::IteratorBase<T, true>;
+    friend class ac::dlist_detail_::IteratorBase<T, false>;
 
 private:
     typedef DListNode<T> NodeType;
@@ -181,7 +181,7 @@ public:
     }
 
     template <bool OISCONST>
-    inline IteratorBase(const kc::dlist_detail_::IteratorBase<T, OISCONST>& other)
+    inline IteratorBase(const ac::dlist_detail_::IteratorBase<T, OISCONST>& other)
         : m_node(other.m_node)
     {
         static_assert(((!OISCONST) || ISCONST),
@@ -205,7 +205,7 @@ public:
 
     template <bool OISCONST>
     inline IteratorBase&
-    operator = (const kc::dlist_detail_::IteratorBase<T, OISCONST>& other)
+    operator = (const ac::dlist_detail_::IteratorBase<T, OISCONST>& other)
     {
         if (&other == this) {
             return *this;
@@ -253,14 +253,14 @@ public:
 
     template <bool OISCONST>
     inline bool
-    operator == (const kc::dlist_detail_::IteratorBase<T, OISCONST>& other) const
+    operator == (const ac::dlist_detail_::IteratorBase<T, OISCONST>& other) const
     {
         return (m_node == other.m_node);
     }
 
     template <bool OISCONST>
     inline bool
-    operator != (const kc::dlist_detail_::IteratorBase<T, OISCONST>& other) const
+    operator != (const ac::dlist_detail_::IteratorBase<T, OISCONST>& other) const
     {
         return (m_node != other.m_node);
     }
@@ -274,9 +274,9 @@ using ConstIterator = IteratorBase<T, true>;
 
 } /* end namespace dlist_detail_ */
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_DLIST_TYPES_HPP_ */
+#endif /* AURUM_CONTAINERS_DLIST_TYPES_HPP_ */
 
 //
 // DListTypes.hpp ends here

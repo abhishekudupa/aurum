@@ -37,7 +37,7 @@
 
 // Code:
 
-#include "../../projects/kinara-common/src/containers/OrderedSet.hpp"
+#include "../../src/containers/OrderedSet.hpp"
 
 #include <utility>
 #include <random>
@@ -48,15 +48,15 @@
 
 #include "../../thirdparty/gtest/include/gtest/gtest.h"
 
-using kinara::u32;
-using kinara::u64;
-using kinara::i32;
-using kinara::i64;
+using aurum::u32;
+using aurum::u64;
+using aurum::i32;
+using aurum::i64;
 
 const u64 max_insertion_value = (1 << 18);
 const u64 max_test_iterations = (1 << 4);
 
-using kinara::containers::u64OrderedSet;
+using aurum::containers::u64OrderedSet;
 
 static inline bool test_equal(const u64OrderedSet& set1, std::set<u64>& set2)
 {
@@ -162,7 +162,7 @@ TEST(OrderedSetTest, Functional)
     typedef u64OrderedSet SetType;
 
 
-    SetType kinara_set;
+    SetType aurum_set;
     std::set<u64> std_set;
 
     std::default_random_engine generator;
@@ -170,58 +170,58 @@ TEST(OrderedSetTest, Functional)
 
     for (u64 i = 0; i < max_test_iterations; ++i) {
         std_set.clear();
-        kinara_set.clear();
+        aurum_set.clear();
 
         for (u64 j = 0; j < max_insertion_value; ++j) {
             auto flip = (distribution(generator) == 1);
             if (flip) {
                 std_set.insert(j);
-                kinara_set.insert(j);
+                aurum_set.insert(j);
 
-                EXPECT_EQ(std_set.size(), kinara_set.size());
+                EXPECT_EQ(std_set.size(), aurum_set.size());
             }
         }
 
-        EXPECT_TRUE(test_equal(kinara_set, std_set));
+        EXPECT_TRUE(test_equal(aurum_set, std_set));
 
         // erase some random elements
         for (u64 j = 0; j < max_insertion_value; ++j) {
             auto flip = (distribution(generator) == 1);
             if (flip) {
                 std_set.erase(j);
-                kinara_set.erase(j);
+                aurum_set.erase(j);
 
-                EXPECT_EQ(std_set.size(), kinara_set.size());
+                EXPECT_EQ(std_set.size(), aurum_set.size());
             }
         }
 
-        EXPECT_TRUE(test_equal(kinara_set, std_set));
+        EXPECT_TRUE(test_equal(aurum_set, std_set));
 
         // repeat the above two steps
         for (u64 j = 0; j < max_insertion_value; ++j) {
             auto flip = (distribution(generator) == 1);
             if (flip) {
                 std_set.insert(j);
-                kinara_set.insert(j);
+                aurum_set.insert(j);
 
-                EXPECT_EQ(std_set.size(), kinara_set.size());
+                EXPECT_EQ(std_set.size(), aurum_set.size());
             }
         }
 
-        EXPECT_TRUE(test_equal(kinara_set, std_set));
+        EXPECT_TRUE(test_equal(aurum_set, std_set));
 
         // erase some random elements
         for (u64 j = 0; j < max_insertion_value; ++j) {
             auto flip = (distribution(generator) == 1);
             if (flip) {
                 std_set.erase(j);
-                kinara_set.erase(j);
+                aurum_set.erase(j);
 
-                EXPECT_EQ(std_set.size(), kinara_set.size());
+                EXPECT_EQ(std_set.size(), aurum_set.size());
             }
         }
 
-        EXPECT_TRUE(test_equal(kinara_set, std_set));
+        EXPECT_TRUE(test_equal(aurum_set, std_set));
     }
 }
 
@@ -229,7 +229,7 @@ TEST(OrderedSetTest, Performance)
 {
     typedef u64OrderedSet SetType;
 
-    SetType kinara_set;
+    SetType aurum_set;
     const u64 multiplier = 16;
     const u64 divisor = 4;
 
@@ -239,17 +239,17 @@ TEST(OrderedSetTest, Performance)
     std::uniform_int_distribution<u64> delete_distribution(0, multiplier * max_insertion_value);
 
     for (u64 j = 0; j < max_test_iterations / divisor; ++j) {
-        kinara_set.clear();
+        aurum_set.clear();
 
         for (u64 i = 0; i < multiplier * max_insertion_value; ++i) {
-            kinara_set.insert(elem_distribution(generator));
+            aurum_set.insert(elem_distribution(generator));
         }
 
-        kinara_set.shrink_to_fit();
+        aurum_set.shrink_to_fit();
 
         for (u64 i = 0; i < multiplier * max_insertion_value; ++i) {
             if (distribution(generator) == 1) {
-                kinara_set.erase(delete_distribution(generator));
+                aurum_set.erase(delete_distribution(generator));
             }
         }
     }

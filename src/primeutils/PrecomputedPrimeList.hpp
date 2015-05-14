@@ -35,12 +35,12 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_PRIMEUTILS_PRECOMPUTED_PRIME_LIST_HPP_
-#define KINARA_KINARA_COMMON_PRIMEUTILS_PRECOMPUTED_PRIME_LIST_HPP_
+#if !defined AURUM_PRIMEUTILS_PRECOMPUTED_PRIME_LIST_HPP_
+#define AURUM_PRIMEUTILS_PRECOMPUTED_PRIME_LIST_HPP_
 
-#include "../basetypes/KinaraBase.hpp"
+#include "../basetypes/AurumBase.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 namespace precomputed_primes {
 
@@ -50,9 +50,9 @@ extern const u64 max_precomputed_prime;
 
 } /* end namespace precomputed_primes */
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_PRIMEUTILS_PRECOMPUTED_PRIME_LIST_HPP_ */
+#endif /* AURUM_PRIMEUTILS_PRECOMPUTED_PRIME_LIST_HPP_ */
 
 //
 // PrecomputedPrimeList.hpp ends here

@@ -35,22 +35,22 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_SLIST_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_SLIST_HPP_
+#if !defined AURUM_CONTAINERS_SLIST_HPP_
+#define AURUM_CONTAINERS_SLIST_HPP_
 
 #include <initializer_list>
 
-#include "../basetypes/KinaraTypes.hpp"
+#include "../basetypes/AurumTypes.hpp"
 #include "../allocators/MemoryManager.hpp"
 #include "../allocators/PoolAllocator.hpp"
 
 #include "SListTypes.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 
-namespace ka = kinara::allocators;
-namespace kc = kinara::containers;
+namespace aa = aurum::allocators;
+namespace ac = aurum::containers;
 
 /*
   A singly-linked list:
@@ -86,7 +86,7 @@ class SListBase final
 
     union PoolSizeUnionType
     {
-        ka::PoolAllocator* m_pool_allocator;
+        aa::PoolAllocator* m_pool_allocator;
         u64 m_size;
 
         PoolSizeUnionType()
@@ -113,12 +113,12 @@ class SListBase final
         if (USEPOOLS) {
             if (m_pool_or_size.m_pool_allocator == nullptr) {
                 m_pool_or_size.m_pool_allocator =
-                    ka::allocate_object_raw<ka::PoolAllocator>(sizeof(NodeType));
+                    aa::allocate_object_raw<aa::PoolAllocator>(sizeof(NodeType));
             }
             auto ptr = m_pool_or_size.m_pool_allocator->allocate();
             return NodeType::construct(ptr, std::forward<ArgTypes>(args)...);
         } else {
-            auto ptr = ka::allocate_raw(sizeof(NodeType));
+            auto ptr = aa::allocate_raw(sizeof(NodeType));
             return NodeType::construct(ptr, std::forward<ArgTypes>(args)...);
         }
     }
@@ -126,9 +126,9 @@ class SListBase final
     inline void deallocate_block(NodeType* node)
     {
         if (USEPOOLS) {
-            ka::deallocate(*(m_pool_or_size.m_pool_allocator), node);
+            aa::deallocate(*(m_pool_or_size.m_pool_allocator), node);
         } else {
-            ka::deallocate_object_raw(node, sizeof(NodeType));
+            aa::deallocate_object_raw(node, sizeof(NodeType));
         }
     }
 
@@ -182,7 +182,7 @@ class SListBase final
     // constructs n objects AFTER the current position
     inline Iterator construct_fill(NodeBaseType* position, u64 n, const ValueType& value)
     {
-        KINARA_ASSERT(n > 0);
+        AURUM_ASSERT(n > 0);
 
         auto last_inserted = position;
         auto next_of_position = position->m_next;
@@ -208,7 +208,7 @@ class SListBase final
                                    const InputIterator& first,
                                    const InputIterator& last)
     {
-        KINARA_ASSERT (first != last);
+        AURUM_ASSERT (first != last);
 
         auto last_inserted = position;
         auto next_of_position = position->m_next;
@@ -308,14 +308,14 @@ class SListBase final
     }
 
     template <bool OUSEPOOLS>
-    SListBase(const kc::SListBase<T, OUSEPOOLS>& other)
+    SListBase(const ac::SListBase<T, OUSEPOOLS>& other)
         : SListBase(std::move(other))
     {
         // Nothing here
     }
 
     template <bool OUSEPOOLS>
-    SListBase(kc::SListBase<T, OUSEPOOLS>&& other)
+    SListBase(ac::SListBase<T, OUSEPOOLS>&& other)
         : SListBase()
     {
         if (other.size() == 0) {
@@ -341,7 +341,7 @@ class SListBase final
             cur_node = next_node;
         }
         if (USEPOOLS && m_pool_or_size.m_pool_allocator != nullptr) {
-            ka::deallocate_object_raw(m_pool_or_size.m_pool_allocator, sizeof(ka::PoolAllocator));
+            aa::deallocate_object_raw(m_pool_or_size.m_pool_allocator, sizeof(aa::PoolAllocator));
             m_pool_or_size.m_pool_allocator = nullptr;
         }
         m_node_before_head.m_next = nullptr;
@@ -365,7 +365,7 @@ class SListBase final
     }
 
     template <bool OUSEPOOLS>
-    inline void assign(const kc::SListBase<T, OUSEPOOLS>& other)
+    inline void assign(const ac::SListBase<T, OUSEPOOLS>& other)
     {
         assign(other.begin(), other.end());
     }
@@ -394,7 +394,7 @@ class SListBase final
     }
 
     template <bool OUSEPOOLS>
-    inline SListBase& operator = (const kc::SListBase<T, OUSEPOOLS>& other)
+    inline SListBase& operator = (const ac::SListBase<T, OUSEPOOLS>& other)
     {
         if (&other == this) {
             return *this;
@@ -615,7 +615,7 @@ class SListBase final
     Iterator emplace(const ConstIterator& position, ArgTypes&&... args)
     {
         if (position == cbefore_begin()) {
-            throw KinaraException("Cannot emplace before the beginning of an SList");
+            throw AurumException("Cannot emplace before the beginning of an SList");
         }
         auto node_before = find_node_before(position);
         return construct_after(node_before, std::forward<ArgTypes>(args)...);
@@ -653,7 +653,7 @@ class SListBase final
     Iterator insert(const ConstIterator& position, const ValueType& value)
     {
         if (position == cbefore_begin()) {
-            throw KinaraException("Cannot insert before the beginning of an SList");
+            throw AurumException("Cannot insert before the beginning of an SList");
         }
         auto node_before = find_node_before(position.get_node());
         return construct_after(node_before, value);
@@ -662,7 +662,7 @@ class SListBase final
     Iterator insert(const ConstIterator& position, ValueType&& value)
     {
         if (position == cbefore_begin()) {
-            throw KinaraException("Cannot insert before the beginning of an SList");
+            throw AurumException("Cannot insert before the beginning of an SList");
         }
 
         auto node_before = find_node_before(position.get_node());
@@ -672,7 +672,7 @@ class SListBase final
     Iterator insert(const ConstIterator& position, u64 n, const ValueType& value)
     {
         if (position == cbefore_begin()) {
-            throw KinaraException("Cannot insert before the beginning of an SList");
+            throw AurumException("Cannot insert before the beginning of an SList");
         }
 
         auto node_before = find_node_before(position.get_node());
@@ -685,7 +685,7 @@ class SListBase final
                     const InputIterator& last)
     {
         if (position == cbefore_begin()) {
-            throw KinaraException("Cannot insert before the beginning of an SList");
+            throw AurumException("Cannot insert before the beginning of an SList");
         }
 
         auto node_before = find_node_before(position.get_node());
@@ -696,7 +696,7 @@ class SListBase final
                     std::initializer_list<ValueType> init_list)
     {
         if (position == cbefore_begin()) {
-            throw KinaraException("Cannot insert before the beginning of an SList");
+            throw AurumException("Cannot insert before the beginning of an SList");
         }
 
         return insert(position, init_list.begin(), init_list.end());
@@ -754,7 +754,7 @@ class SListBase final
     Iterator erase(const ConstIterator& position)
     {
         if (position == cbefore_begin()) {
-            throw KinaraException("Cannot erase before the beginning of an SList");
+            throw AurumException("Cannot erase before the beginning of an SList");
         }
 
         auto node_before = find_node_before(position.get_node());
@@ -764,7 +764,7 @@ class SListBase final
     Iterator erase(const ConstIterator& first, const ConstIterator& last)
     {
         if (first == cbefore_begin()) {
-            throw KinaraException("Cannot erase before the beginning of an SList");
+            throw AurumException("Cannot erase before the beginning of an SList");
         }
 
         auto node_before = find_node_before(first.get_node());
@@ -831,7 +831,7 @@ class SListBase final
     void splice_after(const ConstIterator& position, SListBase& other)
     {
         if (&other == this) {
-            throw KinaraException("Cannot splice an SListBase onto itself");
+            throw AurumException("Cannot splice an SListBase onto itself");
         }
 
         splice_after(position, std::move(other));
@@ -842,7 +842,7 @@ class SListBase final
     void splice_after(const ConstIterator& position, SListBase&& other)
     {
         if (&other == this) {
-            throw KinaraException("Cannot splice an SListBase onto itself");
+            throw AurumException("Cannot splice an SListBase onto itself");
         }
         if (other.size() == 0) {
             return;
@@ -899,7 +899,7 @@ class SListBase final
                               const ConstIterator& other_position)
     {
         if (other_position == other.cbefore_begin()) {
-            throw KinaraException("Cannot splice from before begin of SListBase");
+            throw AurumException("Cannot splice from before begin of SListBase");
         }
 
         insert_after(position, *other_position);
@@ -941,7 +941,7 @@ class SListBase final
                             const ConstIterator& first, const ConstIterator& last)
     {
         if (first == other.cbefore_begin()) {
-            throw KinaraException("Cannot splice from before begin of SListBase");
+            throw AurumException("Cannot splice from before begin of SListBase");
         }
         if (first == other.cbegin() && last == other.cend()) {
             splice_after(position, other);
@@ -965,11 +965,11 @@ class SListBase final
     void splice(const ConstIterator& position, SListBase&& other)
     {
         if (&other == this) {
-            throw KinaraException("Cannot splice an SListBase onto itself");
+            throw AurumException("Cannot splice an SListBase onto itself");
         }
 
         if (position == cbefore_begin()) {
-            throw KinaraException("Cannot splice before beginning of list");
+            throw AurumException("Cannot splice before beginning of list");
         }
         if (other.size() == 0) {
             return;
@@ -1014,10 +1014,10 @@ class SListBase final
                 const ConstIterator& other_position)
     {
         if (position == cbefore_begin()) {
-            throw KinaraException("Cannot splice before beginning of list");
+            throw AurumException("Cannot splice before beginning of list");
         }
         if (other_position == other.cbefore_begin()) {
-            throw KinaraException("Cannot splice from before beginning of list");
+            throw AurumException("Cannot splice from before beginning of list");
         }
 
         insert(position, *(std::next(other_position)));
@@ -1030,10 +1030,10 @@ class SListBase final
                         const ConstIterator& other_position)
     {
         if (position == cbefore_begin()) {
-            throw KinaraException("Cannot splice before beginning of list");
+            throw AurumException("Cannot splice before beginning of list");
         }
         if (other_position == other.cbefore_begin()) {
-            throw KinaraException("Cannot splice from before beginning of list");
+            throw AurumException("Cannot splice from before beginning of list");
         }
 
         insert(position, *other_position);
@@ -1054,7 +1054,7 @@ class SListBase final
                 const ConstIterator& first, const ConstIterator& last)
     {
         if (position == cbefore_begin()) {
-            throw KinaraException("Cannot splice before beginning of list");
+            throw AurumException("Cannot splice before beginning of list");
         }
 
         if (first == other.cbefore_begin() && last == other.end()) {
@@ -1079,10 +1079,10 @@ class SListBase final
                       const ConstIterator& first, const ConstIterator& last)
     {
         if (position == cbefore_begin()) {
-            throw KinaraException("Cannot splice before beginning of list");
+            throw AurumException("Cannot splice before beginning of list");
         }
         if (first == other.cbefore_begin()) {
-            throw KinaraException("Cannot splice from before beginning of list");
+            throw AurumException("Cannot splice from before beginning of list");
         }
 
         if (first == other.cbegin() && last == other.cend()) {
@@ -1393,13 +1393,13 @@ class SListBase final
     }
 
     template <bool OUSEPOOLS>
-    i64 compare(const kc::SListBase<T, OUSEPOOLS>& other) const
+    i64 compare(const ac::SListBase<T, OUSEPOOLS>& other) const
     {
         return compare(other, std::less<T>());
     }
 
     template <bool OUSEPOOLS, typename BinaryPredicate>
-    i64 compare(const kc::SListBase<T, OUSEPOOLS>& other,
+    i64 compare(const ac::SListBase<T, OUSEPOOLS>& other,
                 BinaryPredicate predicate) const
     {
         auto diff = size() - other.size();
@@ -1530,9 +1530,9 @@ typedef SList<i32> i32SList;
 typedef SList<i64> i64SList;
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_SLIST_HPP_ */
+#endif /* AURUM_CONTAINERS_SLIST_HPP_ */
 
 //
 // SList.hpp ends here

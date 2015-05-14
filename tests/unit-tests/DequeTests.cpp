@@ -35,7 +35,7 @@
 
 // Code:
 
-#include "../../projects/kinara-common/src/containers/Deque.hpp"
+#include "../../src/containers/Deque.hpp"
 #include <algorithm>
 #include <deque>
 
@@ -43,11 +43,11 @@
 
 #include "../../thirdparty/gtest/include/gtest/gtest.h"
 
-using kinara::u32;
-using kinara::u64;
-using kinara::containers::Deque;
-using kinara::containers::u32Deque;
-using kinara::containers::MPtrDeque;
+using aurum::u32;
+using aurum::u64;
+using aurum::containers::Deque;
+using aurum::containers::u32Deque;
+using aurum::containers::MPtrDeque;
 
 #define MAX_TEST_SIZE 2048
 #define TEST_NUM_ITERATIONS 2048

@@ -35,8 +35,8 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_HASHFUNCS_HASH_HPP_
-#define KINARA_KINARA_COMMON_HASHFUNCS_HASH_HPP_
+#if !defined AURUM_HASHFUNCS_HASH_HPP_
+#define AURUM_HASHFUNCS_HASH_HPP_
 
 // this file contains the definition of builtin hash
 // functions for common types, as well as facilities
@@ -45,17 +45,17 @@
 #include <functional>
 #include <type_traits>
 
-#include "../basetypes/KinaraBase.hpp"
-#include "../basetypes/KinaraTypes.hpp"
+#include "../basetypes/AurumBase.hpp"
+#include "../basetypes/AurumTypes.hpp"
 
 #include "../memory/ManagedPointer.hpp"
 
 #include "HashFunctions.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 
-namespace km = kinara::memory;
+namespace am = aurum::memory;
 
 template <typename T>
 class Hasher
@@ -134,7 +134,7 @@ public:
 };
 
 template <typename T>
-class Hasher<km::ManagedPointer<T> >
+class Hasher<am::ManagedPointer<T> >
 {
 private:
     inline u64 compute_hash(const T* ptr,
@@ -151,7 +151,7 @@ private:
     }
 
 public:
-    inline u64 operator () (const km::ManagedPointer<T>& managed_ptr) const
+    inline u64 operator () (const am::ManagedPointer<T>& managed_ptr) const
     {
         typename std::is_base_of<HashableEBC, T>::type is_hashable_object;
         return compute_hash((const T*)managed_ptr, is_hashable_object);
@@ -159,7 +159,7 @@ public:
 };
 
 template <typename T>
-class Hasher<km::ManagedConstPointer<T> >
+class Hasher<am::ManagedConstPointer<T> >
 {
 private:
     inline u64 compute_hash(const T* ptr,
@@ -176,7 +176,7 @@ private:
     }
 
 public:
-    inline u64 operator () (const km::ManagedConstPointer<T>& managed_ptr) const
+    inline u64 operator () (const am::ManagedConstPointer<T>& managed_ptr) const
     {
         typename std::is_base_of<HashableEBC, T>::type is_hashable_object;
         return compute_hash((const T*)managed_ptr, is_hashable_object);
@@ -306,9 +306,9 @@ public:
 
 
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_HASHFUNCS_HASH_HPP_ */
+#endif /* AURUM_HASHFUNCS_HASH_HPP_ */
 
 //
 // Hash.hpp ends here

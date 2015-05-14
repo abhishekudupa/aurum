@@ -35,7 +35,7 @@
 
 // Code:
 
-#include "../../projects/kinara-common/src/containers/Vector.hpp"
+#include "../../src/containers/Vector.hpp"
 #include <vector>
 #include <random>
 #include <cstdlib>
@@ -45,11 +45,11 @@
 
 #include "../../thirdparty/gtest/include/gtest/gtest.h"
 
-using kinara::containers::u32Vector;
-using kinara::containers::MPtrVector;
+using aurum::containers::u32Vector;
+using aurum::containers::MPtrVector;
 
-using kinara::u32;
-using kinara::u64;
+using aurum::u32;
+using aurum::u64;
 
 TEST(Vector, EmptyIntVector)
 {

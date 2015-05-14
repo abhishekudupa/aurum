@@ -37,16 +37,13 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_QUEUE_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_QUEUE_HPP_
+#if !defined AURUM_COMMON_CONTAINERS_QUEUE_HPP_
+#define AURUM_COMMON_CONTAINERS_QUEUE_HPP_
 
 #include "Deque.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
-
-namespace ka = kinara::allocators;
-namespace kc = kinara::containers;
 
 template <typename T, typename ContainerType_ = Deque<T>>
 class Queue final
@@ -218,9 +215,9 @@ class String;
 typedef Queue<String> StringQueue;
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_QUEUE_HPP_ */
+#endif /* AURUM_CONTAINERS_QUEUE_HPP_ */
 
 //
 // Queue.hpp ends here

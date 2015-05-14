@@ -46,10 +46,10 @@
 
 #include "BitSet.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 
-namespace ka = kinara::allocators;
+namespace aa = aurum::allocators;
 
 // Implementation of BitRef
 BitSet::BitRef::BitRef(BitSet* bit_set, u64 bit_num)
@@ -134,7 +134,7 @@ BitSet::BitSet(u64 size)
     : m_num_bits(size)
 {
     u64 num_bytes = (m_num_bits + 7) / 8;
-    m_bit_array = ka::casted_allocate_raw_cleared<u08>(sizeof(u08) * num_bytes);
+    m_bit_array = aa::casted_allocate_raw_cleared<u08>(sizeof(u08) * num_bytes);
 }
 
 BitSet::BitSet(u64 size, bool initial_value)
@@ -158,7 +158,7 @@ BitSet::BitSet(const BitSet& other)
     : m_num_bits(other.m_num_bits)
 {
     u64 num_bytes = (m_num_bits + 7) / 8;
-    m_bit_array = ka::casted_allocate_raw_cleared<u08>(sizeof(u08) * num_bytes);
+    m_bit_array = aa::casted_allocate_raw_cleared<u08>(sizeof(u08) * num_bytes);
     memcpy(m_bit_array, other.m_bit_array, num_bytes);
 }
 
@@ -178,7 +178,7 @@ void BitSet::reset()
 {
     if (m_bit_array != nullptr) {
         u64 num_bytes = (m_num_bits + 7) / 8;
-        ka::deallocate_raw(m_bit_array, num_bytes);
+        aa::deallocate_raw(m_bit_array, num_bytes);
         m_bit_array = nullptr;
     }
     m_num_bits = 0;
@@ -193,12 +193,12 @@ BitSet& BitSet::operator = (const BitSet& other)
 
     if (m_bit_array != nullptr) {
         u64 old_num_bytes = (m_num_bits + 7) / 8;
-        ka::deallocate_raw(m_bit_array, old_num_bytes);
+        aa::deallocate_raw(m_bit_array, old_num_bytes);
     }
 
     m_num_bits = other.m_num_bits;
     u64 num_bytes = (m_num_bits + 7) / 8;
-    m_bit_array = ka::casted_allocate_raw<u08>(sizeof(u08) * num_bytes);
+    m_bit_array = aa::casted_allocate_raw<u08>(sizeof(u08) * num_bytes);
     memcpy(m_bit_array, other.m_bit_array, num_bytes);
     return *this;
 }
@@ -366,23 +366,23 @@ void BitSet::resize_and_clear(u64 new_num_bits)
         clear();
     }
     if (new_num_bits == 0) {
-        ka::deallocate_raw(m_bit_array, (m_num_bits + 7 / 8));
+        aa::deallocate_raw(m_bit_array, (m_num_bits + 7 / 8));
         m_bit_array = nullptr;
         m_num_bits = 0;
     }
 
     auto new_num_bytes = (new_num_bits + 7) / 8;
-    auto new_bit_array = ka::casted_allocate_raw_cleared<u08>(new_num_bytes * sizeof(u08));
+    auto new_bit_array = aa::casted_allocate_raw_cleared<u08>(new_num_bytes * sizeof(u08));
 
     if (m_bit_array != nullptr) {
-        ka::deallocate_raw(m_bit_array, (m_num_bits + 7) / 8);
+        aa::deallocate_raw(m_bit_array, (m_num_bits + 7) / 8);
     }
     m_num_bits = new_num_bits;
     m_bit_array = new_bit_array;
 }
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
 //
 // BitSet.cpp ends here

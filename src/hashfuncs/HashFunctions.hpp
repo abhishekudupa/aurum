@@ -35,8 +35,8 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_HASHFUNCS_HASHFUNCTIONS_HPP_
-#define KINARA_KINARA_COMMON_HASHFUNCS_HASHFUNCTIONS_HPP_
+#if !defined AURUM_HASHFUNCS_HASHFUNCTIONS_HPP_
+#define AURUM_HASHFUNCS_HASHFUNCTIONS_HPP_
 
 #include <array>
 
@@ -46,7 +46,7 @@
 #include "MurmurHash.hpp"
 #include "SpookyHash.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 
 namespace hash_combine_detail_ {
@@ -131,9 +131,9 @@ static inline u64 hash_combine(ArgTypes&&... args)
 
 
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_HASHFUNCS_HASHFUNCTIONS_HPP_ */
+#endif /* AURUM_HASHFUNCS_HASHFUNCTIONS_HPP_ */
 
 //
 // HashFunctions.hpp ends here

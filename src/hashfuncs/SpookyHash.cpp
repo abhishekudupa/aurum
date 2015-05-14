@@ -12,7 +12,7 @@
 #include <cstring>
 #include "SpookyHash.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 namespace spooky_hash_detail_ {
 
@@ -353,4 +353,4 @@ void SpookyHash::Final(uint64 *hash1, uint64 *hash2)
 
 } /* end namespace spooky_hash_detail_ */
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */

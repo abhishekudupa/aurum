@@ -37,14 +37,14 @@
 
 // Code:
 
-#include "../../projects/kinara-common/src/primeutils/PrimeGenerator.hpp"
+#include "../../src/primeutils/PrimeGenerator.hpp"
 #include "../../thirdparty/gtest/include/gtest/gtest.h"
 #include <random>
 
-using kinara::utils::PrimeGenerator;
+using aurum::utils::PrimeGenerator;
 
-using kinara::u32;
-using kinara::u64;
+using aurum::u32;
+using aurum::u64;
 
 #define MAX_TEST_SIZE ((u64)(1 << 12))
 

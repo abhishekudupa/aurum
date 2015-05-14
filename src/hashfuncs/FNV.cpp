@@ -37,7 +37,7 @@
 
 #include "FNV.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 namespace fnv_hash_detail_ {
 
@@ -150,7 +150,7 @@ fnv_64a_str(const char *str, Fnv64_t hval)
 
 } /* end namespace fnv_hash_detail_ */
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
 //
 // FNV.cpp ends here

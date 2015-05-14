@@ -26,17 +26,17 @@
 // slower than MD5.
 //
 
-// audupa: adapted from public domain for use in kinara
+// audupa: adapted from public domain for use in aurum
 
-#if !defined KINARA_KINARA_COMMON_HASHFUNCS_SPOOKYHASH_HPP_
-#define KINARA_KINARA_COMMON_HASHFUNCS_SPOOKYHASH_HPP_
+#if !defined AURUM_HASHFUNCS_SPOOKYHASH_HPP_
+#define AURUM_HASHFUNCS_SPOOKYHASH_HPP_
 
 #include <cstddef>
 #include <cstdint>
 
-#include "../basetypes/KinaraBase.hpp"
+#include "../basetypes/AurumBase.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 namespace spooky_hash_detail_ {
 
@@ -344,6 +344,6 @@ static inline u128 spooky_hash_128(const void* data, u64 length)
 }
 
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_HASHFUNCS_SPOOKYHASH_HPP_ */
+#endif /* AURUM_HASHFUNCS_SPOOKYHASH_HPP_ */

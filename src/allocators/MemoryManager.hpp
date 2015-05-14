@@ -35,15 +35,15 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_ALLOCATORS_MEMORY_MANAGER_HPP_
-#define KINARA_KINARA_COMMON_ALLOCATORS_MEMORY_MANAGER_HPP_
+#if !defined AURUM_ALLOCATORS_MEMORY_MANAGER_HPP_
+#define AURUM_ALLOCATORS_MEMORY_MANAGER_HPP_
 
 #include <exception>
 #include <utility>
 
-#include "../basetypes/KinaraBase.hpp"
+#include "../basetypes/AurumBase.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace allocators {
 
 class OutOfMemoryError : public std::exception
@@ -283,9 +283,9 @@ static inline void deallocate_object_raw(const T* object_ptr, u64 size)
 
 
 } /* end namespace allocators */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_ALLOCATORS_MEMORY_MANAGER_HPP_ */
+#endif /* AURUM_ALLOCATORS_MEMORY_MANAGER_HPP_ */
 
 //
 // MemoryManager.hpp ends here

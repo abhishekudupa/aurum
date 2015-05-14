@@ -35,15 +35,15 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_ALLOCATORS_POOL_ALLOCATOR_HPP_
-#define KINARA_KINARA_COMMON_ALLOCATORS_POOL_ALLOCATOR_HPP_
+#if !defined AURUM_ALLOCATORS_POOL_ALLOCATOR_HPP_
+#define AURUM_ALLOCATORS_POOL_ALLOCATOR_HPP_
 
 #include <new>
 
-#include "../basetypes/KinaraBase.hpp"
-#include "../basetypes/KinaraErrors.hpp"
+#include "../basetypes/AurumBase.hpp"
+#include "../basetypes/AurumErrors.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace allocators {
 
 
@@ -134,7 +134,7 @@ public:
 template <typename T, typename... ArgTypes>
 static inline T* allocate(PoolAllocator& pool_allocator, ArgTypes&&... args)
 {
-    KINARA_ASSERT((sizeof(T) <= pool_allocator.get_block_size()));
+    AURUM_ASSERT((sizeof(T) <= pool_allocator.get_block_size()));
     return new (pool_allocator.allocate()) T(std::forward<ArgTypes>(args)...);
 }
 
@@ -142,16 +142,16 @@ template <typename T>
 static inline void deallocate(PoolAllocator& pool_allocator,
                               const T* object_ptr)
 {
-    KINARA_ASSERT((sizeof(T) <= pool_allocator.get_block_size() &&
+    AURUM_ASSERT((sizeof(T) <= pool_allocator.get_block_size() &&
                    sizeof(T) + 8 > pool_allocator.get_block_size()));
     object_ptr->~T();
     pool_allocator.deallocate(const_cast<T*>(object_ptr));
 }
 
 } /* end namespace allocators */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_ALLOCATORS_POOL_ALLOCATOR_HPP_ */
+#endif /* AURUM_ALLOCATORS_POOL_ALLOCATOR_HPP_ */
 
 //
 // PoolAllocator.hpp ends here

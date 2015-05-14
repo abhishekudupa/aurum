@@ -1,5 +1,5 @@
-// KinaraErrors.cpp ---
-// Filename: KinaraErrors.cpp
+// AurumErrors.cpp ---
+// Filename: AurumErrors.cpp
 // Author: Abhishek Udupa
 // Created: Fri Feb 20 15:29:54 2015 (-0500)
 //
@@ -38,11 +38,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <KinaraConfig.h>
+#include <AurumConfig.h>
 
-#include "KinaraErrors.hpp"
+#include "AurumErrors.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace error_handlers {
 
 volatile bool gdb_is_attached__ = false;
@@ -68,7 +68,7 @@ void notify_assertion_violation(const char* function_name,
 
 void invoke_debugger()
 {
-#ifdef KINARA_CFG_HAVE_GDB_
+#ifdef AURUM_CFG_HAVE_GDB_
     if (gdb_ignore_further_errors__) {
         return;
     }
@@ -94,8 +94,8 @@ void invoke_debugger()
         sprintf(pid_string, "%d", my_pid);
         sprintf(exec_name, "/proc/%d/exe", my_pid);
 
-        execl(KINARA_CFG_PATH_TO_GDB_,
-              KINARA_CFG_PATH_TO_GDB_,
+        execl(AURUM_CFG_PATH_TO_GDB_,
+              AURUM_CFG_PATH_TO_GDB_,
               exec_name,
               pid_string,
               "-ex",
@@ -104,11 +104,11 @@ void invoke_debugger()
               "continue",
               (char*)nullptr);
     }
-#endif /* KINARA_CFG_HAVE_GDB_ */
+#endif /* AURUM_CFG_HAVE_GDB_ */
 }
 
 } /* end namespace error_handlers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
 // global and with C linkage
 // because gdb seems to have trouble
@@ -118,8 +118,8 @@ extern "C" void notify_gdb_attached____();
 
 void notify_gdb_attached____()
 {
-    kinara::error_handlers::gdb_is_attached__ = true;
+    aurum::error_handlers::gdb_is_attached__ = true;
 }
 
 //
-// KinaraErrors.cpp ends here
+// AurumErrors.cpp ends here

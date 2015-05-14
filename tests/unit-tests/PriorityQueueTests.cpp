@@ -35,9 +35,9 @@
 
 // Code:
 
-#include "../../projects/kinara-common/src/containers/PriorityQueue.hpp"
-#include "../../projects/kinara-common/src/containers/Vector.hpp"
-#include "../../projects/kinara-common/src/containers/MultiWayHeap.hpp"
+#include "../../src/containers/PriorityQueue.hpp"
+#include "../../src/containers/Vector.hpp"
+#include "../../src/containers/MultiWayHeap.hpp"
 
 #include <vector>
 #include <utility>
@@ -54,18 +54,18 @@
 #define NUM_TEST_ITERATIONS (1 << 5)
 #define NUM_INSERT_DELETE_ITERATIONS (1 << 5);
 
-using kinara::u32;
-using kinara::u64;
-using kinara::i32;
-using kinara::i64;
+using aurum::u32;
+using aurum::u64;
+using aurum::i32;
+using aurum::i64;
 
-using kinara::containers::PriorityQueue;
-using kinara::containers::i64PriorityQueue;
-using kinara::containers::BinaryHeap;
-using kinara::containers::TernaryHeap;
-using kinara::containers::QuaternaryHeap;
-using kinara::containers::MultiWayHeap;
-using kinara::containers::Vector;
+using aurum::containers::PriorityQueue;
+using aurum::containers::i64PriorityQueue;
+using aurum::containers::BinaryHeap;
+using aurum::containers::TernaryHeap;
+using aurum::containers::QuaternaryHeap;
+using aurum::containers::MultiWayHeap;
+using aurum::containers::Vector;
 
 using testing::Types;
 

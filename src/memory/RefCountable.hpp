@@ -39,14 +39,14 @@
 
 // Basic ref countable type
 
-#if !defined KINARA_MEMORY_REF_COUNTABLE_HPP_
-#define KINARA_MEMORY_REF_COUNTABLE_HPP_
+#if !defined AURUM_MEMORY_REF_COUNTABLE_HPP_
+#define AURUM_MEMORY_REF_COUNTABLE_HPP_
 
 #include <type_traits>
 
-#include "../basetypes/KinaraBase.hpp"
+#include "../basetypes/AurumBase.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace memory {
 
 class RefCountable
@@ -86,9 +86,9 @@ public:
 };
 
 } /* end namespace memory */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_MEMORY_REF_COUNTABLE_HPP_ */
+#endif /* AURUM_MEMORY_REF_COUNTABLE_HPP_ */
 
 //
 // RefCountable.hpp ends here

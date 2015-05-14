@@ -37,12 +37,12 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_MULTI_WAY_HEAP_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_MULTI_WAY_HEAP_HPP_
+#if !defined AURUM_CONTAINERS_MULTI_WAY_HEAP_HPP_
+#define AURUM_CONTAINERS_MULTI_WAY_HEAP_HPP_
 
 #include "Vector.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 namespace multiway_heap_detail_ {
 
@@ -326,9 +326,9 @@ template <typename T, typename Comparator = std::less<T> >
 using QuaternaryHeap = multiway_heap_detail_::MultiWayHeap<T, Comparator, 4>;
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_MULTI_WAY_HEAP_HPP_ */
+#endif /* AURUM_CONTAINERS_MULTI_WAY_HEAP_HPP_ */
 
 //
 // MultiWayHeap.hpp ends here

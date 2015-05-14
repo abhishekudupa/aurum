@@ -35,22 +35,22 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_DLIST_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_DLIST_HPP_
+#if !defined AURUM_CONTAINERS_DLIST_HPP_
+#define AURUM_CONTAINERS_DLIST_HPP_
 
 #include <initializer_list>
 
-#include "../basetypes/KinaraTypes.hpp"
+#include "../basetypes/AurumTypes.hpp"
 #include "../allocators/MemoryManager.hpp"
 #include "../allocators/PoolAllocator.hpp"
 
 #include "DListTypes.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 
-namespace ka = kinara::allocators;
-namespace kc = kinara::containers;
+namespace aa = aurum::allocators;
+namespace ac = aurum::containers;
 
 template <typename T,bool USEPOOLS>
 class DListBase final
@@ -80,7 +80,7 @@ public:
     static const u64 sc_node_size;
 
 private:
-    ka::PoolAllocator* m_pool_allocator;
+    aa::PoolAllocator* m_pool_allocator;
     u64 m_size;
     NodeBaseType m_root;
     bool m_pool_owned;
@@ -90,12 +90,12 @@ private:
     {
         if (USEPOOLS) {
             if (m_pool_allocator == nullptr) {
-                m_pool_allocator = ka::allocate_object_raw<ka::PoolAllocator>(sizeof(NodeType));
+                m_pool_allocator = aa::allocate_object_raw<aa::PoolAllocator>(sizeof(NodeType));
             }
             auto ptr = m_pool_allocator->allocate();
             return NodeType::construct(ptr, std::forward<ArgTypes>(args)...);
         } else {
-            auto ptr = ka::allocate_raw(sizeof(NodeType));
+            auto ptr = aa::allocate_raw(sizeof(NodeType));
             return NodeType::construct(ptr, std::forward<ArgTypes>(args)...);
         }
     }
@@ -103,9 +103,9 @@ private:
     inline void deallocate_block(NodeType* node)
     {
         if (USEPOOLS) {
-            ka::deallocate(*(m_pool_allocator), node);
+            aa::deallocate(*(m_pool_allocator), node);
         } else {
-            ka::deallocate_object_raw(node, sizeof(NodeType));
+            aa::deallocate_object_raw(node, sizeof(NodeType));
         }
     }
 
@@ -144,7 +144,7 @@ private:
 
     inline Iterator construct_fill(NodeBaseType* position, u64 n, const ValueType& value)
     {
-        KINARA_ASSERT(n > 0);
+        AURUM_ASSERT(n > 0);
 
         auto prev_of_position = position->m_prev;
         auto last_inserted = prev_of_position;
@@ -168,7 +168,7 @@ private:
                                     const InputIterator& first,
                                     const InputIterator& last)
     {
-        KINARA_ASSERT(first != last);
+        AURUM_ASSERT(first != last);
 
         auto prev_of_position = position->m_prev;
         auto last_inserted = prev_of_position;
@@ -212,7 +212,7 @@ public:
     }
 
     // the pool must not go away as long as the list is alive
-    explicit DListBase(ka::PoolAllocator* pool_allocator)
+    explicit DListBase(aa::PoolAllocator* pool_allocator)
         : DListBase()
     {
         static_assert(USEPOOLS,
@@ -228,7 +228,7 @@ public:
         // Nothing here
     }
 
-    inline DListBase(u64 n, ka::PoolAllocator* pool_allocator)
+    inline DListBase(u64 n, aa::PoolAllocator* pool_allocator)
         : DListBase()
     {
         static_assert(USEPOOLS,
@@ -248,7 +248,7 @@ public:
         construct_fill(&m_root, n, value);
     }
 
-    inline DListBase(u64 n, const ValueType& value, ka::PoolAllocator* pool_allocator)
+    inline DListBase(u64 n, const ValueType& value, aa::PoolAllocator* pool_allocator)
         : DListBase()
     {
         static_assert(USEPOOLS,
@@ -271,7 +271,7 @@ public:
 
     template <typename InputIterator>
     DListBase(const InputIterator& first, const InputIterator& last,
-              ka::PoolAllocator* pool_allocator)
+              aa::PoolAllocator* pool_allocator)
         : DListBase()
     {
         static_assert(USEPOOLS,
@@ -307,14 +307,14 @@ public:
     }
 
     template <bool OUSEPOOLS>
-    DListBase(const kc::DListBase<T, OUSEPOOLS>& other)
+    DListBase(const ac::DListBase<T, OUSEPOOLS>& other)
         : DListBase(std::move(other))
     {
         // Nothing here
     }
 
     template <bool OUSEPOOLS>
-    DListBase(kc::DListBase<T, OUSEPOOLS>&& other)
+    DListBase(ac::DListBase<T, OUSEPOOLS>&& other)
         : DListBase(other.begin(), other.end())
     {
         // Nothing here
@@ -327,7 +327,7 @@ public:
     }
 
     DListBase(std::initializer_list<ValueType> init_list,
-              ka::PoolAllocator* pool_allocator)
+              aa::PoolAllocator* pool_allocator)
         : DListBase(init_list.begin(), init_list.end(), pool_allocator)
     {
         // Nothing here
@@ -343,8 +343,8 @@ public:
 
         if (USEPOOLS && m_pool_allocator != nullptr) {
             if (m_pool_owned) {
-                ka::deallocate_object_raw(m_pool_allocator,
-                                          sizeof(ka::PoolAllocator));
+                aa::deallocate_object_raw(m_pool_allocator,
+                                          sizeof(aa::PoolAllocator));
                 m_pool_allocator = nullptr;
             }
         }
@@ -369,7 +369,7 @@ public:
     }
 
     template <bool OUSEPOOLS>
-    inline void assign(const kc::DListBase<T, OUSEPOOLS>& other)
+    inline void assign(const ac::DListBase<T, OUSEPOOLS>& other)
     {
         assign(other.begin(), other.end());
     }
@@ -399,7 +399,7 @@ public:
 
     template <bool OUSEPOOLS>
     inline DListBase&
-    operator = (const kc::DListBase<T, OUSEPOOLS>& other)
+    operator = (const ac::DListBase<T, OUSEPOOLS>& other)
     {
         if (&other == this) {
             return *this;
@@ -1043,7 +1043,7 @@ public:
 
     // Use with caution. Mucking about with
     // the pool can cause list corruption or worse!
-    inline ka::PoolAllocator* get_pool() const
+    inline aa::PoolAllocator* get_pool() const
     {
         if (!USEPOOLS) {
             return nullptr;
@@ -1235,9 +1235,9 @@ typedef DList<i32> i32DList;
 typedef DList<i64> i64DList;
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_DLIST_HPP_ */
+#endif /* AURUM_CONTAINERS_DLIST_HPP_ */
 
 //
 // DList.hpp ends here

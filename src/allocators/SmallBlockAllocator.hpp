@@ -35,15 +35,15 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_ALLOCATORS_SMALL_BLOCK_ALLOCATOR_HPP_
-#define KINARA_KINARA_COMMON_ALLOCATORS_SMALL_BLOCK_ALLOCATOR_HPP_
+#if !defined AURUM_ALLOCATORS_SMALL_BLOCK_ALLOCATOR_HPP_
+#define AURUM_ALLOCATORS_SMALL_BLOCK_ALLOCATOR_HPP_
 
 #include <new>
 
-#include "../basetypes/KinaraBase.hpp"
-#include "../basetypes/KinaraErrors.hpp"
+#include "../basetypes/AurumBase.hpp"
+#include "../basetypes/AurumErrors.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace allocators {
 
 class SmallBlockAllocator
@@ -113,9 +113,9 @@ static inline void deallocate(SmallBlockAllocator& sb_allocator, const T* object
 }
 
 } /* end namespace allocators */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_ALLOCATORS_SMALL_BLOCK_ALLOCATOR_HPP_ */
+#endif /* AURUM_ALLOCATORS_SMALL_BLOCK_ALLOCATOR_HPP_ */
 
 //
 // SmallBlockAllocator.hpp ends here

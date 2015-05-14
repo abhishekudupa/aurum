@@ -37,18 +37,18 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_PRIORITY_QUEUE_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_PRIORITY_QUEUE_HPP_
+#if !defined AURUM_CONTAINERS_PRIORITY_QUEUE_HPP_
+#define AURUM_CONTAINERS_PRIORITY_QUEUE_HPP_
 
 #include <utility>
 
 #include "HeapCommon.hpp"
 #include "MultiWayHeap.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 
-namespace ka = kinara::allocators;
+namespace ka = aurum::allocators;
 
 template <typename T, typename Comparator = std::less<T>,
           typename HeapType = BinaryHeap<T, Comparator> >
@@ -157,10 +157,10 @@ using doublePriorityQueue = PriorityQueue<std::pair<double, Value>,
                                           priority_queue_detail_::PairComparator<double, Value> >;
 
 
-} /* end namespace kinara */
+} /* end namespace aurum */
 } /* end namespace containers */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_PRIORITY_QUEUE_HPP_ */
+#endif /* AURUM_CONTAINERS_PRIORITY_QUEUE_HPP_ */
 
 //
 // PriorityQueue.hpp ends here

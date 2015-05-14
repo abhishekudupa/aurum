@@ -35,12 +35,12 @@
 
 // Code:
 
-#if !defined KINARA_TESTS_UNIT_TESTS_RC_CLASS_HPP_
-#define KINARA_TESTS_UNIT_TESTS_RC_CLASS_HPP_
+#if !defined AURUM_TESTS_UNIT_TESTS_RC_CLASS_HPP_
+#define AURUM_TESTS_UNIT_TESTS_RC_CLASS_HPP_
 
-#include "../../projects/kinara-common/src/memory/RefCountable.hpp"
+#include "../../src/memory/RefCountable.hpp"
 
-using kinara::memory::RefCountable;
+using aurum::memory::RefCountable;
 
 class RCClass : public RefCountable
 {
@@ -77,7 +77,7 @@ public:
     }
 };
 
-#endif /* KINARA_TESTS_UNIT_TESTS_RC_CLASS_HPP_ */
+#endif /* AURUM_TESTS_UNIT_TESTS_RC_CLASS_HPP_ */
 
 //
 // RCClass.hpp ends here

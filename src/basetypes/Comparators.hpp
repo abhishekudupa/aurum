@@ -37,12 +37,12 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_BASETYPES_COMPARATORS_HPP_
-#define KINARA_KINARA_COMMON_BASETYPES_COMPARATORS_HPP_
+#if !defined AURUM_BASETYPES_COMPARATORS_HPP_
+#define AURUM_BASETYPES_COMPARATORS_HPP_
 
-#include "KinaraTypes.hpp"
+#include "AurumTypes.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 
 template <typename T, template <typename> class CompareFunction>
@@ -329,9 +329,9 @@ template <typename T>
 using NEqual = NotEquality<T>;
 
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_BASETYPES_COMPARATORS_HPP_ */
+#endif /* AURUM_BASETYPES_COMPARATORS_HPP_ */
 
 //
 // Comparators.hpp ends here

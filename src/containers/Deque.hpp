@@ -35,21 +35,18 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_DEQUE_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_DEQUE_HPP_
+#if !defined AURUM_CONTAINERS_DEQUE_HPP_
+#define AURUM_CONTAINERS_DEQUE_HPP_
 
 #include <initializer_list>
 #include <algorithm>
 
-#include "../basetypes/KinaraTypes.hpp"
+#include "../basetypes/AurumTypes.hpp"
 
 #include "DequeTypes.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
-
-namespace ka = kinara::allocators;
-namespace kc = kinara::containers;
 
 template <typename T>
 class DequeBase final :
@@ -475,7 +472,7 @@ public:
         auto num_elems = last - first;
         auto orig_size = size();
 
-        KINARA_ASSERT(num_elems > 0);
+        AURUM_ASSERT(num_elems > 0);
 
         if ((u64)num_elems == orig_size) {
             clear();
@@ -681,9 +678,9 @@ typedef Deque<i32> i32Deque;
 typedef Deque<i64> i64Deque;
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_DEQUE_HPP_ */
+#endif /* AURUM_CONTAINERS_DEQUE_HPP_ */
 
 //
 // Deque.hpp ends here

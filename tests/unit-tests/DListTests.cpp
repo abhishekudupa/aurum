@@ -35,7 +35,7 @@
 
 // Code:
 
-#include "../../projects/kinara-common/src/containers/DList.hpp"
+#include "../../src/containers/DList.hpp"
 #include <vector>
 #include <random>
 #include <cstdlib>
@@ -45,15 +45,15 @@
 
 #include "../../thirdparty/gtest/include/gtest/gtest.h"
 
-using kinara::u32;
-using kinara::u64;
-using kinara::containers::DList;
-using kinara::containers::u32DList;
-using kinara::containers::MPtrDList;
-using kinara::containers::PoolMPtrDList;
+using aurum::u32;
+using aurum::u64;
+using aurum::containers::DList;
+using aurum::containers::u32DList;
+using aurum::containers::MPtrDList;
+using aurum::containers::PoolMPtrDList;
 
-using kinara::containers::PoolDList;
-using kinara::containers::u32PoolDList;
+using aurum::containers::PoolDList;
+using aurum::containers::u32PoolDList;
 
 using testing::Types;
 

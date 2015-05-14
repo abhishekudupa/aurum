@@ -2,16 +2,16 @@
 // MurmurHash3 was written by Austin Appleby, and is placed in the public
 // domain. The author hereby disclaims copyright to this source code.
 
-// audupa: adapted from public domain source for use in kinara
+// audupa: adapted from public domain source for use in aurum
 
-#if !defined KINARA_KINARA_COMMON_HASHFUNCS_MURMUR_HASH_HPP_
-#define KINARA_KINARA_COMMON_HASHFUNCS_MURMUR_HASH_HPP_
+#if !defined AURUM_HASHFUNCS_MURMUR_HASH_HPP_
+#define AURUM_HASHFUNCS_MURMUR_HASH_HPP_
 
 #include <cstdint>
 
-#include "../basetypes/KinaraBase.hpp"
+#include "../basetypes/AurumBase.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 namespace murmur_hash_detail_ {
 
@@ -55,6 +55,6 @@ static inline u64 murmur_hash_64(const void* key, u64 length)
 }
 
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_HASHFUNCS_MURMUR_HASH_HPP_ */
+#endif /* AURUM_HASHFUNCS_MURMUR_HASH_HPP_ */

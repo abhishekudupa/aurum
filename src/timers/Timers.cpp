@@ -36,18 +36,18 @@
 // Code:
 
 #include <cstring>
-// load config for KINARA_CFG_HAVE_LIBRT_
-#include <KinaraConfig.h>
+// load config for AURUM_CFG_HAVE_LIBRT_
+#include <AurumConfig.h>
 
-#include "../basetypes/KinaraTypes.hpp"
-#include "../basetypes/KinaraErrors.hpp"
+#include "../basetypes/AurumTypes.hpp"
+#include "../basetypes/AurumErrors.hpp"
 
 #include "Timers.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 
-#if defined KINARA_CFG_HAVE_LIBRT_
+#if defined AURUM_CFG_HAVE_LIBRT_
 
 inline void ScopedTimer::handle_timer_expiration(union sigval the_sigval)
 {
@@ -72,7 +72,7 @@ inline clockid_t ScopedTimer::get_clock_id(ClockIDType clock_to_use) const
     case ClockIDType::ThreadCPUTimeClock:
         return CLOCK_THREAD_CPUTIME_ID;
     default:
-        KINARA_UNREACHABLE_CODE();
+        AURUM_UNREACHABLE_CODE();
     }
 }
 
@@ -87,7 +87,7 @@ inline void ScopedTimer::register_and_arm_timer(ClockIDType clock_to_use, u64 ti
     sigev.sigev_notify_function = ScopedTimer::handle_timer_expiration;
     auto status = timer_create(clock_id, &sigev, &m_timer);
     if (status) {
-        throw KinaraException("Could not create timer!");
+        throw AurumException("Could not create timer!");
     }
 
     struct itimerspec ts;
@@ -102,7 +102,7 @@ inline void ScopedTimer::register_and_arm_timer(ClockIDType clock_to_use, u64 ti
     }
 
     if (timer_settime(m_timer, 0, &ts, nullptr) == -1) {
-        throw KinaraException("Could not set timer!");
+        throw AurumException("Could not set timer!");
     }
 }
 
@@ -141,10 +141,10 @@ ScopedTimer::~ScopedTimer()
     timer_delete(m_timer);
 }
 
-#endif /* KINARA_CFG_HAVE_LIBRT_ */
+#endif /* AURUM_CFG_HAVE_LIBRT_ */
 
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
 //
 // Timers.cpp ends here

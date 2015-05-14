@@ -35,17 +35,17 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_TIMERS_TIMERS_HPP_
-#define KINARA_KINARA_COMMON_TIMERS_TIMERS_HPP_
+#if !defined AURUM_TIMERS_TIMERS_HPP_
+#define AURUM_TIMERS_TIMERS_HPP_
 
 #include <csignal>
 #include <ctime>
 #include <functional>
 
-#include "../basetypes/KinaraBase.hpp"
-#include "../basetypes/KinaraTypesFwd.hpp"
+#include "../basetypes/AurumBase.hpp"
+#include "../basetypes/AurumTypesFwd.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 
 enum class ClockIDType {
@@ -55,7 +55,7 @@ enum class ClockIDType {
     ThreadCPUTimeClock
 };
 
-#if defined KINARA_CFG_HAVE_LIBRT_
+#if defined AURUM_CFG_HAVE_LIBRT_
 
 class ScopedTimer
 {
@@ -109,7 +109,7 @@ public:
     ~ScopedTimer();
 };
 
-#else /* !KINARA_CFG_HAVE_LIBRT_ */
+#else /* !AURUM_CFG_HAVE_LIBRT_ */
 
 // A dummy class in case we don't have librt
 class ScopedTimer
@@ -152,12 +152,12 @@ public:
     }
 };
 
-#endif /* KINARA_CFG_HAVE_LIBRT_ */
+#endif /* AURUM_CFG_HAVE_LIBRT_ */
 
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_TIMERS_TIMERS_HPP_ */
+#endif /* AURUM_TIMERS_TIMERS_HPP_ */
 
 //
 // Timers.hpp ends here

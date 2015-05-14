@@ -1,5 +1,5 @@
-// KinaraErrors.hpp ---
-// Filename: KinaraErrors.hpp
+// AurumErrors.hpp ---
+// Filename: AurumErrors.hpp
 // Author: Abhishek Udupa
 // Created: Fri Feb 20 15:09:42 2015 (-0500)
 //
@@ -35,16 +35,16 @@
 
 // Code:
 
-// This file makes no assumptions about any kinara types being
+// This file makes no assumptions about any aurum types being
 // available and only provides low level debugging and error
 // handling capabilities
 
-#if !defined KINARA_KINARA_COMMON_BASETYPES_KINARA_ERRORS_HPP_
-#define KINARA_KINARA_COMMON_BASETYPES_KINARA_ERRORS_HPP_
+#if !defined AURUM_BASETYPES_AURUM_ERRORS_HPP_
+#define AURUM_BASETYPES_AURUM_ERRORS_HPP_
 
 #include <cstdio>
 
-namespace kinara {
+namespace aurum {
 namespace error_handlers {
 extern void notify_assertion_violation(const char* function_name,
                                        const char* filename, int line,
@@ -53,7 +53,7 @@ extern void notify_assertion_violation(const char* function_name,
 extern void invoke_debugger();
 
 } /* end namespace error_handlers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
 // Assertions are always enabled in debug builds
 // Assertions may be optionally enabled in non-debug builds
@@ -62,22 +62,22 @@ extern void invoke_debugger();
 // Otherwise, IF assertions are enabled, we only notify
 // about the assertion failure on stderr
 
-#if defined KINARA_CFG_DEBUG_MODE_BUILD_
+#if defined AURUM_CFG_DEBUG_MODE_BUILD_
 
-#define KINARA_ASSERT_WITH_MSG(CONDITION__, MESSAGE__)                        \
+#define AURUM_ASSERT_WITH_MSG(CONDITION__, MESSAGE__)                         \
     if (!(CONDITION__)) {                                                     \
-        kinara::error_handlers::notify_assertion_violation(__FUNCTION__,      \
+        aurum::error_handlers::notify_assertion_violation(__FUNCTION__,       \
                                                            __FILE__,          \
                                                            __LINE__,          \
                                                            #CONDITION__,      \
                                                            MESSAGE__);        \
-        kinara::error_handlers::invoke_debugger();                            \
+        aurum::error_handlers::invoke_debugger();                             \
     }                                                                         \
     ((void)0)
 
-#elif defined KINARA_CFG_ASSERTIONS_ENABLED_ /* !KINARA_CFG_DEBUG_MODE_BUILD_ */
+#elif defined AURUM_CFG_ASSERTIONS_ENABLED_ /* !AURUM_CFG_DEBUG_MODE_BUILD_ */
 
-#define KINARA_ASSERT_WITH_MSG(CONDITION__, MESSAGE__)                        \
+#define AURUM_ASSERT_WITH_MSG(CONDITION__, MESSAGE__)                         \
     if (!(CONDITION__)) {                                                     \
         notify_assertion_violation(__FUNCTION__,                              \
                                    __FILE__,                                  \
@@ -87,30 +87,30 @@ extern void invoke_debugger();
     }                                                                         \
     ((void)0)
 
-#else /* !KINARA_CFG_DEBUG_MODE_BUILD_ && !KINARA_CFG_ASSERTIONS_ENABLED_ */
+#else /* !AURUM_CFG_DEBUG_MODE_BUILD_ && !AURUM_CFG_ASSERTIONS_ENABLED_ */
 
-#define KINARA_ASSERT_WITH_MSG(CONDITION__, MESSAGE__)                        \
+#define AURUM_ASSERT_WITH_MSG(CONDITION__, MESSAGE__)                         \
     ((void)0)
 
-#endif /* !KINARA_CFG_ASSERTIONS_ENABLED_ && !KINARA_CFG_ASSERTIONS_ENABLED_ */
+#endif /* !AURUM_CFG_ASSERTIONS_ENABLED_ && !AURUM_CFG_ASSERTIONS_ENABLED_ */
 
 
-#define KINARA_ASSERT(CONDITION__)                                      \
-    KINARA_ASSERT_WITH_MSG(CONDITION__, nullptr)
+#define AURUM_ASSERT(CONDITION__)                                      \
+    AURUM_ASSERT_WITH_MSG(CONDITION__, nullptr)
 
-#if defined KINARA_CFG_DEBUG_MODE_BUILD_
+#if defined AURUM_CFG_DEBUG_MODE_BUILD_
 
-#define KINARA_UNREACHABLE_CODE()                                       \
-    KINARA_ASSERT_WITH_MSG(false, "Error: Code that should never have " \
+#define AURUM_UNREACHABLE_CODE()                                        \
+    AURUM_ASSERT_WITH_MSG(false, "Error: Code that should never have "  \
                            "been reached was executed!");               \
     __builtin_unreachable();                                            \
     (void(0))
 
-#else /* !KINARA_CFG_DEBUG_MODE_BUILD_ */
+#else /* !AURUM_CFG_DEBUG_MODE_BUILD_ */
 
 // Non-debug mode build, trigger a crash!
-#define KINARA_UNREACHABLE_CODE()                                       \
-    KINARA_ASSERT_WITH_MSG(false, "Error: Code that should never have " \
+#define AURUM_UNREACHABLE_CODE()                                        \
+    AURUM_ASSERT_WITH_MSG(false, "Error: Code that should never have "  \
                            "been reached was executed!");               \
     {                                                                   \
         int* int_ptr__ = nullptr;                                       \
@@ -119,9 +119,9 @@ extern void invoke_debugger();
     __builtin_unreachable();                                            \
     (void(0))
 
-#endif /* KINARA_CFG_DEBUG_MODE_BUILD_ */
+#endif /* AURUM_CFG_DEBUG_MODE_BUILD_ */
 
-#endif /* KINARA_KINARA_COMMON_BASETYPES_KINARA_ERRORS_HPP_ */
+#endif /* AURUM_BASETYPES_AURUM_ERRORS_HPP_ */
 
 //
-// KinaraErrors.hpp ends here
+// AurumErrors.hpp ends here

@@ -25,17 +25,17 @@
 //
 // Functions in the CityHash family are not suitable for cryptography.
 
-// audupa: adapted from the sources by google for use in kinara
+// audupa: adapted from the sources by google for use in aurum
 
-#if !defined KINARA_KINARA_COMMON_HASHFUNCS_CITY_CRC_HPP_
-#define KINARA_KINARA_COMMON_HASHFUNCS_CITY_CRC_HPP_
+#if !defined AURUM_HASHFUNCS_CITY_CRC_HPP_
+#define AURUM_HASHFUNCS_CITY_CRC_HPP_
 
 #include "CityHash.hpp"
 
 // only defined if sse 4.2 available
 #ifdef __SSE4_2__
 
-namespace kinara {
+namespace aurum {
 namespace utils {
 namespace cityhash_detail_ {
 
@@ -68,7 +68,7 @@ static inline void city_hash_crc_256(const char* data, u64 length, u64* result)
 }
 
 } /* end namespace utils */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
 #endif /* __SSE4_2__ */
-#endif /* KINARA_KINARA_COMMON_HASHFUNCS_CITY_CRC_HPP_ */
+#endif /* AURUM_HASHFUNCS_CITY_CRC_HPP_ */

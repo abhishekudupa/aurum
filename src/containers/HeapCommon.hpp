@@ -37,14 +37,14 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_HEAP_COMMON_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_HEAP_COMMON_HPP_
+#if !defined AURUM_CONTAINERS_HEAP_COMMON_HPP_
+#define AURUM_CONTAINERS_HEAP_COMMON_HPP_
 
 #include <limits>
 
-#include "../basetypes/KinaraBase.hpp"
+#include "../basetypes/AurumBase.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 
 // Every non-numeric type used as a key in a heap must specialize these
@@ -62,9 +62,9 @@ static inline T get_heap_supremum()
 }
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_HEAP_COMMON_HPP_ */
+#endif /* AURUM_CONTAINERS_HEAP_COMMON_HPP_ */
 
 //
 // HeapCommon.hpp ends here

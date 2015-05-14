@@ -37,8 +37,8 @@
 
 // Code:
 
-#include "../../projects/kinara-common/src/containers/UnorderedSet.hpp"
-#include "../../projects/kinara-common/src/containers/BitSet.hpp"
+#include "../../src/containers/UnorderedSet.hpp"
+#include "../../src/containers/BitSet.hpp"
 
 #include <utility>
 #include <random>
@@ -50,10 +50,10 @@
 #include "../../thirdparty/gtest/include/gtest/gtest.h"
 
 
-using kinara::u32;
-using kinara::u64;
-using kinara::i32;
-using kinara::i64;
+using aurum::u32;
+using aurum::u64;
+using aurum::i32;
+using aurum::i64;
 
 const u64 gc_deleted_value = UINT64_MAX;
 const u64 gc_nonused_value = gc_deleted_value - 1;
@@ -61,10 +61,10 @@ const u64 gc_nonused_value = gc_deleted_value - 1;
 const u64 max_insertion_value = (1 << 16);
 const u64 max_test_iterations = (1 << 4);
 
-using kinara::containers::UnifiedUnorderedSet;
-using kinara::containers::RestrictedUnorderedSet;
-using kinara::containers::SegregatedUnorderedSet;
-using kinara::containers::BitSet;
+using aurum::containers::UnifiedUnorderedSet;
+using aurum::containers::RestrictedUnorderedSet;
+using aurum::containers::SegregatedUnorderedSet;
+using aurum::containers::BitSet;
 
 using testing::Types;
 
@@ -79,17 +79,17 @@ protected:
 TYPED_TEST_CASE_P(UnorderedSetTest);
 
 template<typename SetType>
-static inline bool test_equal(const SetType& kinara_set, const std::unordered_set<u64>& std_set)
+static inline bool test_equal(const SetType& aurum_set, const std::unordered_set<u64>& std_set)
 {
-    if (kinara_set.size() != std_set.size()) {
+    if (aurum_set.size() != std_set.size()) {
         return false;
     }
 
-    auto it1 = kinara_set.begin();
+    auto it1 = aurum_set.begin();
     auto it2 = std_set.begin();
 
-    for (u64 i = 0; i < kinara_set.size(); ++i) {
-        if (kinara_set.find(*it2) == kinara_set.end() ||
+    for (u64 i = 0; i < aurum_set.size(); ++i) {
+        if (aurum_set.find(*it2) == aurum_set.end() ||
             std_set.find(*it1) == std_set.end()) {
             return false;
         }
@@ -194,34 +194,34 @@ TYPED_TEST_P(UnorderedSetTest, Functional)
 {
     typedef TypeParam SetType;
 
-    SetType kinara_set;
+    SetType aurum_set;
 
-    kinara_set.set_deleted_value(gc_deleted_value);
-    kinara_set.set_nonused_value(gc_nonused_value);
+    aurum_set.set_deleted_value(gc_deleted_value);
+    aurum_set.set_nonused_value(gc_nonused_value);
 
     std::unordered_set<u64> std_set;
-    kinara::containers::BitSet bit_set(max_insertion_value);
+    aurum::containers::BitSet bit_set(max_insertion_value);
 
     std::default_random_engine generator;
     std::uniform_int_distribution<u64> distribution(0, 1);
 
     for (u64 i = 0; i < max_test_iterations; ++i) {
         std_set.clear();
-        kinara_set.clear();
+        aurum_set.clear();
         bit_set.clear();
 
         for (u64 j = 0; j < max_insertion_value; ++j) {
             auto flip = (distribution(generator) == 1);
             if (flip) {
                 std_set.insert(j);
-                kinara_set.insert(j);
+                aurum_set.insert(j);
                 bit_set.set(j);
 
-                EXPECT_EQ(std_set.size(), kinara_set.size());
+                EXPECT_EQ(std_set.size(), aurum_set.size());
             }
         }
 
-        EXPECT_TRUE(test_equal(kinara_set, std_set));
+        EXPECT_TRUE(test_equal(aurum_set, std_set));
         EXPECT_TRUE(test_equal(bit_set, std_set));
 
         // erase some random elements
@@ -229,14 +229,14 @@ TYPED_TEST_P(UnorderedSetTest, Functional)
             auto flip = (distribution(generator) == 1);
             if (flip) {
                 std_set.erase(j);
-                kinara_set.erase(j);
+                aurum_set.erase(j);
                 bit_set.clear(j);
 
-                EXPECT_EQ(std_set.size(), kinara_set.size());
+                EXPECT_EQ(std_set.size(), aurum_set.size());
             }
         }
 
-        EXPECT_TRUE(test_equal(kinara_set, std_set));
+        EXPECT_TRUE(test_equal(aurum_set, std_set));
         EXPECT_TRUE(test_equal(bit_set, std_set));
 
         // repeat the above two steps
@@ -244,14 +244,14 @@ TYPED_TEST_P(UnorderedSetTest, Functional)
             auto flip = (distribution(generator) == 1);
             if (flip) {
                 std_set.insert(j);
-                kinara_set.insert(j);
+                aurum_set.insert(j);
                 bit_set.set(j);
 
-                EXPECT_EQ(std_set.size(), kinara_set.size());
+                EXPECT_EQ(std_set.size(), aurum_set.size());
             }
         }
 
-        EXPECT_TRUE(test_equal(kinara_set, std_set));
+        EXPECT_TRUE(test_equal(aurum_set, std_set));
         EXPECT_TRUE(test_equal(bit_set, std_set));
 
         // erase some random elements
@@ -259,14 +259,14 @@ TYPED_TEST_P(UnorderedSetTest, Functional)
             auto flip = (distribution(generator) == 1);
             if (flip) {
                 std_set.erase(j);
-                kinara_set.erase(j);
+                aurum_set.erase(j);
                 bit_set.clear(j);
 
-                EXPECT_EQ(std_set.size(), kinara_set.size());
+                EXPECT_EQ(std_set.size(), aurum_set.size());
             }
         }
 
-        EXPECT_TRUE(test_equal(kinara_set, std_set));
+        EXPECT_TRUE(test_equal(aurum_set, std_set));
         EXPECT_TRUE(test_equal(bit_set, std_set));
     }
 }
@@ -275,21 +275,21 @@ TYPED_TEST_P(UnorderedSetTest, Performance)
 {
     typedef TypeParam SetType;
 
-    SetType kinara_set;
+    SetType aurum_set;
 
     std::default_random_engine generator;
     std::uniform_int_distribution<u64> distribution(0, 1);
 
     for (u64 j = 0; j < (1 << 4); ++j) {
-        kinara_set.clear();
+        aurum_set.clear();
 
         for (u64 i = 0; i < 64 * max_insertion_value; ++i) {
-            kinara_set.insert(i);
+            aurum_set.insert(i);
         }
 
         for (u64 i = 0; i < 64 * max_insertion_value; ++i) {
             if (distribution(generator) == 1) {
-                kinara_set.erase(i);
+                aurum_set.erase(i);
             }
         }
     }

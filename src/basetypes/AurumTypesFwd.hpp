@@ -1,5 +1,5 @@
-// KinaraTypesFwd.hpp ---
-// Filename: KinaraTypesFwd.hpp
+// AurumTypesFwd.hpp ---
+// Filename: AurumTypesFwd.hpp
 // Author: Abhishek Udupa
 // Created: Sat Feb 21 13:50:30 2015 (-0500)
 //
@@ -35,25 +35,25 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_BASETYPES_KINARA_TYPES_FWD_HPP_
-#define KINARA_KINARA_COMMON_BASETYPES_KINARA_TYPES_FWD_HPP_
+#if !defined AURUM_BASETYPES_AURUM_TYPES_FWD_HPP_
+#define AURUM_BASETYPES_AURUM_TYPES_FWD_HPP_
 
-#include "KinaraBase.hpp"
+#include "AurumBase.hpp"
 
-namespace kinara {
+namespace aurum {
 
-// forward declarations of various kinara types
+// forward declarations of various aurum types
 template <typename T> class Stringifiable;
 template <typename T> class Hashable;
 template <typename T> class Comparable;
 class Interruptible;
 class Constructible;
-class KinaraException;
-class KinaraBase;
+class AurumException;
+class AurumBase;
 
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_BASETYPES_KINARA_TYPES_FWD_HPP_ */
+#endif /* AURUM_BASETYPES_AURUM_TYPES_FWD_HPP_ */
 
 //
-// KinaraTypesFwd.hpp ends here
+// AurumTypesFwd.hpp ends here

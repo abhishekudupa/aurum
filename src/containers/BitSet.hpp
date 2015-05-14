@@ -35,15 +35,15 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_BIT_SET_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_BIT_SET_HPP_
+#if !defined AURUM_CONTAINERS_BIT_SET_HPP_
+#define AURUM_CONTAINERS_BIT_SET_HPP_
 
-#include "../basetypes/KinaraTypes.hpp"
+#include "../basetypes/AurumTypes.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 
-class BitSet final
+class BitSet final : public AurumObject
 {
 private:
     u64 m_num_bits;
@@ -117,9 +117,9 @@ public:
 };
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_BIT_SET_HPP_ */
+#endif /* AURUM_CONTAINERS_BIT_SET_HPP_ */
 
 //
 // BitSet.hpp ends here

@@ -35,19 +35,18 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_UNORDERED_SET_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_UNORDERED_SET_HPP_
+#if !defined AURUM_CONTAINERS_UNORDERED_SET_HPP_
+#define AURUM_CONTAINERS_UNORDERED_SET_HPP_
 
 #include "../hashfuncs/Hash.hpp"
 #include "../basetypes/Comparators.hpp"
 
 #include "HashTable.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 
-namespace kc = kinara::containers;
-namespace ku = kinara::utils;
+namespace au = aurum::utils;
 
 namespace unordered_set_detail_ {
 
@@ -330,57 +329,57 @@ public:
 
 
 // Some useful typedefs
-template <typename T, typename HashFunction = ku::Hasher<T>,
-          typename EqualsFunction = ku::Equal<T> >
+template <typename T, typename HashFunction = au::Hasher<T>,
+          typename EqualsFunction = au::Equal<T> >
 using UnifiedUnorderedSet =
     unordered_set_detail_::UnorderedSetBase<T, HashFunction, EqualsFunction,
                                             hash_table_detail_::UnifiedHashTable>;
 
-template <typename T, typename HashFunction = ku::Hasher<T>,
-          typename EqualsFunction = ku::Equal<T> >
+template <typename T, typename HashFunction = au::Hasher<T>,
+          typename EqualsFunction = au::Equal<T> >
 using SegregatedUnorderedSet =
     unordered_set_detail_::UnorderedSetBase<T, HashFunction, EqualsFunction,
                                             hash_table_detail_::SegregatedHashTable>;
 
-template <typename T, typename HashFunction = ku::Hasher<T>,
-          typename EqualsFunction = ku::Equal<T> >
+template <typename T, typename HashFunction = au::Hasher<T>,
+          typename EqualsFunction = au::Equal<T> >
 using RestrictedUnorderedSet =
     unordered_set_detail_::UnorderedSetBase<T, HashFunction, EqualsFunction,
                                             hash_table_detail_::RestrictedHashTable>;
 
-template <typename T, typename HashFunction = ku::Hasher<T*>,
-          typename EqualsFunction = ku::Equal<T*>>
+template <typename T, typename HashFunction = au::Hasher<T*>,
+          typename EqualsFunction = au::Equal<T*>>
     using PtrUnifiedUnorderedSet = UnifiedUnorderedSet<T*, HashFunction, EqualsFunction>;
 
-template <typename T, typename HashFunction = ku::Hasher<const T*>,
-          typename EqualsFunction = ku::Equal<const T*> >
+template <typename T, typename HashFunction = au::Hasher<const T*>,
+          typename EqualsFunction = au::Equal<const T*> >
 using CPtrUnifiedUnorderedSet = UnifiedUnorderedSet<const T*>;
 
-template <typename T, typename HashFunction = ku::Hasher<T*>,
-          typename EqualsFunction = ku::Equal<T*>>
+template <typename T, typename HashFunction = au::Hasher<T*>,
+          typename EqualsFunction = au::Equal<T*>>
 using PtrSegregatedUnorderedSet = SegregatedUnorderedSet<T*>;
 
-template <typename T, typename HashFunction = ku::Hasher<const T*>,
-          typename EqualsFunction = ku::Equal<const T*>>
+template <typename T, typename HashFunction = au::Hasher<const T*>,
+          typename EqualsFunction = au::Equal<const T*>>
 using CPtrSegregatedUnorderedSet = SegregatedUnorderedSet<const T*>;
 
-template <typename T, typename HashFunction = ku::Hasher<T*>,
-          typename EqualsFunction = ku::Equal<T*>>
+template <typename T, typename HashFunction = au::Hasher<T*>,
+          typename EqualsFunction = au::Equal<T*>>
 using PtrRestrictedUnorderedSet = RestrictedUnorderedSet<T*>;
 
-template <typename T, typename HashFunction = ku::Hasher<const T*>,
-          typename EqualsFunction = ku::Equal<const T*>>
+template <typename T, typename HashFunction = au::Hasher<const T*>,
+          typename EqualsFunction = au::Equal<const T*>>
 using CPtrRestrictedUnorderedSet = RestrictedUnorderedSet<const T*>;
 
 template <typename T,
           typename HashFunction =
           typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                    ku::Hasher<memory::ManagedPointer<T> >,
-                                    ku::Hasher<T*> >::type,
+                                    au::Hasher<memory::ManagedPointer<T> >,
+                                    au::Hasher<T*> >::type,
           typename EqualsFunction =
           typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                    ku::Equal<memory::ManagedPointer<T> >,
-                                    ku::Equal<T*> >::type>
+                                    au::Equal<memory::ManagedPointer<T> >,
+                                    au::Equal<T*> >::type>
 using MPtrUnifiedUnorderedSet =
     UnifiedUnorderedSet<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
                                                   memory::ManagedPointer<T>, T*>::type,
@@ -389,12 +388,12 @@ using MPtrUnifiedUnorderedSet =
 template <typename T,
           typename HashFunction =
           typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                    ku::Hasher<memory::ManagedConstPointer<T> >,
-                                    ku::Hasher<const T*> >::type,
+                                    au::Hasher<memory::ManagedConstPointer<T> >,
+                                    au::Hasher<const T*> >::type,
           typename EqualsFunction =
           typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                    ku::Equal<memory::ManagedConstPointer<T> >,
-                                    ku::Equal<const T*> >::type>
+                                    au::Equal<memory::ManagedConstPointer<T> >,
+                                    au::Equal<const T*> >::type>
 using CMPtrUnifiedUnorderedSet =
     UnifiedUnorderedSet<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
                                                   memory::ManagedConstPointer<T>,
@@ -404,12 +403,12 @@ using CMPtrUnifiedUnorderedSet =
 template <typename T,
           typename HashFunction =
           typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                    ku::Hasher<memory::ManagedPointer<T> >,
-                                    ku::Hasher<T*> >::type,
+                                    au::Hasher<memory::ManagedPointer<T> >,
+                                    au::Hasher<T*> >::type,
           typename EqualsFunction =
           typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                    ku::Equal<memory::ManagedPointer<T> >,
-                                    ku::Equal<T*> >::type>
+                                    au::Equal<memory::ManagedPointer<T> >,
+                                    au::Equal<T*> >::type>
 using MPtrSegregatedUnorderedSet =
     SegregatedUnorderedSet<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
                                                      memory::ManagedPointer<T>, T*>::type,
@@ -418,12 +417,12 @@ using MPtrSegregatedUnorderedSet =
 template <typename T,
           typename HashFunction =
           typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                    ku::Hasher<memory::ManagedConstPointer<T> >,
-                                    ku::Hasher<const T*> >::type,
+                                    au::Hasher<memory::ManagedConstPointer<T> >,
+                                    au::Hasher<const T*> >::type,
           typename EqualsFunction =
           typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                    ku::Equal<memory::ManagedConstPointer<T> >,
-                                    ku::Equal<const T*> >::type>
+                                    au::Equal<memory::ManagedConstPointer<T> >,
+                                    au::Equal<const T*> >::type>
 using CMPtrSegregatedUnorderedSet =
     SegregatedUnorderedSet<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
                                                      memory::ManagedConstPointer<T>,
@@ -433,12 +432,12 @@ using CMPtrSegregatedUnorderedSet =
 template <typename T,
           typename HashFunction =
           typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                    ku::Hasher<memory::ManagedPointer<T> >,
-                                    ku::Hasher<T*> >::type,
+                                    au::Hasher<memory::ManagedPointer<T> >,
+                                    au::Hasher<T*> >::type,
           typename EqualsFunction =
           typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                    ku::Equal<memory::ManagedPointer<T> >,
-                                    ku::Equal<T*> >::type>
+                                    au::Equal<memory::ManagedPointer<T> >,
+                                    au::Equal<T*> >::type>
 using MPtrRestrictedUnorderedSet =
     RestrictedUnorderedSet<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
                                                      memory::ManagedPointer<T>, T*>::type,
@@ -447,12 +446,12 @@ using MPtrRestrictedUnorderedSet =
 template <typename T,
           typename HashFunction =
           typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                    ku::Hasher<memory::ManagedConstPointer<T> >,
-                                    ku::Hasher<const T*> >::type,
+                                    au::Hasher<memory::ManagedConstPointer<T> >,
+                                    au::Hasher<const T*> >::type,
           typename EqualsFunction =
           typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                    ku::Equal<memory::ManagedConstPointer<T> >,
-                                    ku::Equal<const T*> >::type>
+                                    au::Equal<memory::ManagedConstPointer<T> >,
+                                    au::Equal<const T*> >::type>
 using CMPtrRestrictedUnorderedSet =
     RestrictedUnorderedSet<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
                                                      memory::ManagedConstPointer<T>,
@@ -460,9 +459,9 @@ using CMPtrRestrictedUnorderedSet =
                            HashFunction, EqualsFunction>;
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_UNORDERED_SET_HPP_ */
+#endif /* AURUM_CONTAINERS_UNORDERED_SET_HPP_ */
 
 //
 // UnorderedSet.hpp ends here

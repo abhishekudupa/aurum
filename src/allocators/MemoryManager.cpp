@@ -39,7 +39,7 @@
 
 #include "MemoryManager.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace allocators {
 
 inline u64& MemoryManager::total_bytes_allocated()
@@ -245,19 +245,19 @@ bool MemoryManager::is_out_of_memory()
 }
 
 } /* end namespace allocators */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
 // override the new and delete operators
-// to use kinara managed memory
+// to use aurum managed memory
 
 void* operator new(std::size_t count)
 {
-    return kinara::allocators::allocate(count);
+    return aurum::allocators::allocate(count);
 }
 
 void operator delete(void* block_ptr) noexcept
 {
-    kinara::allocators::deallocate(block_ptr);
+    aurum::allocators::deallocate(block_ptr);
 }
 
 //

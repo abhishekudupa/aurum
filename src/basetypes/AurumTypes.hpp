@@ -1,5 +1,5 @@
-// KinaraTypes.hpp ---
-// Filename: KinaraTypes.hpp
+// AurumTypes.hpp ---
+// Filename: AurumTypes.hpp
 // Author: Abhishek Udupa
 // Created: Fri Feb 13 19:00:04 2015 (-0500)
 //
@@ -35,8 +35,8 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_BASETYPES_KINARA_TYPES_HPP_
-#define KINARA_KINARA_COMMON_BASETYPES_KINARA_TYPES_HPP_
+#if !defined AURUM_BASETYPES_AURUM_TYPES_HPP_
+#define AURUM_BASETYPES_AURUM_TYPES_HPP_
 
 #include <ostream>
 #include <type_traits>
@@ -45,16 +45,16 @@
 #include "../memory/RefCountable.hpp"
 #include "../memory/ManagedPointer.hpp"
 
-namespace kinara {
+namespace aurum {
 
 // A base class for objects
-class KinaraObject
+class AurumObject
 {
     static void* operator new(std::size_t sz);
     static void* operator new[](std::size_t count);
     static void operator delete(void* ptr, std::size_t sz);
     static void operator delete[](void* ptr, std::size_t sz);
-    virtual ~KinaraObject();
+    virtual ~AurumObject();
 };
 
 template <typename DerivedClass>
@@ -326,30 +326,30 @@ public:
 };
 
 
-class KinaraException : public std::exception
+class AurumException : public std::exception
 {
 private:
     std::string m_exception_info;
 
 public:
-    KinaraException()
+    AurumException()
         : m_exception_info("No information about exception")
     {
         // Nothing here
     }
 
-    KinaraException(const std::string& exception_info) noexcept
+    AurumException(const std::string& exception_info) noexcept
         : m_exception_info(exception_info)
     {
         // Nothing here
     }
 
-    virtual ~KinaraException() noexcept
+    virtual ~AurumException() noexcept
     {
         // Nothing here
     }
 
-    inline KinaraException& operator = (const KinaraException& other) noexcept
+    inline AurumException& operator = (const AurumException& other) noexcept
     {
         if (&other == this) {
             return *this;
@@ -396,9 +396,9 @@ inline std::string to_string(const T& object)
     return stringification_detail_::to_string_(object);
 }
 
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_BASETYPES_KINARA_TYPES_HPP_ */
+#endif /* AURUM_BASETYPES_AURUM_TYPES_HPP_ */
 
 //
-// KinaraTypes.hpp ends here
+// AurumTypes.hpp ends here

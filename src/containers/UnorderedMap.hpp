@@ -35,8 +35,8 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_UNORDERED_MAP_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_UNORDERED_MAP_HPP_
+#if !defined AURUM_CONTAINERS_UNORDERED_MAP_HPP_
+#define AURUM_CONTAINERS_UNORDERED_MAP_HPP_
 
 #include <stdexcept>
 
@@ -45,11 +45,11 @@
 
 #include "HashTable.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
 
-namespace kc = kinara::containers;
-namespace ku = kinara::utils;
+namespace ac = aurum::containers;
+namespace au = aurum::utils;
 
 namespace unordered_map_detail_ {
 
@@ -105,7 +105,7 @@ public:
     }
 
     template <bool OISCONST>
-    inline UMIterator(const kc::unordered_map_detail_::UMIterator<BaseIteratorType,
+    inline UMIterator(const ac::unordered_map_detail_::UMIterator<BaseIteratorType,
                                                                   ValueType, OISCONST>& other)
     {
         static_assert(!OISCONST || ISCONST,
@@ -127,7 +127,7 @@ public:
 
     template <bool OISCONST>
     inline UMIterator&
-    operator = (const kc::unordered_map_detail_::UMIterator<BaseIteratorType,
+    operator = (const ac::unordered_map_detail_::UMIterator<BaseIteratorType,
                                                             ValueType, OISCONST>& other)
     {
         static_assert(!OISCONST || ISCONST,
@@ -138,7 +138,7 @@ public:
 
     template <bool OISCONST>
     inline bool
-    operator == (const kc::unordered_map_detail_::UMIterator<BaseIteratorType,
+    operator == (const ac::unordered_map_detail_::UMIterator<BaseIteratorType,
                                                              ValueType, OISCONST>& other) const
     {
         return BaseIteratorType::operator==(other);
@@ -146,7 +146,7 @@ public:
 
     template <bool OISCONST>
     inline bool
-    operator != (const kc::unordered_map_detail_::UMIterator<BaseIteratorType,
+    operator != (const ac::unordered_map_detail_::UMIterator<BaseIteratorType,
                                                              ValueType, OISCONST>& other) const
     {
         return BaseIteratorType::operator!=(other);
@@ -422,7 +422,7 @@ public:
     {
         auto it = find(key);
         if (it == end()) {
-            throw std::out_of_range("Key not found in Kinara::UnorderedMap::at()");
+            throw std::out_of_range("Key not found in aurum::UnorderedMap::at()");
         }
         return it->second;
     }
@@ -431,7 +431,7 @@ public:
     {
         auto it = find(key);
         if (it == end()) {
-            throw std::out_of_range("Key not found in Kinara::UnorderedMap::at()");
+            throw std::out_of_range("Key not found in aurum::UnorderedMap::at()");
         }
         return it->second;
     }
@@ -556,24 +556,24 @@ public:
 // Some useful typedefs
 
 template <typename MappedKeyType, typename MappedValueType,
-          typename HashFunction = ku::Hasher<MappedKeyType>,
-          typename EqualsFunction = ku::Equal<MappedKeyType> >
+          typename HashFunction = au::Hasher<MappedKeyType>,
+          typename EqualsFunction = au::Equal<MappedKeyType> >
 using UnifiedUnorderedMap =
     unordered_map_detail_::UnorderedMapBase<MappedKeyType, MappedValueType,
                                             HashFunction, EqualsFunction,
                                             hash_table_detail_::UnifiedHashTable>;
 
 template <typename MappedKeyType, typename MappedValueType,
-          typename HashFunction = ku::Hasher<MappedKeyType>,
-          typename EqualsFunction = ku::Equal<MappedKeyType> >
+          typename HashFunction = au::Hasher<MappedKeyType>,
+          typename EqualsFunction = au::Equal<MappedKeyType> >
 using SegregatedUnorderedMap =
     unordered_map_detail_::UnorderedMapBase<MappedKeyType, MappedValueType,
                                             HashFunction, EqualsFunction,
                                             hash_table_detail_::SegregatedHashTable>;
 
 template <typename MappedKeyType, typename MappedValueType,
-          typename HashFunction = ku::Hasher<MappedKeyType>,
-          typename EqualsFunction = ku::Equal<MappedKeyType> >
+          typename HashFunction = au::Hasher<MappedKeyType>,
+          typename EqualsFunction = au::Equal<MappedKeyType> >
 using RestrictedUnorderedMap =
     unordered_map_detail_::UnorderedMapBase<MappedKeyType, MappedValueType,
                                             HashFunction, EqualsFunction,
@@ -634,9 +634,9 @@ using CMPtrRestrictedUnorderedMap =
                            MappedValueType>;
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_UNORDERED_MAP_HPP_ */
+#endif /* AURUM_CONTAINERS_UNORDERED_MAP_HPP_ */
 
 //
 // UnorderedMap.hpp ends here

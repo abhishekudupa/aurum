@@ -35,21 +35,19 @@
 
 // Code:
 
-#if !defined KINARA_KINARA_COMMON_CONTAINERS_STATIC_BIT_SET_HPP_
-#define KINARA_KINARA_COMMON_CONTAINERS_STATIC_BIT_SET_HPP_
+#if !defined AURUM_CONTAINERS_STATIC_BIT_SET_HPP_
+#define AURUM_CONTAINERS_STATIC_BIT_SET_HPP_
 
 #include <cstring>
 #include <utility>
 #include <string>
 #include <sstream>
 
-#include "../basetypes/KinaraBase.hpp"
+#include "../basetypes/AurumBase.hpp"
 #include "../allocators/MemoryManager.hpp"
 
-namespace kinara {
+namespace aurum {
 namespace containers {
-
-namespace ka = kinara::allocators;
 
 template <u64 SIZE>
 class StaticBitSet final
@@ -324,9 +322,9 @@ public:
 };
 
 } /* end namespace containers */
-} /* end namespace kinara */
+} /* end namespace aurum */
 
-#endif /* KINARA_KINARA_COMMON_CONTAINERS_STATIC_BIT_SET_HPP_ */
+#endif /* AURUM_CONTAINERS_STATIC_BIT_SET_HPP_ */
 
 //
 // StaticBitSet.hpp ends here
