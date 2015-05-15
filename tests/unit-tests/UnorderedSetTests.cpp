@@ -47,7 +47,7 @@
 
 #include "RCClass.hpp"
 
-#include "../../thirdparty/google-test/include/gtest/gtest.h"
+#include <gtest/gtest.h>
 
 
 using aurum::u32;

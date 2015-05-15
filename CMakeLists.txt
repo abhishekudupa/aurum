@@ -83,7 +83,7 @@ option(AURUM_BUILD_TEST_CASES
 # locations for built objects
 set(AURUM_BIN_DIR "bin")
 set(AURUM_LIB_DIR "lib")
-set(AURUM_INC_DIR "include")
+set(AURUM_INC_DIR "include/aurum")
 
 add_library(aurum-shared SHARED
   src/allocators/MemoryManager.cpp
@@ -130,6 +130,15 @@ target_link_libraries(aurum-static ${AURUM_LINK_LIBS})
 target_include_directories(aurum-shared PRIVATE ${CMAKE_BINARY_DIR})
 target_include_directories(aurum-static PRIVATE ${CMAKE_BINARY_DIR})
 
+# set the interface include directories for projects which include
+# this project as a subproject
+set_property(TARGET aurum-shared APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+  $<INSTALL_INTERFACE:include/aurum>)
+set_property(TARGET aurum-static APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+  $<INSTALL_INTERFACE:include/aurum>)
+
 set_target_properties(aurum-shared PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${AURUM_LIB_DIR}"
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${AURUM_LIB_DIR}"
@@ -144,13 +153,42 @@ set_target_properties(aurum-static PROPERTIES
 if(AURUM_BUILD_TEST_CASES)
   add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/thirdparty/google-test")
   file(GLOB AURUM_TEST_SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/tests/unit-tests/*.cpp")
-  add_executable(aurum-unit-tests "${AURUM_TEST_SOURCE_FILES}")
-  add_dependencies(aurum-unit-tests gtest)
-  add_dependencies(aurum-unit-tests aurum-shared aurum-static)
-  target_link_libraries(aurum-unit-tests gtest gtest_main)
-  target_link_libraries(aurum-unit-tests ${CMAKE_THREAD_LIBS_INIT})
-  target_link_libraries(aurum-unit-tests aurum-shared)
-  target_include_directories(aurum-unit-tests PRIVATE "${CMAKE_CURRENT_LIST_DIR}/thirdparty/google-test/include")
-  set_target_properties(aurum-unit-tests PROPERTIES
+  add_executable(aurum-unit-tests-shared "${AURUM_TEST_SOURCE_FILES}")
+  add_dependencies(aurum-unit-tests-shared gtest)
+  add_dependencies(aurum-unit-tests-shared aurum-shared)
+  target_link_libraries(aurum-unit-tests-shared gtest gtest_main)
+  target_link_libraries(aurum-unit-tests-shared ${CMAKE_THREAD_LIBS_INIT})
+  target_link_libraries(aurum-unit-tests-shared aurum-shared)
+  target_include_directories(aurum-unit-tests-shared PRIVATE "${CMAKE_CURRENT_LIST_DIR}/thirdparty/google-test/include")
+  set_target_properties(aurum-unit-tests-shared PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${AURUM_BIN_DIR}")
+
+  add_executable(aurum-unit-tests-static "${AURUM_TEST_SOURCE_FILES}")
+  add_dependencies(aurum-unit-tests-static gtest)
+  add_dependencies(aurum-unit-tests-static aurum-static)
+  target_link_libraries(aurum-unit-tests-static gtest gtest_main)
+  target_link_libraries(aurum-unit-tests-static ${CMAKE_THREAD_LIBS_INIT})
+  target_link_libraries(aurum-unit-tests-static aurum-static)
+  target_include_directories(aurum-unit-tests-static PRIVATE "${CMAKE_CURRENT_LIST_DIR}/thirdparty/google-test/include")
+  set_target_properties(aurum-unit-tests-static PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${AURUM_BIN_DIR}")
 endif()
+
+# installation
+install(TARGETS aurum-static
+  ARCHIVE DESTINATION ${AURUM_LIB_DIR} COMPONENT dev)
+
+install(TARGETS aurum-shared
+  LIBRARY DESTINATION ${AURUM_LIB_DIR} COMPONENT dev)
+
+install(DIRECTORY
+  src/allocators
+  src/basetypes
+  src/containers
+  src/hashfuncs
+  src/memory
+  src/primeutils
+  src/timers
+  DESTINATION ${AURUM_INC_DIR}
+  COMPONENT dev
+  FILES_MATCHING PATTERN "*.hpp")

@@ -38,8 +38,8 @@
 // Code:
 
 #include "../../src/primeutils/PrimeGenerator.hpp"
-#include "../../thirdparty/google-test/include/gtest/gtest.h"
 #include <random>
+#include <gtest/gtest.h>
 
 using aurum::utils::PrimeGenerator;
 

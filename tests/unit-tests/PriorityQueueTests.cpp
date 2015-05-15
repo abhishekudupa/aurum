@@ -48,7 +48,7 @@
 
 #include "RCClass.hpp"
 
-#include "../../thirdparty/google-test/include/gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #define MAX_TEST_SIZE (1 << 12)
 #define NUM_TEST_ITERATIONS (1 << 5)
