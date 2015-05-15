@@ -49,7 +49,7 @@ namespace aa = aurum::allocators;
 namespace au = aurum::utils;
 
 template <typename T, typename HashFunction, typename EqualsFunction, typename LessFunction>
-class OrderedSetBase
+class OrderedSetBase : public AurumObject
 {
 private:
     typedef PoolDList<T> ListType;

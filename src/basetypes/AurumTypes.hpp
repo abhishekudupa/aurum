@@ -53,6 +53,8 @@ class AurumObject
 public:
     static void* operator new(std::size_t sz);
     static void* operator new[](std::size_t count);
+    static void* operator new(std::size_t sz, void* ptr);
+    static void* operator new[](std::size_t count, void* ptr);
     static void operator delete(void* ptr, std::size_t sz);
     static void operator delete[](void* ptr, std::size_t sz);
     AurumObject();
@@ -346,6 +348,18 @@ public:
         // Nothing here
     }
 
+    AurumException(const AurumException& other) noexcept
+        : m_exception_info(other.m_exception_info)
+    {
+        // Nothing here
+    }
+
+    AurumException(AurumException&& other) noexcept
+        : m_exception_info(std::move(other.m_exception_info))
+    {
+        // Nothing here
+    }
+
     virtual ~AurumException() noexcept
     {
         // Nothing here
@@ -357,6 +371,16 @@ public:
             return *this;
         }
         m_exception_info = other.m_exception_info;
+        return *this;
+    }
+
+    inline AurumException& operator = (AurumException&& other) noexcept
+    {
+        if (&other == this) {
+            return *this;
+        }
+
+        std::swap(m_exception_info, other.m_exception_info);
         return *this;
     }
 

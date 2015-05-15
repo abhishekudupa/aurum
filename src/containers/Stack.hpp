@@ -44,7 +44,7 @@ namespace aurum {
 namespace containers {
 
 template <typename T, typename ContainerType_ = Deque<T>>
-class Stack final
+class Stack final : public AurumObject
 {
 public:
     typedef T ValueType;

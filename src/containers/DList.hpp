@@ -53,7 +53,7 @@ namespace aa = aurum::allocators;
 namespace ac = aurum::containers;
 
 template <typename T,bool USEPOOLS>
-class DListBase final
+class DListBase final : public AurumObject
 {
 public:
     typedef T ValueType;

@@ -43,7 +43,6 @@
 #include <iterator>
 
 #include "../basetypes/AurumBase.hpp"
-#include "ContainersBase.hpp"
 
 namespace aurum {
 namespace containers {

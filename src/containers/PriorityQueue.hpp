@@ -42,7 +42,6 @@
 
 #include <utility>
 
-#include "HeapCommon.hpp"
 #include "MultiWayHeap.hpp"
 
 namespace aurum {
@@ -52,7 +51,7 @@ namespace aa = aurum::allocators;
 
 template <typename T, typename Comparator = std::less<T>,
           typename HeapType = BinaryHeap<T, Comparator> >
-class PriorityQueue final
+class PriorityQueue final : public AurumObject
 {
 private:
     HeapType m_heap;

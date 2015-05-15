@@ -50,6 +50,7 @@ namespace containers {
 
 template <typename T>
 class DequeBase final :
+        public AurumObject,
         protected deque_detail_::DequeInternal<T>
 {
 public:

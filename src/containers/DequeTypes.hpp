@@ -48,8 +48,6 @@
 #include "../allocators/MemoryManager.hpp"
 #include "../basetypes/AurumErrors.hpp"
 
-#include "ContainersBase.hpp"
-
 namespace aurum {
 namespace containers {
 

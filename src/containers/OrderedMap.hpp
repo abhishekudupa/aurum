@@ -186,7 +186,7 @@ public:
 
 template <typename KeyType, typename MappedType, typename KeyHash,
           typename KeyEquals, typename KeyLess>
-class OrderedMapBase
+class OrderedMapBase : public AurumObject
 {
 public:
     typedef std::pair<const KeyType, MappedType> ValueType;

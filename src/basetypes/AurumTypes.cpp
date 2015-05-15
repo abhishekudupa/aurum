@@ -54,6 +54,16 @@ void* AurumObject::operator new[] (std::size_t sz)
     return aa::allocate_raw(sz);
 }
 
+void* AurumObject::operator new (std::size_t sz, void* ptr)
+{
+    return ptr;
+}
+
+void* AurumObject::operator new[] (std::size_t sz, void* ptr)
+{
+    return ptr;
+}
+
 void AurumObject::operator delete(void* ptr, std::size_t sz)
 {
     aa::deallocate_raw(ptr, sz);

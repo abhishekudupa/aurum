@@ -85,7 +85,8 @@ set(AURUM_BIN_DIR "bin")
 set(AURUM_LIB_DIR "lib")
 set(AURUM_INC_DIR "include/aurum")
 
-add_library(aurum-shared SHARED
+# all the source files that need to be compiled
+set(AURUM_CXX_SOURCE_FILES
   src/allocators/MemoryManager.cpp
   src/allocators/PoolAllocator.cpp
   src/allocators/SmallBlockAllocator.cpp
@@ -100,30 +101,18 @@ add_library(aurum-shared SHARED
   src/hashfuncs/MurmurHash.cpp
   src/hashfuncs/SpookyHash.cpp
 
+  src/logging/LogManager.cpp
+
   src/primeutils/PrecomputedPrimeList.cpp
   src/primeutils/PrimeGenerator.cpp
 
   src/timers/Timers.cpp)
+
+add_library(aurum-shared SHARED
+  ${AURUM_CXX_SOURCE_FILES})
 
 add_library(aurum-static STATIC
-  src/allocators/MemoryManager.cpp
-  src/allocators/PoolAllocator.cpp
-  src/allocators/SmallBlockAllocator.cpp
-
-  src/basetypes/AurumErrors.cpp
-  src/basetypes/AurumTypes.cpp
-
-  src/containers/BitSet.cpp
-
-  src/hashfuncs/CityHash.cpp
-  src/hashfuncs/FNVHash.cpp
-  src/hashfuncs/MurmurHash.cpp
-  src/hashfuncs/SpookyHash.cpp
-
-  src/primeutils/PrecomputedPrimeList.cpp
-  src/primeutils/PrimeGenerator.cpp
-
-  src/timers/Timers.cpp)
+  ${AURUM_CXX_SOURCE_FILES})
 
 target_link_libraries(aurum-shared ${AURUM_LINK_LIBS})
 target_link_libraries(aurum-static ${AURUM_LINK_LIBS})
@@ -133,7 +122,7 @@ target_include_directories(aurum-static PRIVATE ${CMAKE_BINARY_DIR})
 # set the interface include directories for projects which include
 # this project as a subproject
 set_property(TARGET aurum-shared APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}>
   $<INSTALL_INTERFACE:include/aurum>)
 set_property(TARGET aurum-static APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}>
@@ -189,6 +178,7 @@ install(DIRECTORY
   src/memory
   src/primeutils
   src/timers
+  src/logging
   DESTINATION ${AURUM_INC_DIR}
   COMPONENT dev
   FILES_MATCHING PATTERN "*.hpp")

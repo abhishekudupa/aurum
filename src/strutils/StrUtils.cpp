@@ -1,8 +1,8 @@
-// HeapCommon.hpp ---
+// StrUtils.cpp ---
 //
-// Filename: HeapCommon.hpp
+// Filename: StrUtils.cpp
 // Author: Abhishek Udupa
-// Created: Fri Mar 13 17:26:42 2015 (-0400)
+// Created: Fri May 15 17:45:19 2015 (-0400)
 //
 //
 // Copyright (c) 2015, Abhishek Udupa, University of Pennsylvania
@@ -37,34 +37,76 @@
 
 // Code:
 
-#if !defined AURUM_CONTAINERS_HEAP_COMMON_HPP_
-#define AURUM_CONTAINERS_HEAP_COMMON_HPP_
-
-#include <limits>
-
-#include "../basetypes/AurumBase.hpp"
+#include "StrUtils.hpp"
 
 namespace aurum {
-namespace containers {
+namespace strutils {
 
-// Every non-numeric type used as a key in a heap must specialize these
-// functions
-template <typename T>
-static inline T get_heap_infimum()
+static inline bool match_on_position(const std::string& the_string,
+                                     const std::string& pattern,
+                                     i64 position)
 {
-    return std::numeric_limits<T>::min();
+    auto const pat_length = pattern.length();
+    auto const str_length = the_string.length();
+
+    if (position + pat_length >= str_length) {
+        return false;
+    }
+    for (u64 i = 0; i < pat_length; ++i) {
+        if (the_string[position + i] != pattern[i]) {
+            return false;
+        }
+    }
 }
 
-template <typename T>
-static inline T get_heap_supremum()
+i64 find_first_match(const std::string& the_string,
+                     const std::string& pattern,
+                     i64 start_offset)
 {
-    return std::numeric_limits<T>::max();
+    if (start_offset >= the_string.length()) {
+        return INT64_MAX;
+    }
 }
 
-} /* end namespace containers */
+void trim(std::string& the_string)
+{
+    u64 begin_pos = 0;
+    u64 end_pos = the_string.length() - 1;
+
+    while (the_string[begin_pos] == ' ' ||
+           the_string[begin_pos] == '\t' ||
+           the_string[begin_pos] == '\n') {
+        ++begin_pos;
+    }
+
+    while (the_string[end_pos] == ' ' ||
+           the_string[end_pos] == '\t' ||
+           the_string[end_pos] == '\n') {
+        --end_pos;
+    }
+
+    if (end_pos <= begin_pos) {
+        the_string = "";
+    }
+
+    the_string = the_string.substr(begin_pos, end_pos - begin_pos + 1);
+}
+
+std::string trim_copy(const std::string& the_string)
+{
+    auto copy_string = the_string;
+    trim(copy_string);
+    return copy_string;
+}
+
+ac::Vector<std::string> split(const std::string& the_string,
+                              const std::string& separator)
+{
+
+}
+
+} /* end namespace strutils */
 } /* end namespace aurum */
 
-#endif /* AURUM_CONTAINERS_HEAP_COMMON_HPP_ */
-
 //
-// HeapCommon.hpp ends here
+// StrUtils.cpp ends here

@@ -63,7 +63,7 @@ namespace ac = aurum::containers;
 */
 
 template <typename T, bool USEPOOLS>
-class SListBase final
+class SListBase final : public AurumObject
 {
  public:
     typedef T ValueType;

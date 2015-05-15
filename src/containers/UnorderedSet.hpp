@@ -52,7 +52,9 @@ namespace unordered_set_detail_ {
 
 template <typename T, typename HashFunction, typename EqualsFunction,
           template <typename, typename, typename> class HashTableTemplateType>
-class UnorderedSetBase : private HashTableTemplateType<T, HashFunction, EqualsFunction>
+class UnorderedSetBase :
+        public AurumObject,
+        private HashTableTemplateType<T, HashFunction, EqualsFunction>
 {
 private:
     typedef HashTableTemplateType<T, HashFunction, EqualsFunction> HashTableType;

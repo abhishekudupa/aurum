@@ -166,14 +166,16 @@ public:
 template <typename MappedKeyType, typename MappedValueType,
           typename HashFunction, typename EqualsFunction,
           template <typename, typename, typename> class HashTableTemplateType>
-class UnorderedMapBase : private HashTableTemplateType<std::pair<const MappedKeyType,
-                                                                 MappedValueType>,
-                                                       KeyValuePairHasher<MappedKeyType,
-                                                                          MappedValueType,
-                                                                          HashFunction>,
-                                                       KeyValuePairEquals<MappedKeyType,
-                                                                          MappedValueType,
-                                                                          EqualsFunction>>
+class UnorderedMapBase :
+        public AurumObject,
+        private HashTableTemplateType<std::pair<const MappedKeyType,
+                                                MappedValueType>,
+                                      KeyValuePairHasher<MappedKeyType,
+                                                         MappedValueType,
+                                                         HashFunction>,
+                                      KeyValuePairEquals<MappedKeyType,
+                                                         MappedValueType,
+                                                         EqualsFunction>>
 {
 private:
     typedef HashTableTemplateType<std::pair<const MappedKeyType,

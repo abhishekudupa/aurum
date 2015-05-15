@@ -49,8 +49,6 @@
 #include "../basetypes/AurumTypes.hpp"
 #include "../allocators/MemoryManager.hpp"
 
-#include "ContainersBase.hpp"
-
 namespace aurum {
 namespace containers {
 
@@ -61,7 +59,7 @@ namespace containers {
 namespace aa = aurum::allocators;
 
 template <typename T>
-class VectorBase final
+class VectorBase final : public AurumObject
 {
 public:
     typedef T ValueType;

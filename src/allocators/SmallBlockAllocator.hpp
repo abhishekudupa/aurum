@@ -41,12 +41,13 @@
 #include <new>
 
 #include "../basetypes/AurumBase.hpp"
+#include "../basetypes/AurumTypes.hpp"
 #include "../basetypes/AurumErrors.hpp"
 
 namespace aurum {
 namespace allocators {
 
-class SmallBlockAllocator
+class SmallBlockAllocator : public AurumObject
 {
 private:
     // preconfigured constants

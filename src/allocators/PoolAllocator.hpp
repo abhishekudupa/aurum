@@ -41,6 +41,7 @@
 #include <new>
 
 #include "../basetypes/AurumBase.hpp"
+#include "../basetypes/AurumTypes.hpp"
 #include "../basetypes/AurumErrors.hpp"
 
 namespace aurum {
@@ -49,7 +50,7 @@ namespace allocators {
 
 // Like a small block allocator, but only one fixed size
 // which is rounded up to the alignment factor
-class PoolAllocator
+class PoolAllocator : public AurumObject
 {
 private:
     static constexpr u32 sc_default_num_objects = 32;

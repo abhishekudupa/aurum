@@ -44,13 +44,14 @@
 #include <sstream>
 
 #include "../basetypes/AurumBase.hpp"
+#include "../basetypes/AurumTypes.hpp"
 #include "../allocators/MemoryManager.hpp"
 
 namespace aurum {
 namespace containers {
 
 template <u64 SIZE>
-class StaticBitSet final
+class StaticBitSet final : public AurumObject
 {
 private:
     static constexpr u64 sc_num_bits = SIZE;

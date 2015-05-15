@@ -1,8 +1,8 @@
-// ContainersBase.hpp ---
+// ProgramOptions.hpp ---
 //
-// Filename: ContainersBase.hpp
+// Filename: ProgramOptions.hpp
 // Author: Abhishek Udupa
-// Created: Thu Feb 12 17:38:57 2015 (-0500)
+// Created: Fri May 15 16:21:08 2015 (-0400)
 //
 //
 // Copyright (c) 2015, Abhishek Udupa, University of Pennsylvania
@@ -37,36 +37,34 @@
 
 // Code:
 
-#if !defined AURUM_CONTAINERS_CONTAINERS_BASE_HPP_
-#define AURUM_CONTAINERS_CONTAINERS_BASE_HPP_
+#if !defined AURUM_PROGOPTIONS_PROGRAM_OPTIONS_HPP_
+#define AURUM_PROGOPTIONS_PROGRAM_OPTIONS_HPP_
 
-#include <ostream>
-#include <algorithm>
-
-#include "../basetypes/AurumBase.hpp"
+#include "../basetypes/AurumTypes.hpp"
 
 namespace aurum {
-namespace containers {
+namespace program_options {
 
-
-template <typename ForwardIterator>
-static inline void print_iterable(std::ostream& out_stream,
-                                  const ForwardIterator& begin_iterator,
-                                  const ForwardIterator& end_iterator)
+class OptionBase : public AurumObject
 {
-    for (auto it = begin_iterator; it != end_iterator; ++it) {
-        out_stream << *it;
-        if (next(it) != end_iterator) {
-            std::operator<<(out_stream, ", ");
-        }
-    }
-    return;
-}
 
-} /* end namespace containers */
+};
+
+class NumericOption : public OptionBase
+{
+private:
+
+};
+
+class StringOption : public OptionBase
+{
+
+};
+
+} /* end namespace program_options */
 } /* end namespace aurum */
 
-#endif /* AURUM_CONTAINERS_CONTAINERS_BASE_HPP_ */
+#endif /* AURUM_PROGOPTIONS_PROGRAM_OPTIONS_HPP_ */
 
 //
-// ContainersBase.hpp ends here
+// ProgramOptions.hpp ends here
