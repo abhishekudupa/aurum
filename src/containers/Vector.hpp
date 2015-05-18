@@ -443,7 +443,7 @@ public:
         assign(other.begin(), other.end());
     }
 
-    VectorBase(const VectorBase&& other)
+    VectorBase(VectorBase&& other)
         : m_data(nullptr)
     {
         std::swap(m_data, other.m_data);

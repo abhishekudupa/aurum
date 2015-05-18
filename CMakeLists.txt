@@ -106,6 +106,8 @@ set(AURUM_CXX_SOURCE_FILES
   src/primeutils/PrecomputedPrimeList.cpp
   src/primeutils/PrimeGenerator.cpp
 
+  src/strutils/StrUtils.cpp
+
   src/timers/Timers.cpp)
 
 add_library(aurum-shared SHARED
@@ -175,10 +177,11 @@ install(DIRECTORY
   src/basetypes
   src/containers
   src/hashfuncs
+  src/logging
   src/memory
   src/primeutils
+  src/strutils
   src/timers
-  src/logging
   DESTINATION ${AURUM_INC_DIR}
   COMPONENT dev
   FILES_MATCHING PATTERN "*.hpp")

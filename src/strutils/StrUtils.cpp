@@ -37,35 +37,123 @@
 
 // Code:
 
+#include <cctype>
+
 #include "StrUtils.hpp"
 
 namespace aurum {
 namespace strutils {
 
+// requires: position + pat_length < str_length
 static inline bool match_on_position(const std::string& the_string,
                                      const std::string& pattern,
-                                     i64 position)
+                                     u64 str_length, u64 pat_length,
+                                     i64 position, bool case_insensitive)
 {
-    auto const pat_length = pattern.length();
-    auto const str_length = the_string.length();
-
-    if (position + pat_length >= str_length) {
-        return false;
-    }
     for (u64 i = 0; i < pat_length; ++i) {
-        if (the_string[position + i] != pattern[i]) {
-            return false;
+        if (case_insensitive) {
+            if (std::tolower(the_string[position + i]) != std::tolower(pattern[i])) {
+                return false;
+            }
+        } else {
+            if (the_string[position + i] != pattern[i]) {
+                return false;
+            }
         }
     }
+    return true;
 }
+
+static inline i64 find_first_match_internal(const std::string& the_string,
+                                            const std::string& pattern,
+                                            i64 start_offset,
+                                            bool case_insensitive)
+{
+    u64 str_length = the_string.length();
+    u64 pat_length = pattern.length();
+
+    auto position = start_offset;
+
+    while (position + pat_length < str_length) {
+        if (match_on_position(the_string, pattern, str_length,
+                              pat_length, position, case_insensitive)) {
+            return position;
+        }
+    }
+    return INT64_MAX;
+}
+
+static inline i64 find_last_match_internal(const std::string& the_string,
+                                           const std::string& pattern,
+                                           i64 start_offset,
+                                           bool case_insensitive)
+{
+    i64 str_length = the_string.length();
+    i64 pat_length = pattern.length();
+
+    auto position = std::min(str_length - pat_length, start_offset);
+
+    while (position >= 0) {
+        if (match_on_position(the_string, pattern, str_length,
+                              pat_length, position, case_insensitive)) {
+            return position;
+        }
+    }
+    return INT64_MIN;
+}
+
+
 
 i64 find_first_match(const std::string& the_string,
                      const std::string& pattern,
                      i64 start_offset)
 {
-    if (start_offset >= the_string.length()) {
-        return INT64_MAX;
+    return find_first_match_internal(the_string, pattern, start_offset, false);
+}
+
+i64 find_last_match(const std::string& the_string,
+                    const std::string& pattern,
+                    i64 start_offset)
+{
+    return find_last_match_internal(the_string, pattern, start_offset, false);
+}
+
+i64 ifind_first_match(const std::string& the_string,
+                      const std::string& pattern,
+                      i64 start_offset)
+{
+    return find_first_match_internal(the_string, pattern, start_offset, true);
+}
+
+i64 ifind_last_match(const std::string& the_string,
+                     const std::string& pattern,
+                     i64 start_offset)
+{
+    return find_last_match_internal(the_string, pattern, start_offset, true);
+}
+
+void reverse(std::string& the_string)
+{
+    u64 start_offset = 0;
+    u64 end_offset = the_string.length() - 1;
+
+    while (end_offset > start_offset) {
+        std::swap(the_string[start_offset], the_string[end_offset]);
+        --end_offset;
+        ++start_offset;
     }
+    return;
+}
+
+std::string reverse_copy(const std::string& the_string)
+{
+    std::string retval = the_string;
+    auto const str_len = the_string.length();
+
+    for (u64 i = 0; i < str_len; ++i) {
+        retval[i] = the_string[str_len - i - 1];
+    }
+    return retval;
 }
 
 void trim(std::string& the_string)
@@ -94,7 +182,7 @@ void trim(std::string& the_string)
 
 std::string trim_copy(const std::string& the_string)
 {
-    auto copy_string = the_string;
+    std::string copy_string(the_string);
     trim(copy_string);
     return copy_string;
 }
@@ -102,7 +190,141 @@ std::string trim_copy(const std::string& the_string)
 ac::Vector<std::string> split(const std::string& the_string,
                               const std::string& separator)
 {
+    auto const sep_len = separator.length();
+    auto const str_len = the_string.length();
 
+    ac::Vector<std::string> retval;
+
+    u64 current_offset = 0;
+    u64 prev_match_pos = 0;
+
+    while (current_offset < str_len) {
+        auto sep_match_pos = find_first_match(the_string, separator, current_offset);
+        retval.push_back(the_string.substr(prev_match_pos, sep_match_pos - prev_match_pos));
+        current_offset = sep_match_pos + sep_len;
+    }
+    return retval;
+}
+
+bool begins_with(const std::string& the_string,
+                 const std::string& pattern)
+{
+    return match_on_position(the_string, pattern, the_string.length(),
+                             pattern.length(), 0, false);
+}
+
+bool ibegins_with(const std::string& the_string,
+                  const std::string& pattern)
+{
+    return match_on_position(the_string, pattern, the_string.length(),
+                             pattern.length(), 0, true);
+}
+
+bool ends_with(const std::string& the_string,
+               const std::string& pattern)
+{
+    return match_on_position(the_string, pattern, the_string.length(),
+                             pattern.length(), the_string.length() - pattern.length(), false);
+}
+
+bool iends_with(const std::string& the_string,
+                const std::string& pattern)
+{
+    return match_on_position(the_string, pattern, the_string.length(),
+                             pattern.length(), the_string.length() - pattern.length(), true);
+}
+
+void to_lowercase(std::string& the_string)
+{
+    auto const str_len = the_string.length();
+
+    for (u64 i = 0; i < str_len; ++i) {
+        the_string[i] = std::tolower(the_string[i]);
+    }
+    return;
+}
+
+std::string to_lowercase_copy(const std::string& the_string)
+{
+    std::string retval(the_string);
+    to_lowercase(retval);
+    return retval;
+}
+
+void to_uppercase(std::string& the_string)
+{
+    auto const str_len = the_string.length();
+
+    for (u64 i = 0; i < str_len; ++i) {
+        the_string[i] = std::toupper(the_string[i]);
+    }
+    return;
+}
+
+std::string to_uppercase_copy(const std::string& the_string)
+{
+    std::string retval(the_string);
+    to_uppercase(retval);
+    return retval;
+}
+
+static inline u64 to_number(const std::string& the_string, i32 base)
+{
+    return std::stoull(the_string, 0, base);
+}
+
+i64 to_integer(const std::string& the_string)
+{
+    std::string trimmed_string(the_string);
+
+    i32 base = 0;
+    bool negative = false;
+    if (trimmed_string[0] == '-') {
+        negative = true;
+        trimmed_string = trimmed_string.substr(1, trimmed_string.length() - 1);
+    }
+    if (ibegins_with(trimmed_string, "0x")) {
+        base = 16;
+        trimmed_string = trimmed_string.substr(2, trimmed_string.length() - 2);
+    } else if (ibegins_with(trimmed_string, "0b")) {
+        base = 2;
+        trimmed_string = trimmed_string.substr(2, trimmed_string.length() - 2);
+    } else {
+        base = 10;
+    }
+    auto num = to_number(trimmed_string, base);
+    if (negative && num > INT64_MAX) {
+        throw StringConversionException((std::string)"Overflow converting string \"" +
+                                        the_string + "\" to number");
+    }
+    if (negative) {
+        return -num;
+    } else {
+        return num;
+    }
+}
+
+double to_double(const std::string& the_string)
+{
+    return std::stod(trim_copy(the_string));
+}
+
+u64 to_unsigned(const std::string& the_string)
+{
+    std::string trimmed_string(the_string);
+
+    i32 base = 0;
+
+    if (ibegins_with(trimmed_string, "0x")) {
+        base = 16;
+        trimmed_string = trimmed_string.substr(2, trimmed_string.length() - 2);
+    } else if (ibegins_with(trimmed_string, "0b")) {
+        base = 2;
+        trimmed_string = trimmed_string.substr(2, trimmed_string.length() - 2);
+    } else {
+        base = 10;
+    }
+    return to_number(trimmed_string, base);
 }
 
 } /* end namespace strutils */

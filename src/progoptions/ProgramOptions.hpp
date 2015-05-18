@@ -56,6 +56,21 @@ private:
 
 };
 
+class IntegerOption : public NumericOption
+{
+
+};
+
+class UnsignedOption : public NumericOption
+{
+
+};
+
+class RealOption : public NumericOption
+{
+
+};
+
 class StringOption : public OptionBase
 {
 

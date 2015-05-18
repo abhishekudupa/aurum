@@ -53,7 +53,24 @@ namespace strutils {
 class StringConversionException : public AurumException
 {
 public:
-    using AurumException::AurumException;
+    inline StringConversionException(const std::string& exception_info) noexcept
+        : AurumException(exception_info)
+    {
+        // Nothing here
+    }
+
+    inline StringConversionException(const StringConversionException& other) noexcept
+        : AurumException(other.m_exception_info)
+    {
+        // Nothing here
+    }
+
+    inline StringConversionException(StringConversionException&& other) noexcept
+        : AurumException(std::move(other.m_exception_info))
+    {
+        // Nothing here
+    }
+
     virtual ~StringConversionException() {}
     inline StringConversionException& operator = (const StringConversionException& other) noexcept
     {
@@ -85,7 +102,7 @@ extern void reverse(std::string& the_string);
 extern std::string reverse_copy(const std::string& the_string);
 
 extern void trim(std::string& the_string);
-extern string trim_copy(const std::string& the_string);
+extern std::string trim_copy(const std::string& the_string);
 
 extern ac::Vector<std::string> split(const std::string& the_string,
                                      const std::string& separator);
@@ -100,9 +117,9 @@ extern bool iends_with(const std::string& the_string,
                        const std::string& pattern);
 
 extern void to_lowercase(std::string& the_string);
-extern string to_lowercase_copy(const std::string& the_string);
+extern std::string to_lowercase_copy(const std::string& the_string);
 extern void to_uppercase(std::string& the_string);
-extern string to_uppercase_copy(const std::string& the_string);
+extern std::string to_uppercase_copy(const std::string& the_string);
 
 extern i64 to_integer(const std::string& the_string);
 extern double to_double(const std::string& the_string);

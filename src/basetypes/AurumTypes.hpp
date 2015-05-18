@@ -332,7 +332,7 @@ public:
 
 class AurumException : public std::exception
 {
-private:
+protected:
     std::string m_exception_info;
 
 public:
@@ -344,6 +344,12 @@ public:
 
     AurumException(const std::string& exception_info) noexcept
         : m_exception_info(exception_info)
+    {
+        // Nothing here
+    }
+
+    AurumException(std::string&& exception_info) noexcept
+        : m_exception_info(std::move(exception_info))
     {
         // Nothing here
     }
