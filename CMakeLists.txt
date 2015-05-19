@@ -106,6 +106,8 @@ set(AURUM_CXX_SOURCE_FILES
   src/primeutils/PrecomputedPrimeList.cpp
   src/primeutils/PrimeGenerator.cpp
 
+  src/progoptions/ProgramOptions.cpp
+
   src/strutils/StrUtils.cpp
 
   src/timers/Timers.cpp)
@@ -180,6 +182,7 @@ install(DIRECTORY
   src/logging
   src/memory
   src/primeutils
+  src/progoptions
   src/strutils
   src/timers
   DESTINATION ${AURUM_INC_DIR}

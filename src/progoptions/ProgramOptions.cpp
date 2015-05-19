@@ -1,8 +1,8 @@
-// AurumBase.hpp ---
+// ProgramOptions.cpp ---
 //
-// Filename: AurumBase.hpp
+// Filename: ProgramOptions.cpp
 // Author: Abhishek Udupa
-// Created: Wed Feb 11 16:48:21 2015 (-0500)
+// Created: Tue May 19 15:31:35 2015 (-0400)
 //
 //
 // Copyright (c) 2015, Abhishek Udupa, University of Pennsylvania
@@ -37,41 +37,50 @@
 
 // Code:
 
-#if !defined AURUM_BASETYPES_AURUM_BASE_HPP_
-#define AURUM_BASETYPES_AURUM_BASE_HPP_
-
-// check that we're on a 64 bit machine
-#if (__SIZEOF_POINTER__ < 8)
-#error "Only 64 bit architectures are currently supported."
-#endif /* __SIZEOF_POINTER__ < 8 */
-
-#if !defined __linux__
-#error "Only Linux based platforms are currently supported."
-#endif
-
-#include <cstdint>
-#include <exception>
-#include <utility>
-#include <functional>
+#include "ProgramOptions.hpp"
 
 namespace aurum {
+namespace program_options {
 
-typedef std::uint8_t  u08;
-typedef std::uint16_t u16;
-typedef std::uint32_t u32;
-typedef std::uint64_t u64;
+OptionBase::OptionBase(const std::string& option_name)
+    : m_is_named(true), m_option_name(option_name)
+{
+    // Nothing here
+}
 
-typedef std::pair<u64, u64> u128;
+OptionBase::OptionBase(u64 option_position)
+    : m_is_named(false), m_option_position(option_position)
+{
+    // Nothing here
+}
 
-typedef std::int8_t   i08;
-typedef std::int16_t  i16;
-typedef std::int32_t  i32;
-typedef std::int64_t  i64;
+OptionBase::~OptionBase()
+{
+    // Nothing here
+}
 
+const std::string& OptionBase::get_option_name() const
+{
+    return m_option_name;
+}
+
+u64 OptionBase::get_option_position() const
+{
+    return m_option_position;
+}
+
+bool OptionBase::is_option_named() const
+{
+    return m_is_named;
+}
+
+bool OptionBase::is_option_positional() const
+{
+    return (!m_is_named);
+}
+
+} /* end namespace program_options */
 } /* end namespace aurum */
 
-
-#endif /* AURUM_BASETYPES_AURUM_BASE_HPP_ */
-
 //
-// AurumBase.hpp ends here
+// ProgramOptions.cpp ends here

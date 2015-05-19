@@ -82,6 +82,17 @@ public:
     }
 };
 
+// specialization for strings
+template <>
+class Hasher<std::string>
+{
+public:
+    inline u64 operator () (const std::string& object) const
+    {
+        return default_hash_function(object.c_str(), object.length());
+    }
+};
+
 // specialization for pointers
 template <typename T>
 class Hasher<T*>
