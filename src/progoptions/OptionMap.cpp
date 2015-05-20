@@ -1,8 +1,8 @@
-// ProgramOptions.cpp ---
+// OptionMap.cpp ---
 //
-// Filename: ProgramOptions.cpp
+// Filename: OptionMap.cpp
 // Author: Abhishek Udupa
-// Created: Tue May 19 15:31:35 2015 (-0400)
+// Created: Wed May 20 18:46:36 2015 (-0400)
 //
 //
 // Copyright (c) 2015, Abhishek Udupa, University of Pennsylvania
@@ -37,15 +37,29 @@
 
 // Code:
 
-#include "ProgramOptions.hpp"
+#include "OptionMap.hpp"
 
 namespace aurum {
 namespace program_options {
 
+OptionMap::OptionMap()
+    : m_option_map()
+{
+    // Nothing here
+}
 
+OptionMap::~OptionMap()
+{
+    // Nothing here
+}
+
+void OptionMap::insert(const std::string& option_name, const OptionValueRef& option_value)
+{
+    m_option_map[option_name] = option_value;
+}
 
 } /* end namespace program_options */
 } /* end namespace aurum */
 
 //
-// ProgramOptions.cpp ends here
+// OptionMap.cpp ends here

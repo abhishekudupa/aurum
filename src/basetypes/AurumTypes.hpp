@@ -416,7 +416,7 @@ inline std::string to_string_(const T& object,
 template <typename T>
 inline std::string to_string_(const T& object)
 {
-    typename std::is_base_of<StringifiableEBC, T>::value is_stringifiable;
+    typename std::is_base_of<StringifiableEBC, T>::type is_stringifiable;
     return to_string_(object, is_stringifiable);
 }
 

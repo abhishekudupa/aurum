@@ -1,8 +1,8 @@
-// ProgramOptions.cpp ---
+// Options.hpp ---
 //
-// Filename: ProgramOptions.cpp
+// Filename: Options.hpp
 // Author: Abhishek Udupa
-// Created: Tue May 19 15:31:35 2015 (-0400)
+// Created: Wed May 20 12:03:20 2015 (-0400)
 //
 //
 // Copyright (c) 2015, Abhishek Udupa, University of Pennsylvania
@@ -37,15 +37,26 @@
 
 // Code:
 
-#include "ProgramOptions.hpp"
+#if !defined AURUM_PROGOPTIONS_OPTIONS_HPP_
+#define AURUM_PROGOPTIONS_OPTIONS_HPP_
+
+#include "../basetypes/AurumTypes.hpp"
 
 namespace aurum {
 namespace program_options {
+namespace detail {
 
+template <typename StorageType>
+class Option : public AurumObject
+{
 
+}
 
+} /* end namespace detail */
 } /* end namespace program_options */
 } /* end namespace aurum */
 
+#endif /* AURUM_PROGOPTIONS_OPTIONS_HPP_ */
+
 //
-// ProgramOptions.cpp ends here
+// Options.hpp ends here

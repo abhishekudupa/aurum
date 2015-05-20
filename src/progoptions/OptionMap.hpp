@@ -1,8 +1,8 @@
-// ProgramOptions.cpp ---
+// OptionMap.hpp ---
 //
-// Filename: ProgramOptions.cpp
+// Filename: OptionMap.hpp
 // Author: Abhishek Udupa
-// Created: Tue May 19 15:31:35 2015 (-0400)
+// Created: Wed May 20 14:28:53 2015 (-0400)
 //
 //
 // Copyright (c) 2015, Abhishek Udupa, University of Pennsylvania
@@ -37,15 +37,59 @@
 
 // Code:
 
-#include "ProgramOptions.hpp"
+#if !defined AURUM_PROGOPTIONS_OPTION_MAP_HPP_
+#define AURUM_PROGOPTIONS_OPTION_MAP_HPP_
+
+#include "../basetypes/AurumTypes.hpp"
+#include "../containers/UnorderedMap.hpp"
+
+#include "OptionValue.hpp"
 
 namespace aurum {
 namespace program_options {
 
+namespace ac = aurum::containers;
 
+class OptionMap : public AurumObject
+{
+public:
+    typedef ac::UnifiedUnorderedMap<std::string, OptionValueRef> OptionMapType;
+    typedef OptionMapType::ConstIterator ConstIterator;
+    typedef OptionMapType::Iterator Iterator;
+    typedef ConstIterator const_iterator;
+    typedef Iterator iterator;
+
+private:
+    OptionMapType m_option_map;
+
+public:
+    OptionMap();
+    ~OptionMap();
+
+    const OptionValueRef& operator [] (const std::string& option_name) const;
+    const OptionValueRef& operator [] (const u64 option_position) const;
+    const OptionValueRef& find(const std::string& option_name) const;
+    const OptionValueRef& find(u64 option_position) const;
+
+    void insert(const std::string& option_name, const OptionValueRef& option_value);
+    void erase(const std::string& option_name);
+
+    Iterator begin();
+    Iterator end();
+
+    ConstIterator begin() const;
+    ConstIterator end() const;
+
+    ConstIterator cbegin() const;
+    ConstIterator cend() const;
+
+    void finalize() const;
+};
 
 } /* end namespace program_options */
 } /* end namespace aurum */
 
+#endif /* AURUM_PROGOPTIONS_OPTION_MAP_HPP_ */
+
 //
-// ProgramOptions.cpp ends here
+// OptionMap.hpp ends here

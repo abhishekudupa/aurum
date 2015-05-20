@@ -200,8 +200,12 @@ ac::Vector<std::string> split(const std::string& the_string,
 
     while (current_offset < str_len) {
         auto sep_match_pos = find_first_match(the_string, separator, current_offset);
-        retval.push_back(the_string.substr(prev_match_pos, sep_match_pos - prev_match_pos));
+        // compress successive matches of separator
+        if (sep_match_pos - prev_match_pos > 0) {
+            retval.push_back(the_string.substr(prev_match_pos, sep_match_pos - prev_match_pos));
+        }
         current_offset = sep_match_pos + sep_len;
+        prev_match_pos = current_offset;
     }
     return retval;
 }
@@ -268,8 +272,32 @@ std::string to_uppercase_copy(const std::string& the_string)
     return retval;
 }
 
-static inline u64 to_number(const std::string& the_string, i32 base)
+static inline u64 to_number(const std::string& the_string, u32 base)
 {
+    if (base > 16 || base < 1) {
+        throw StringConversionException((std::string)"Base = " + to_string(base) +
+                                        " is too large or too small to convert string \"" +
+                                        the_string + "\" to a number");
+    }
+
+    auto const str_len = the_string.length();
+    for (u32 i = 0; i < str_len; ++i) {
+        if (base <= 10) {
+            if (the_string[i] < '0' || the_string[i] > (unsigned char)('0' + base - 1)) {
+                throw StringConversionException((std::string)"The string \"" + the_string +
+                                                "contains characters invalid for base = " +
+                                                to_string(base));
+            }
+        } else {
+            if ((the_string[i] < '0' || the_string[i] > '9') &&
+                (std::tolower(the_string[i]) < 'a' ||
+                 std::tolower(the_string[i]) > 'a' + (unsigned char)(base - 11))) {
+                throw StringConversionException((std::string)"The string \"" + the_string +
+                                                "contains characters invalid for base = " +
+                                                to_string(base));
+            }
+        }
+    }
     return std::stoull(the_string, 0, base);
 }
 
@@ -277,7 +305,7 @@ i64 to_integer(const std::string& the_string)
 {
     std::string trimmed_string(the_string);
 
-    i32 base = 0;
+    u32 base = 0;
     bool negative = false;
     if (trimmed_string[0] == '-') {
         negative = true;
@@ -313,7 +341,7 @@ u64 to_unsigned(const std::string& the_string)
 {
     std::string trimmed_string(the_string);
 
-    i32 base = 0;
+    u32 base = 0;
 
     if (ibegins_with(trimmed_string, "0x")) {
         base = 16;
@@ -325,6 +353,55 @@ u64 to_unsigned(const std::string& the_string)
         base = 10;
     }
     return to_number(trimmed_string, base);
+}
+
+void unquote_string(std::string& the_string)
+{
+    auto const str_length = the_string.length();
+    u64 start_offset = 0;
+    u64 end_offset = str_length - 1;
+
+    while (start_offset <= end_offset &&
+           (the_string[start_offset] == '"' ||
+            the_string[start_offset] == '\'')) {
+        ++start_offset;
+    }
+
+    while (start_offset <= end_offset &&
+           (the_string[end_offset] == '"' ||
+            the_string[end_offset] == '\'')) {
+        --end_offset;
+    }
+    if (start_offset < end_offset) {
+        the_string.clear();
+    } else {
+        the_string = the_string.substr(start_offset, end_offset - start_offset + 1);
+    }
+    return;
+}
+
+std::string unquote_string_copy(const std::string& the_string)
+{
+    auto const str_length = the_string.length();
+    u64 start_offset = 0;
+    u64 end_offset = str_length - 1;
+
+    while (start_offset <= end_offset &&
+           (the_string[start_offset] == '"' ||
+            the_string[start_offset] == '\'')) {
+        ++start_offset;
+    }
+
+    while (start_offset <= end_offset &&
+           (the_string[end_offset] == '"' ||
+            the_string[end_offset] == '\'')) {
+        --end_offset;
+    }
+    if (start_offset < end_offset) {
+        return "";
+    } else {
+        return the_string.substr(start_offset, end_offset - start_offset + 1);
+    }
 }
 
 } /* end namespace strutils */

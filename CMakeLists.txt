@@ -107,6 +107,8 @@ set(AURUM_CXX_SOURCE_FILES
   src/primeutils/PrimeGenerator.cpp
 
   src/progoptions/ProgramOptions.cpp
+  src/progoptions/OptionMap.cpp
+  src/progoptions/OptionValue.cpp
 
   src/strutils/StrUtils.cpp
 

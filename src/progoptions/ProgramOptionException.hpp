@@ -1,8 +1,8 @@
-// ProgramOptions.cpp ---
+// ProgramOptionException.hpp ---
 //
-// Filename: ProgramOptions.cpp
+// Filename: ProgramOptionException.hpp
 // Author: Abhishek Udupa
-// Created: Tue May 19 15:31:35 2015 (-0400)
+// Created: Wed May 20 14:37:53 2015 (-0400)
 //
 //
 // Copyright (c) 2015, Abhishek Udupa, University of Pennsylvania
@@ -37,15 +37,57 @@
 
 // Code:
 
-#include "ProgramOptions.hpp"
+#if !defined AURUM_PROGOPTIONS_PROGRAM_OPTION_EXCEPTION_HPP_
+#define AURUM_PROGOPTIONS_PROGRAM_OPTION_EXCEPTION_HPP_
+
+#include "../basetypes/AurumTypes.hpp"
 
 namespace aurum {
 namespace program_options {
 
+class ProgramOptionException : public AurumException
+{
+public:
+    inline ProgramOptionException(const std::string& exception_info) noexcept
+        : AurumException((std::string)"ProgramOptionException: " + exception_info)
+    {
+        // Nothing here
+    }
 
+    inline ProgramOptionException(const ProgramOptionException& other) noexcept
+        : ProgramOptionException(other.m_exception_info)
+    {
+        // Nothing here
+    }
+
+    inline ProgramOptionException(ProgramOptionException&& other) noexcept
+        : ProgramOptionException(std::move(other.m_exception_info))
+    {
+        // Nothing here
+    }
+
+    virtual ~ProgramOptionException()
+    {
+        // Nothing here
+    }
+
+    inline ProgramOptionException& operator = (const ProgramOptionException& other) noexcept
+    {
+        AurumException::operator=(other);
+        return *this;
+    }
+
+    inline ProgramOptionException& operator = (ProgramOptionException&& other) noexcept
+    {
+        AurumException::operator=(std::move(other));
+        return *this;
+    }
+};
 
 } /* end namespace program_options */
 } /* end namespace aurum */
 
+#endif /* AURUM_PROGOPTIONS_PROGRAM_OPTION_EXCEPTION_HPP_ */
+
 //
-// ProgramOptions.cpp ends here
+// ProgramOptionException.hpp ends here

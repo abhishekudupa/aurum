@@ -41,6 +41,7 @@
 #define AURUM_STRUTILS_STR_UTILS_HPP_
 
 #include <string>
+#include <sstream>
 
 #include "../containers/Vector.hpp"
 #include "../basetypes/AurumTypes.hpp"
@@ -54,7 +55,7 @@ class StringConversionException : public AurumException
 {
 public:
     inline StringConversionException(const std::string& exception_info) noexcept
-        : AurumException(exception_info)
+        : AurumException((std::string)"StringConversionException: " + exception_info)
     {
         // Nothing here
     }
@@ -124,6 +125,88 @@ extern std::string to_uppercase_copy(const std::string& the_string);
 extern i64 to_integer(const std::string& the_string);
 extern double to_double(const std::string& the_string);
 extern u64 to_unsigned(const std::string& the_string);
+
+extern void unquote_string(std::string& the_string);
+extern std::string unquote_string_copy(const std::string& the_string);
+
+template <typename T>
+static inline T string_cast(const std::string& the_string)
+{
+    std::istringstream istr(the_string);
+    T retval;
+    istr >> retval;
+    if (istr.get() != EOF) {
+        throw StringConversionException((std::string)"Leftover characters in string_cast of " +
+                                        "string \"" + the_string + "\"");
+    }
+    return retval;
+}
+
+template <>
+inline i64 string_cast<i64>(const std::string& the_string)
+{
+    return to_integer(the_string);
+}
+
+template <>
+inline u64 string_cast<u64>(const std::string& the_string)
+{
+    return to_unsigned(the_string);
+}
+
+template <>
+inline u32 string_cast<u32>(const std::string& the_string)
+{
+    return (u32)to_unsigned(the_string);
+}
+
+template <>
+inline i32 string_cast<i32>(const std::string& the_string)
+{
+    return (i32)to_unsigned(the_string);
+}
+
+template <>
+inline u16 string_cast<u16>(const std::string& the_string)
+{
+    return (u16)to_unsigned(the_string);
+}
+
+template <>
+inline i16 string_cast<i16>(const std::string& the_string)
+{
+    return (i16)to_unsigned(the_string);
+}
+
+template <>
+inline u08 string_cast<u08>(const std::string& the_string)
+{
+    return (u08)to_unsigned(the_string);
+}
+
+template <>
+inline i08 string_cast<i08>(const std::string& the_string)
+{
+    return (i08)to_unsigned(the_string);
+}
+
+template <>
+inline float string_cast<float>(const std::string& the_string)
+{
+    return (float)to_double(the_string);
+}
+
+template <>
+inline double string_cast<double>(const std::string& the_string)
+{
+    return to_double(the_string);
+}
+
+template <>
+inline std::string string_cast<std::string>(const std::string& the_string)
+{
+    return the_string;
+}
 
 } /* end namespace strutils */
 } /* end namespace aurum */
