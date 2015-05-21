@@ -35,6 +35,8 @@
 
 // Code:
 
+#include <sstream>
+
 #include "../strutils/StrUtils.hpp"
 
 #include "Parsers.hpp"
@@ -44,6 +46,49 @@ namespace program_options {
 namespace parsers {
 
 namespace ac = aurum::containers;
+
+static inline bool string_contains_white_space(const std::string& the_string)
+{
+    auto const str_len = the_string.length();
+
+    for (u64 i = 0; i < str_len; ++i) {
+        if (the_string[i] == ' ' || the_string[i] == '\n' || the_string[i] == '\t') {
+            return true;
+        }
+    }
+    return false;
+}
+
+void parse_command_line(int argc, char *argv[],
+                        const ProgramOptions& program_options,
+                        ParseMap& parse_map)
+{
+    std::ostringstream sstr;
+
+    for (i32 i = 1; i < argc, ++i) {
+        if (string_contains_white_space(argv[i])) {
+            sstr << '"' << argv[i] << '"' << " ";
+        } else {
+            sstr << argv[i];
+        }
+    }
+
+    parse_option_string(sstr.str(), program_options, parse_map);
+}
+
+void parse_config_file(const std::string& config_file_name,
+                       const ProgramOptions& program_options,
+                       ParseMap& parse_map)
+{
+
+}
+
+void parse_option_string(const std::string& option_string,
+                         ProgramOptions& program_options,
+                         ParseMap& parse_map)
+{
+
+}
 
 } /* end namespace parsers */
 } /* end namespace program_options */

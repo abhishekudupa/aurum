@@ -123,8 +123,6 @@ protected:
     ValueType* m_storage_ptr;
     // local checks performed during store
     std::function<bool(const ValueType&)> m_local_option_checker;
-    // global checks performed after ALL stores are completed
-    std::function<bool(const ValueType&, const OptionMap&)> m_global_option_checker;
 
     inline void rethrow_storage_exception(const AurumException& exception)
     {
@@ -155,11 +153,7 @@ public:
     inline OptionValueImpl(ValueType* storage_ptr)
         : OptionValueBase(),
           m_storage_ptr(storage_ptr),
-          m_local_option_checker([] (const ValueType& unused) -> bool { return true; }),
-          m_global_option_checker([] (const ValueType& unused1, const OptionMap& unused2) -> bool
-                                  {
-                                      return true;
-                                  })
+          m_local_option_checker([] (const ValueType& unused) -> bool { return true; })
     {
         // Nothing here
     }
@@ -168,34 +162,7 @@ public:
                            const std::function<bool(const ValueType&)>& local_option_checker)
         : OptionValueBase(),
           m_storage_ptr(storage_ptr),
-          m_local_option_checker(local_option_checker),
-          m_global_option_checker([] (const ValueType& unused1, const OptionMap& unused2) -> bool
-                                  {
-                                      return true;
-                                  })
-    {
-        // Nothing here
-    }
-
-    inline OptionValueImpl(ValueType* storage_ptr,
-                           const std::function<bool(const ValueType&, const OptionMap&)>&
-                           global_option_checker)
-        : OptionValueBase(),
-          m_storage_ptr(storage_ptr),
-          m_local_option_checker([] (const ValueType& unused) -> bool { return true; }),
-          m_global_option_checker(global_option_checker)
-    {
-        // Nothing here
-    }
-
-    inline OptionValueImpl(ValueType* storage_ptr,
-                           const std::function<bool(const ValueType&)>& local_option_checker,
-                           const std::function<bool(const ValueType&, const OptionMap&)>&
-                           global_option_checker)
-        : OptionValueBase(),
-          m_storage_ptr(storage_ptr),
-          m_local_option_checker(local_option_checker),
-          m_global_option_checker(global_option_checker)
+          m_local_option_checker(local_option_checker)
     {
         // Nothing here
     }
@@ -210,6 +177,16 @@ template <typename ValueType>
 class OptionValue : public OptionValueImpl<ValueType>
 {
     static_assert(true, "Unsupported instantiation of class aurum::program_options::OptionValue");
+};
+
+template <>
+class OptionValue<bool> : public OptionValueImpl<bool>
+{
+public:
+    using OptionValueImpl<bool>::OptionValueImpl;
+    virtual ~OptionValue();
+
+    virtual void store(const std::string& textual_value) override;
 };
 
 template <>
@@ -333,13 +310,6 @@ public:
     OptionValue(ValueType* storage_ptr);
     OptionValue(ValueType* storage_ptr,
                 const std::function<bool(const ValueType&)>& local_option_checker);
-    OptionValue(ValueType* storage_ptr,
-                const std::function<bool(const ValueType&, const OptionMap&)>&
-                global_option_checker);
-    OptionValue(ValueType* storage_ptr,
-                const std::function<bool(const ValueType&)>& local_option_checker,
-                const std::function<bool(const ValueType&, const OptionMap&)>&
-                global_option_checker);
 
     virtual ~OptionValue();
 
@@ -358,13 +328,6 @@ public:
     OptionValue(ValueType* storage_ptr);
     OptionValue(ValueType* storage_ptr,
                 const std::function<bool(const ValueType&)>& local_option_checker);
-    OptionValue(ValueType* storage_ptr,
-                const std::function<bool(const ValueType&, const OptionMap&)>&
-                global_option_checker);
-    OptionValue(ValueType* storage_ptr,
-                const std::function<bool(const ValueType&)>& local_option_checker,
-                const std::function<bool(const ValueType&, const OptionMap&)>&
-                global_option_checker);
 
     virtual ~OptionValue();
 
@@ -382,13 +345,6 @@ public:
     OptionValue(ValueType* storage_ptr);
     OptionValue(ValueType* storage_ptr,
                 const std::function<bool(const ValueType&)>& local_option_checker);
-    OptionValue(ValueType* storage_ptr,
-                const std::function<bool(const ValueType&, const OptionMap&)>&
-                global_option_checker);
-    OptionValue(ValueType* storage_ptr,
-                const std::function<bool(const ValueType&)>& local_option_checker,
-                const std::function<bool(const ValueType&, const OptionMap&)>&
-                global_option_checker);
 
     virtual ~OptionValue();
 
@@ -506,30 +462,6 @@ OptionValue<std::pair<T1, T2> >::OptionValue(ValueType* storage_ptr,
     this->multitoken();
 }
 
-template <typename T1, typename T2>
-inline
-OptionValue<std::pair<T1, T2> >::OptionValue(ValueType* storage_ptr,
-                                             const std::function<bool(const ValueType&,
-                                                                      const OptionMap&)>&
-                                             global_option_checker)
-    : BaseType(storage_ptr, global_option_checker)
-{
-    this->multitoken();
-}
-
-template <typename T1, typename T2>
-inline
-OptionValue<std::pair<T1, T2> >::OptionValue(ValueType* storage_ptr,
-                                             const std::function<bool(const ValueType&)>&
-                                             local_option_checker,
-                                             const std::function<bool(const ValueType&,
-                                                                      const OptionMap&)>&
-                                             global_option_checker)
-    : BaseType(storage_ptr, local_option_checker, global_option_checker)
-{
-    this->multitoken();
-}
-
 
 template <typename... TupleTypes>
 inline OptionValue<std::tuple<TupleTypes...> >::OptionValue(ValueType* storage_ptr)
@@ -548,31 +480,6 @@ OptionValue<std::tuple<TupleTypes...> >::OptionValue(ValueType* storage_ptr,
     this->multitoken();
 }
 
-template <typename... TupleTypes>
-inline
-OptionValue<std::tuple<TupleTypes...> >::OptionValue(ValueType* storage_ptr,
-                                                     const std::function<bool(const ValueType&,
-                                                                              const OptionMap&)>&
-                                                     global_option_checker)
-    : BaseType(storage_ptr, global_option_checker)
-{
-    this->multitoken();
-}
-
-template <typename... TupleTypes>
-inline
-OptionValue<std::tuple<TupleTypes...> >::OptionValue(ValueType* storage_ptr,
-                                                     const std::function<bool(const ValueType&)>&
-                                                     local_option_checker,
-                                                     const std::function<bool(const ValueType&,
-                                                                              const OptionMap&)>&
-                                                     global_option_checker)
-    : BaseType(storage_ptr, local_option_checker, global_option_checker)
-{
-    this->multitoken();
-}
-
-
 template <typename ElemType>
 inline OptionValue<ac::Vector<ElemType> >::OptionValue(ValueType* storage_ptr)
     : BaseType(storage_ptr)
@@ -586,30 +493,6 @@ OptionValue<ac::Vector<ElemType> >::OptionValue(ValueType* storage_ptr,
                                                 const std::function<bool(const ValueType&)>&
                                                 local_option_checker)
     : BaseType(storage_ptr, local_option_checker)
-{
-    this->multitoken();
-}
-
-template <typename ElemType>
-inline
-OptionValue<ac::Vector<ElemType> >::OptionValue(ValueType* storage_ptr,
-                                                const std::function<bool(const ValueType&,
-                                                                         const OptionMap&)>&
-                                                global_option_checker)
-    : BaseType(storage_ptr, global_option_checker)
-{
-    this->multitoken();
-}
-
-template <typename ElemType>
-inline
-OptionValue<ac::Vector<ElemType> >::OptionValue(ValueType* storage_ptr,
-                                                const std::function<bool(const ValueType&)>&
-                                                local_option_checker,
-                                                const std::function<bool(const ValueType&,
-                                                                         const OptionMap&)>&
-                                                global_option_checker)
-    : BaseType(storage_ptr, local_option_checker, global_option_checker)
 {
     this->multitoken();
 }

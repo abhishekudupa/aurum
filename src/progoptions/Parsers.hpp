@@ -53,16 +53,16 @@ typedef ac::UnifiedUnorderedMap<std::string, std::string> ParseMap;
 
 
 extern void parse_command_line(int argc, char* argv[],
-                               ProgramOptions& program_options,
+                               const ProgramOptions& program_options,
                                ParseMap& parse_map);
 
 extern void parse_config_file(const std::string& config_file_name,
-                              ProgramOptions& program_options,
+                              const ProgramOptions& program_options,
                               ParseMap& parse_map);
 
-extern void parse_command_line(const std::string& command_line,
-                               ProgramOptions& program_options,
-                               ParseMap& parse_map);
+extern void parse_option_string(const std::string& option_string,
+                                const ProgramOptions& program_options,
+                                ParseMap& parse_map);
 
 } /* end namespace parsers */
 } /* end namespace program_options */

@@ -38,6 +38,7 @@
 // Code:
 
 #include "OptionMap.hpp"
+#include "ProgramOptions.hpp"
 
 namespace aurum {
 namespace program_options {
@@ -56,6 +57,66 @@ OptionMap::~OptionMap()
 void OptionMap::insert(const std::string& option_name, const OptionValueRef& option_value)
 {
     m_option_map[option_name] = option_value;
+}
+
+void OptionMap::erase(const std::string& option_name)
+{
+    m_option_map.erase(option_name);
+}
+
+OptionMap::Iterator OptionMap::begin()
+{
+    return m_option_map.begin();
+}
+
+OptionMap::Iterator OptionMap::end()
+{
+    return m_option_map.end();
+}
+
+OptionMap::ConstIterator OptionMap::begin() const
+{
+    return m_option_map.begin();
+}
+
+OptionMap::ConstIterator OptionMap::end() const
+{
+    return m_option_map.end();
+}
+
+OptionMap::ConstIterator OptionMap::cbegin() const
+{
+    return begin();
+}
+
+OptionMap::ConstIterator OptionMap::cend() const
+{
+    return end();
+}
+
+const OptionValueRef& OptionMap::operator [] (const std::string& option_name) const
+{
+    return find(option_name);
+}
+
+const OptionValueRef& OptionMap::operator [] (u64 option_position) const
+{
+    return find(option_position);
+}
+
+const OptionValueRef& OptionMap::find(const std::string& option_name) const
+{
+    auto it = m_option_map.find(option_name);
+    if (it == m_option_map.end()) {
+        return OptionValueRef::null_pointer;
+    }
+    return it->second;
+}
+
+const OptionValueRef& OptionMap::find(u64 option_position) const
+{
+    std::string index_string = positional_option_prefix_ + to_string(option_position);
+    return find(index_string);
 }
 
 } /* end namespace program_options */

@@ -143,6 +143,21 @@ static inline T string_cast(const std::string& the_string)
 }
 
 template <>
+inline bool string_cast<bool>(const std::string& the_string)
+{
+    auto&& local_string = trim_copy(the_string);
+    to_lowercase(local_string);
+    if (local_string == "true") {
+        return true;
+    } else if (local_string == "false") {
+        return false;
+    } else {
+        throw StringConversionException((std::string)"Error casting string \"" +
+                                        the_string + "\" to a boolean value");
+    }
+}
+
+template <>
 inline i64 string_cast<i64>(const std::string& the_string)
 {
     return to_integer(the_string);

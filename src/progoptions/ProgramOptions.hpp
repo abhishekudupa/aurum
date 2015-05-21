@@ -40,16 +40,94 @@
 #if !defined AURUM_PROGOPTIONS_PROGRAM_OPTIONS_HPP_
 #define AURUM_PROGOPTIONS_PROGRAM_OPTIONS_HPP_
 
+#include <ostream>
+
 #include "../basetypes/AurumTypes.hpp"
+#include "../containers/UnorderedMap.hpp"
+
+#include "OptionMap.hpp"
 
 namespace aurum {
 namespace program_options {
 
-class ProgramOptions : public AurumObject
+namespace ac = aurum::containers;
+
+extern const std::string positional_option_prefix_;
+
+namespace detail {
+
+class OptionDescription : public AurumObject,
+                          public Stringifiable<OptionDescription>
+{
+public:
+    std::string m_full_name;
+    std::string m_short_name;
+    std::string m_description;
+    bool m_positional;
+    u64 m_position;
+
+    OptionDescription();
+    OptionDescription(const OptionDescription& other);
+    OptionDescription(OptionDescription&& other);
+    OptionDescription(const std::string& full_name, const std::string& short_name,
+                      const std::string& description);
+    OptionDescription(const std::string& full_name, u64 position,
+                      const std::string& description);
+
+    OptionDescription& operator = (const OptionDescription& other);
+    OptionDescription& operator = (OptionDescription&& other);
+
+    virtual ~OptionDescription();
+
+    std::string to_string() const;
+    std::string to_string(u32 verbosity) const;
+};
+
+extern std::ostream& operator << (std::ostream& out,
+                                  const OptionDescription& option_description);
+
+} /* end namespace detail */
+
+class ProgramOptions : private OptionMap
 {
 private:
+    typedef ac::UnifiedUnorderedMap<std::string, detail::OptionDescription> DescriptionMap;
+    DescriptionMap m_description_map;
+    ac::Vector<u32> m_anon_option_values;
+    u64 m_next_positional_option;
 
+public:
+    typedef OptionMap::ConstIterator Iterator;
+
+    ProgramOptions();
+    ~ProgramOptions();
+
+    void add_option(const std::string& full_name, const std::string& short_name,
+                    const std::string& option_description,
+                    const OptionValueRef& option_value = OptionValueRef::null_pointer);
+
+    void add_positional_option(u64 option_position, const std::string& full_name,
+                               const std::string& option_description,
+                               const OptionValueRef& option_value);
+
+    using OptionMap::operator[];
+    using OptionMap::find;
+
+    Iterator begin() const;
+    Iterator end() const;
+
+    void parse_option_string(const std::string& option_string);
+    void parse_command_line(int argc, char* argv[]);
+    void parse_config_file(const std::string& config_file_name);
+
+    void get_descriptions(std::ostream& out) const;
+    std::string get_descriptions() const;
+
+    std::string get_description(const std::string& option_name) const;
+    std::string get_description(u64 option_position) const;
 };
+
+extern std::ostream& operator << (std::ostream& out, const ProgramOptions& prog_options);
 
 } /* end namespace program_options */
 } /* end namespace aurum */

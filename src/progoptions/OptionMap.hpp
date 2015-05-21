@@ -82,8 +82,6 @@ public:
 
     ConstIterator cbegin() const;
     ConstIterator cend() const;
-
-    void finalize() const;
 };
 
 } /* end namespace program_options */

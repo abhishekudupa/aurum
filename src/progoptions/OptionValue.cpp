@@ -136,9 +136,24 @@ const std::string& OptionValueBase::get_textual_value() const
 }
 
 // implementation of store methods for specializations
+void OptionValue<bool>::store(const std::string& textual_value)
+{
+    do_store<bool>(textual_value);
+}
+
+OptionValue<bool>::~OptionValue()
+{
+    // Nothing here
+}
+
 void OptionValue<i64>::store(const std::string& textual_value)
 {
     do_store<i64>(textual_value);
+}
+
+OptionValue<i64>::~OptionValue()
+{
+    // Nothing here
 }
 
 void OptionValue<u64>::store(const std::string& textual_value)
@@ -146,9 +161,19 @@ void OptionValue<u64>::store(const std::string& textual_value)
     do_store<u64>(textual_value);
 }
 
+OptionValue<u64>::~OptionValue()
+{
+    // Nothing here
+}
+
 void OptionValue<i32>::store(const std::string& textual_value)
 {
     do_store<i32>(textual_value);
+}
+
+OptionValue<i32>::~OptionValue()
+{
+    // Nothing here
 }
 
 void OptionValue<u32>::store(const std::string& textual_value)
@@ -156,9 +181,19 @@ void OptionValue<u32>::store(const std::string& textual_value)
     do_store<u32>(textual_value);
 }
 
+OptionValue<u32>::~OptionValue()
+{
+    // Nothing here
+}
+
 void OptionValue<i16>::store(const std::string& textual_value)
 {
     do_store<i16>(textual_value);
+}
+
+OptionValue<i16>::~OptionValue()
+{
+    // Nothing here
 }
 
 void OptionValue<u16>::store(const std::string& textual_value)
@@ -166,9 +201,19 @@ void OptionValue<u16>::store(const std::string& textual_value)
     do_store<u16>(textual_value);
 }
 
+OptionValue<u16>::~OptionValue()
+{
+    // Nothing here
+}
+
 void OptionValue<i08>::store(const std::string& textual_value)
 {
     do_store<i08>(textual_value);
+}
+
+OptionValue<i08>::~OptionValue()
+{
+    // Nothing here
 }
 
 void OptionValue<u08>::store(const std::string& textual_value)
@@ -176,9 +221,19 @@ void OptionValue<u08>::store(const std::string& textual_value)
     do_store<u08>(textual_value);
 }
 
+OptionValue<u08>::~OptionValue()
+{
+    // Nothing here
+}
+
 void OptionValue<float>::store(const std::string& textual_value)
 {
     do_store<float>(textual_value);
+}
+
+OptionValue<float>::~OptionValue()
+{
+    // Nothing here
 }
 
 void OptionValue<double>::store(const std::string& textual_value)
@@ -186,9 +241,19 @@ void OptionValue<double>::store(const std::string& textual_value)
     do_store<double>(textual_value);
 }
 
+OptionValue<double>::~OptionValue()
+{
+    // Nothing here
+}
+
 void OptionValue<std::string>::store(const std::string& textual_value)
 {
     do_store<std::string>(textual_value);
+}
+
+OptionValue<std::string>::~OptionValue()
+{
+    // Nothing here
 }
 
 } /* end namespace program_options */
