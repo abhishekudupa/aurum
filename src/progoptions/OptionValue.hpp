@@ -74,6 +74,7 @@ protected:
     bool m_has_been_stored_to;
     // separator for multitoken strings
     // default is to use a comma
+    bool m_is_multitoken;
     std::string m_separator;
 
 public:
@@ -85,11 +86,13 @@ public:
     bool has_default_value() const;
     bool has_implicit_value() const;
     bool has_been_stored_to() const;
+    bool is_multitoken() const;
 
     OptionValueBase* required();
     OptionValueBase* default_value(const std::string& textual_default_value);
     OptionValueBase* implicit_value(const std::string& textual_implicit_value);
     OptionValueBase* separator(const std::string& separator);
+    OptionValueBase* multitoken();
 
     const std::string& get_textual_default_value() const;
     const std::string& get_textual_implicit_value() const;
@@ -322,19 +325,47 @@ public:
 template <typename T1, typename T2>
 class OptionValue<std::pair<T1, T2>> : public OptionValueImpl<std::pair<T1, T2> >
 {
+private:
+    typedef std::pair<T1, T2> ValueType;
+    typedef OptionValueImpl<ValueType> BaseType;
+
 public:
-    using OptionValueImpl<std::string>::OptionValueImpl;
+    OptionValue(ValueType* storage_ptr);
+    OptionValue(ValueType* storage_ptr,
+                const std::function<bool(const ValueType&)>& local_option_checker);
+    OptionValue(ValueType* storage_ptr,
+                const std::function<bool(const ValueType&, const OptionMap&)>&
+                global_option_checker);
+    OptionValue(ValueType* storage_ptr,
+                const std::function<bool(const ValueType&)>& local_option_checker,
+                const std::function<bool(const ValueType&, const OptionMap&)>&
+                global_option_checker);
+
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
 };
 
 template <typename... TupleTypes>
-class OptionValue<std::tuple<TupleTypes...>>
-    : public OptionValueImpl<std::tuple<TupleTypes...>>
+class OptionValue<std::tuple<TupleTypes...> >
+    : public OptionValueImpl<std::tuple<TupleTypes...> >
 {
+private:
+    typedef std::tuple<TupleTypes...> ValueType;
+    typedef OptionValueImpl<ValueType> BaseType;
+
 public:
-    using OptionValueImpl<std::string>::OptionValueImpl;
+    OptionValue(ValueType* storage_ptr);
+    OptionValue(ValueType* storage_ptr,
+                const std::function<bool(const ValueType&)>& local_option_checker);
+    OptionValue(ValueType* storage_ptr,
+                const std::function<bool(const ValueType&, const OptionMap&)>&
+                global_option_checker);
+    OptionValue(ValueType* storage_ptr,
+                const std::function<bool(const ValueType&)>& local_option_checker,
+                const std::function<bool(const ValueType&, const OptionMap&)>&
+                global_option_checker);
+
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
@@ -343,8 +374,22 @@ public:
 template <typename ElemType>
 class OptionValue<ac::Vector<ElemType> > : public OptionValueImpl<ac::Vector<ElemType> >
 {
+private:
+    typedef ac::Vector<ElemType> ValueType;
+    typedef OptionValueImpl<ValueType> BaseType;
+
 public:
-    using OptionValueImpl<std::string>::OptionValueImpl;
+    OptionValue(ValueType* storage_ptr);
+    OptionValue(ValueType* storage_ptr,
+                const std::function<bool(const ValueType&)>& local_option_checker);
+    OptionValue(ValueType* storage_ptr,
+                const std::function<bool(const ValueType&, const OptionMap&)>&
+                global_option_checker);
+    OptionValue(ValueType* storage_ptr,
+                const std::function<bool(const ValueType&)>& local_option_checker,
+                const std::function<bool(const ValueType&, const OptionMap&)>&
+                global_option_checker);
+
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
@@ -372,7 +417,8 @@ inline void OptionValue<std::pair<T1, T2> >::store(const std::string& textual_va
         throw ProgramOptionException("Wrong number of arguments for a pair option");
     }
 
-    trim_components(split_components)
+    trim_components(split_components);
+
     try {
         *(this->m_storage_ptr).first = strutils::string_cast<T1>(split_components[0]);
         *(this->m_storage_ptr).second = strutils::string_cast<T2>(split_components[1]);
@@ -441,6 +487,131 @@ inline void OptionValue<ac::Vector<ElemType> >::store(const std::string& textual
 
     this->run_local_check();
     this->m_has_been_stored_to = true;
+}
+
+template <typename T1, typename T2>
+inline OptionValue<std::pair<T1, T2> >::OptionValue(ValueType* storage_ptr)
+    : BaseType(storage_ptr)
+{
+    this->multitoken();
+}
+
+template <typename T1, typename T2>
+inline
+OptionValue<std::pair<T1, T2> >::OptionValue(ValueType* storage_ptr,
+                                             const std::function<bool(const ValueType&)>&
+                                             local_option_checker)
+    : BaseType(storage_ptr, local_option_checker)
+{
+    this->multitoken();
+}
+
+template <typename T1, typename T2>
+inline
+OptionValue<std::pair<T1, T2> >::OptionValue(ValueType* storage_ptr,
+                                             const std::function<bool(const ValueType&,
+                                                                      const OptionMap&)>&
+                                             global_option_checker)
+    : BaseType(storage_ptr, global_option_checker)
+{
+    this->multitoken();
+}
+
+template <typename T1, typename T2>
+inline
+OptionValue<std::pair<T1, T2> >::OptionValue(ValueType* storage_ptr,
+                                             const std::function<bool(const ValueType&)>&
+                                             local_option_checker,
+                                             const std::function<bool(const ValueType&,
+                                                                      const OptionMap&)>&
+                                             global_option_checker)
+    : BaseType(storage_ptr, local_option_checker, global_option_checker)
+{
+    this->multitoken();
+}
+
+
+template <typename... TupleTypes>
+inline OptionValue<std::tuple<TupleTypes...> >::OptionValue(ValueType* storage_ptr)
+    : BaseType(storage_ptr)
+{
+    this->multitoken();
+}
+
+template <typename... TupleTypes>
+inline
+OptionValue<std::tuple<TupleTypes...> >::OptionValue(ValueType* storage_ptr,
+                                                     const std::function<bool(const ValueType&)>&
+                                                     local_option_checker)
+    : BaseType(storage_ptr, local_option_checker)
+{
+    this->multitoken();
+}
+
+template <typename... TupleTypes>
+inline
+OptionValue<std::tuple<TupleTypes...> >::OptionValue(ValueType* storage_ptr,
+                                                     const std::function<bool(const ValueType&,
+                                                                              const OptionMap&)>&
+                                                     global_option_checker)
+    : BaseType(storage_ptr, global_option_checker)
+{
+    this->multitoken();
+}
+
+template <typename... TupleTypes>
+inline
+OptionValue<std::tuple<TupleTypes...> >::OptionValue(ValueType* storage_ptr,
+                                                     const std::function<bool(const ValueType&)>&
+                                                     local_option_checker,
+                                                     const std::function<bool(const ValueType&,
+                                                                              const OptionMap&)>&
+                                                     global_option_checker)
+    : BaseType(storage_ptr, local_option_checker, global_option_checker)
+{
+    this->multitoken();
+}
+
+
+template <typename ElemType>
+inline OptionValue<ac::Vector<ElemType> >::OptionValue(ValueType* storage_ptr)
+    : BaseType(storage_ptr)
+{
+    this->multitoken();
+}
+
+template <typename ElemType>
+inline
+OptionValue<ac::Vector<ElemType> >::OptionValue(ValueType* storage_ptr,
+                                                const std::function<bool(const ValueType&)>&
+                                                local_option_checker)
+    : BaseType(storage_ptr, local_option_checker)
+{
+    this->multitoken();
+}
+
+template <typename ElemType>
+inline
+OptionValue<ac::Vector<ElemType> >::OptionValue(ValueType* storage_ptr,
+                                                const std::function<bool(const ValueType&,
+                                                                         const OptionMap&)>&
+                                                global_option_checker)
+    : BaseType(storage_ptr, global_option_checker)
+{
+    this->multitoken();
+}
+
+template <typename ElemType>
+inline
+OptionValue<ac::Vector<ElemType> >::OptionValue(ValueType* storage_ptr,
+                                                const std::function<bool(const ValueType&)>&
+                                                local_option_checker,
+                                                const std::function<bool(const ValueType&,
+                                                                         const OptionMap&)>&
+                                                global_option_checker)
+    : BaseType(storage_ptr, local_option_checker, global_option_checker)
+{
+    this->multitoken();
 }
 
 } /* end namespace program_options */

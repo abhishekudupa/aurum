@@ -1,11 +1,9 @@
-// Parsers.hpp ---
-//
-// Filename: Parsers.hpp
+// Parsers.cpp ---
+// Filename: Parsers.cpp
 // Author: Abhishek Udupa
-// Created: Wed May 20 19:01:22 2015 (-0400)
+// Created: Wed May 20 20:27:46 2015 (-0400)
 //
-//
-// Copyright (c) 2015, Abhishek Udupa, University of Pennsylvania
+// Copyright (c) 2013, Abhishek Udupa, University of Pennsylvania
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -37,36 +35,20 @@
 
 // Code:
 
-#include "../AurumTypes.hpp"
-#include "../containers/UnorderedMap.hpp"
+#include "../strutils/StrUtils.hpp"
+
+#include "Parsers.hpp"
 
 namespace aurum {
 namespace program_options {
-
-class ProgramOptions;
-
 namespace parsers {
 
 namespace ac = aurum::containers;
-
-typedef ac::UnifiedUnorderedMap<std::string, std::string> ParseMap;
-
-
-extern void parse_command_line(int argc, char* argv[],
-                               ProgramOptions& program_options,
-                               ParseMap& parse_map);
-
-extern void parse_config_file(const std::string& config_file_name,
-                              ProgramOptions& program_options,
-                              ParseMap& parse_map);
-
-extern void parse_command_line(const std::string& command_line,
-                               ProgramOptions& program_options,
-                               ParseMap& parse_map);
 
 } /* end namespace parsers */
 } /* end namespace program_options */
 } /* end namespace aurum */
 
+
 //
-// Parsers.hpp ends here
+// Parsers.cpp ends here

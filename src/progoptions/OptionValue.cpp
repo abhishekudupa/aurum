@@ -45,7 +45,7 @@ namespace program_options {
 OptionValueBase::OptionValueBase()
     : m_textual_value(), m_is_required(false), m_has_default_value(false),
       m_textual_default_value(), m_has_implicit_value(false), m_textual_implicit_value(),
-      m_has_been_stored_to(false), m_separator(",")
+      m_has_been_stored_to(false), m_is_multitoken(false), m_separator(",")
 {
     // Nothing here
 }
@@ -73,6 +73,11 @@ bool OptionValueBase::has_implicit_value() const
 bool OptionValueBase::has_been_stored_to() const
 {
     return m_has_been_stored_to;
+}
+
+bool OptionValueBase::is_multitoken() const
+{
+    return m_is_multitoken;
 }
 
 OptionValueBase* OptionValueBase::required()
@@ -106,6 +111,12 @@ OptionValueBase* OptionValueBase::implicit_value(const std::string& textual_impl
 OptionValueBase* OptionValueBase::separator(const std::string& separator)
 {
     m_separator = separator;
+    return this;
+}
+
+OptionValueBase* OptionValueBase::multitoken()
+{
+    m_is_multitoken = true;
     return this;
 }
 
