@@ -116,7 +116,6 @@ public:
     Iterator begin() const;
     Iterator end() const;
 
-    void parse_option_string(const std::string& option_string);
     void parse_command_line(int argc, char* argv[]);
 
     void get_descriptions(std::ostream& out) const;
