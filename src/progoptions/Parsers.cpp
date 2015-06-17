@@ -56,7 +56,8 @@ static inline bool string_contains_white_space(const std::string& the_string)
     auto const str_len = the_string.length();
 
     for (u64 i = 0; i < str_len; ++i) {
-        if (the_string[i] == ' ' || the_string[i] == '\n' || the_string[i] == '\t') {
+        if (the_string[i] == ' ' || the_string[i] == '\n' ||
+            the_string[i] == '\t' || the_string[i] == '\r') {
             return true;
         }
     }
@@ -71,45 +72,17 @@ void parse_command_line(int argc, char *argv[],
 
     for (i32 i = 1; i < argc, ++i) {
         if (string_contains_white_space(argv[i])) {
-            sstr << '"' << argv[i] << '"' << " ";
+            sstr << "\"" << argv[i] << "\"" << " ";
         } else {
-            sstr << argv[i];
+            sstr << strutils::trim_copy(argv[i]) << " ";
         }
     }
 
     parse_option_string(sstr.str(), program_options, parse_map);
 }
 
-static inline std::string get_line_from_stream(istream& in_stream)
-{
-
-}
-
-// A config file needs to have one option per line
-void parse_config_file(const std::string& config_file_name,
-                       const ProgramOptions& program_options,
-                       ParseMap& parse_map)
-{
-    std::ifstream in_file(config_file_name.c_str());
-    if (in_file.fail()) {
-        throw ProgramOptionException((std::string)"Could not open configuration file: " +
-                                     config_file_name);
-    }
-
-    in_file.seekg(0, in_file.end);
-    auto file_length = in_file.tellg();
-    in_file.seekg(0, in_file.beg);
-
-    u08* buffer = aa::allocate_raw_cleared(file_length + 1);
-    in_file.read(buffer, file_length);
-
-    for (u64 i = 0; i < file_length; ++i) {
-
-    }
-}
-
 void parse_option_string(const std::string& option_string,
-                         ProgramOptions& program_options,
+                         const ProgramOptions& program_options,
                          ParseMap& parse_map)
 {
 

@@ -118,7 +118,6 @@ public:
 
     void parse_option_string(const std::string& option_string);
     void parse_command_line(int argc, char* argv[]);
-    void parse_config_file(const std::string& config_file_name);
 
     void get_descriptions(std::ostream& out) const;
     std::string get_descriptions() const;
