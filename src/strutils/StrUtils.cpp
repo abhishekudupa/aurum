@@ -404,6 +404,54 @@ std::string unquote_string_copy(const std::string& the_string)
     }
 }
 
+u64 find_next_whitespace(const std::string& the_string, u64 start_offset)
+{
+    auto current_offset = start_offset;
+    auto const str_length = the_string.length();
+
+    while (current_offset < str_length) {
+        auto const current_char = the_string[current_offset];
+        if (current_char == ' ' || current_char == '\t' ||
+            current_char == '\n' || current_char == '\r') {
+            return current_offset;
+        }
+        ++current_offset;
+    }
+
+    return str_length;
+}
+
+u64 find_next_non_whitespace(const std::string& the_string, u64 start_offset)
+{
+    auto current_offset = start_offset;
+    auto const str_length = the_string.length();
+
+    while (current_offset < str_length) {
+        auto const current_char = the_string[current_offset];
+        if (current_char != ' ' && current_char != '\t' &&
+            current_char != '\n' && current_char != '\r') {
+            return current_offset;
+        }
+    }
+    return str_length;
+}
+
+ac::Vector<std::string> split_on_whitespace(const std::string& the_string)
+{
+    ac::Vector<std::string> retval;
+    auto const str_length = the_string.length();
+
+    u64 begin_position = find_next_non_whitespace(the_string, 0);
+
+    while (begin_position < str_length) {
+        u64 end_position = find_next_whitespace(the_string, begin_position);
+        retval.push_back(the_string.substr(begin_position, end_position - begin_position));
+        begin_position = find_next_non_whitespace(the_string, end_position);
+    }
+
+    return retval;
+}
+
 } /* end namespace strutils */
 } /* end namespace aurum */
 

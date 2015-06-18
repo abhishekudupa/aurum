@@ -103,8 +103,9 @@ public:
     template <typename TargetType>
     inline TargetType get_value() const
     {
+        strutils::StringCaster<TargetType> caster;
         try {
-            return strutils::string_cast<TargetType>(m_textual_value);
+            return caster(m_textual_value);
         } catch (strutils::StringConversionException& e) {
             throw ProgramOptionException((std::string)"Bad conversion in " +
                                          "OptionValueBase::get_value(). " +
@@ -140,8 +141,9 @@ protected:
     template <typename CastType>
     inline void do_store(const std::string& textual_value)
     {
+        strutils::StringCaster<CastType> caster;
         try{
-            *m_storage_ptr = strutils::string_cast<u64>(textual_value);
+            *m_storage_ptr = caster(textual_value);
         } catch (const AurumException& e) {
             rethrow_storage_exception(e);
         }
@@ -376,8 +378,8 @@ inline void OptionValue<std::pair<T1, T2> >::store(const std::string& textual_va
     trim_components(split_components);
 
     try {
-        *(this->m_storage_ptr).first = strutils::string_cast<T1>(split_components[0]);
-        *(this->m_storage_ptr).second = strutils::string_cast<T2>(split_components[1]);
+        strutils::StringCaster<std::pair<T1, T2> > caster;
+        *(this->m_storage_ptr) = caster(textual_value);
     } catch (const strutils::StringConversionException& e) {
         this->rethrow_storage_exception(e);
     }
@@ -402,9 +404,9 @@ populate_tuple(std::tuple<TupleTypes...>& the_tuple,
 {
     typedef std::tuple<TupleTypes...> TheTupleType;
     typedef typename std::tuple_element<INDEX, TheTupleType>::type ElementType;
+    strutils::StringCaster<ElementType> caster;
 
-    std::get<INDEX>(the_tuple) =
-        strutils::string_cast<ElementType>(split_components[INDEX]);
+    std::get<INDEX>(the_tuple) = caster(split_components[INDEX]);
 }
 
 } /* end namespace detail */
@@ -434,8 +436,9 @@ inline void OptionValue<ac::Vector<ElemType> >::store(const std::string& textual
     trim_components(split_components);
 
     try {
+        strutils::StringCaster<ElemType> caster;
         for (auto const& component : split_components) {
-            this->m_storage_ptr->push_back(strutils::string_cast<ElemType>(component));
+            this->m_storage_ptr->push_back(caster(component));
         }
     } catch (const strutils::StringConversionException& e) {
         this->rethrow_storage_exception(e);

@@ -129,99 +129,176 @@ extern u64 to_unsigned(const std::string& the_string);
 extern void unquote_string(std::string& the_string);
 extern std::string unquote_string_copy(const std::string& the_string);
 
+extern u64 find_next_whitespace(const std::string& the_string, u64 start_offset);
+extern u64 find_next_non_whitespace(const std::string& the_string, u64 start_offset);
+extern ac::Vector<std::string> split_on_whitespace(const std::string& the_string);
+
+// caster classes
 template <typename T>
-static inline T string_cast(const std::string& the_string)
+class StringCaster
 {
-    std::istringstream istr(the_string);
-    T retval;
-    istr >> retval;
-    if (istr.get() != EOF) {
-        throw StringConversionException((std::string)"Leftover characters in string_cast of " +
-                                        "string \"" + the_string + "\"");
+public:
+    inline T operator () (const std::string& the_string) const
+    {
+        std::istringstream istr(the_string);
+        T retval;
+        istr >> retval;
+        if (istr.get() != EOF) {
+            throw StringConversionException((std::string)"Leftover characters in string_cast " +
+                                            "of string \"" + the_string + "\"");
+        }
+        return retval;
     }
-    return retval;
-}
+};
 
 template <>
-inline bool string_cast<bool>(const std::string& the_string)
+class StringCaster<bool>
 {
-    auto&& local_string = trim_copy(the_string);
-    to_lowercase(local_string);
-    if (local_string == "true") {
-        return true;
-    } else if (local_string == "false") {
-        return false;
-    } else {
-        throw StringConversionException((std::string)"Error casting string \"" +
-                                        the_string + "\" to a boolean value");
+public:
+    inline bool operator () (const std::string& the_string) const
+    {
+        auto&& local_string = trim_copy(the_string);
+        to_lowercase(local_string);
+        if (local_string == "true") {
+            return true;
+        } else if (local_string == "false") {
+            return false;
+        } else {
+            throw StringConversionException((std::string)"Error casting string \"" +
+                                            the_string + "\" to a boolean value");
+        }
     }
-}
+};
 
 template <>
-inline i64 string_cast<i64>(const std::string& the_string)
+class StringCaster<i64>
 {
-    return to_integer(the_string);
-}
+public:
+    inline i64 operator () (const std::string& the_string) const
+    {
+        return to_integer(the_string);
+    }
+};
 
 template <>
-inline u64 string_cast<u64>(const std::string& the_string)
+class StringCaster<u64>
 {
-    return to_unsigned(the_string);
-}
+public:
+    inline u64 operator () (const std::string& the_string) const
+    {
+        return to_integer(the_string);
+    }
+};
 
 template <>
-inline u32 string_cast<u32>(const std::string& the_string)
+class StringCaster<i32>
 {
-    return (u32)to_unsigned(the_string);
-}
+public:
+    inline i32 operator () (const std::string& the_string) const
+    {
+        return to_integer(the_string);
+    }
+};
 
 template <>
-inline i32 string_cast<i32>(const std::string& the_string)
+class StringCaster<u32>
 {
-    return (i32)to_unsigned(the_string);
-}
+public:
+    inline u32 operator () (const std::string& the_string) const
+    {
+        return to_integer(the_string);
+    }
+};
 
 template <>
-inline u16 string_cast<u16>(const std::string& the_string)
+class StringCaster<i16>
 {
-    return (u16)to_unsigned(the_string);
-}
+public:
+    inline i16 operator () (const std::string& the_string) const
+    {
+        return to_integer(the_string);
+    }
+};
 
 template <>
-inline i16 string_cast<i16>(const std::string& the_string)
+class StringCaster<u16>
 {
-    return (i16)to_unsigned(the_string);
-}
+public:
+    inline u16 operator () (const std::string& the_string) const
+    {
+        return to_integer(the_string);
+    }
+};
 
 template <>
-inline u08 string_cast<u08>(const std::string& the_string)
+class StringCaster<i08>
 {
-    return (u08)to_unsigned(the_string);
-}
+public:
+    inline i08 operator () (const std::string& the_string) const
+    {
+        return to_integer(the_string);
+    }
+};
 
 template <>
-inline i08 string_cast<i08>(const std::string& the_string)
+class StringCaster<u08>
 {
-    return (i08)to_unsigned(the_string);
-}
+public:
+    inline u08 operator () (const std::string& the_string) const
+    {
+        return to_integer(the_string);
+    }
+};
 
 template <>
-inline float string_cast<float>(const std::string& the_string)
+class StringCaster<float>
 {
-    return (float)to_double(the_string);
-}
+public:
+    inline float operator () (const std::string& the_string) const
+    {
+        return (float)to_double(the_string);
+    }
+};
 
 template <>
-inline double string_cast<double>(const std::string& the_string)
+class StringCaster<double>
 {
-    return to_double(the_string);
-}
+public:
+    inline double operator () (const std::string& the_string) const
+    {
+        return to_double(the_string);
+    }
+};
 
 template <>
-inline std::string string_cast<std::string>(const std::string& the_string)
+class StringCaster<std::string>
 {
-    return the_string;
-}
+public:
+    inline std::string operator () (const std::string& the_string) const
+    {
+        return the_string;
+    }
+};
+
+template <typename... TupleTypes>
+class StringCaster<std::tuple<TupleTypes...> >
+{
+public:
+    inline std::tuple<TupleTypes...> operator () (const std::string& the_string) const
+    {
+        auto&& split_components = strutils::split_on_whitespace(the_string);
+        if (split_components.size() != sizeof...(TupleTypes)) {
+            throw StringConversionException((std::string)"Wrong number of components in string " +
+                                            "for conversion to a tuple. Expected " +
+                                            std::to_string(sizeof...(TupleTypes)) +
+                                            " components, but got " +
+                                            to_string(split_components.size()) +
+                                            " components.");
+        }
+
+
+    }
+};
 
 } /* end namespace strutils */
 } /* end namespace aurum */
