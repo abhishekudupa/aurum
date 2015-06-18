@@ -285,16 +285,16 @@ static inline u64 to_number(const std::string& the_string, u32 base)
         if (base <= 10) {
             if (the_string[i] < '0' || the_string[i] > (unsigned char)('0' + base - 1)) {
                 throw StringConversionException((std::string)"The string \"" + the_string +
-                                                "contains characters invalid for base = " +
-                                                to_string(base));
+                                                "contains characters invalid for base " +
+                                                to_string(base) + " number.");
             }
         } else {
             if ((the_string[i] < '0' || the_string[i] > '9') &&
                 (std::tolower(the_string[i]) < 'a' ||
                  std::tolower(the_string[i]) > 'a' + (unsigned char)(base - 11))) {
                 throw StringConversionException((std::string)"The string \"" + the_string +
-                                                "contains characters invalid for base = " +
-                                                to_string(base));
+                                                "contains characters invalid for a base " +
+                                                to_string(base) + " number.");
             }
         }
     }
@@ -323,7 +323,7 @@ i64 to_integer(const std::string& the_string)
     auto num = to_number(trimmed_string, base);
     if (negative && num > INT64_MAX) {
         throw StringConversionException((std::string)"Overflow converting string \"" +
-                                        the_string + "\" to number");
+                                        the_string + "\" to an integer.");
     }
     if (negative) {
         return -num;

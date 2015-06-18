@@ -394,6 +394,11 @@ public:
     {
         return m_exception_info.c_str();
     }
+
+    const std::string& get_exception_info() const
+    {
+        return m_exception_info;
+    }
 };
 
 

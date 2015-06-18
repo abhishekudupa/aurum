@@ -42,6 +42,7 @@
 
 #include <string>
 #include <sstream>
+#include <typeinfo>
 
 #include "../containers/Vector.hpp"
 #include "../basetypes/AurumTypes.hpp"
@@ -145,7 +146,8 @@ public:
         istr >> retval;
         if (istr.get() != EOF) {
             throw StringConversionException((std::string)"Leftover characters in string_cast " +
-                                            "of string \"" + the_string + "\"");
+                                            "of string \"" + the_string + "\" to type: " +
+                                            typeid(T).name());
         }
         return retval;
     }
@@ -280,11 +282,48 @@ public:
     }
 };
 
+namespace detail {
+
+template <u64 INDEX, typename... TupleTypes>
+inline typename std::enable_if<INDEX != sizeof...(TupleTypes), void>::type
+populate_tuple(std::tuple<TupleTypes...>& the_tuple,
+               const ac::Vector<std::string>& split_components)
+{
+    typedef std::tuple<TupleTypes...> TheTupleType;
+    typedef typename std::tuple_element<INDEX, TheTupleType>::type ElemType;
+    strutils::StringCaster<ElementType> caster;
+
+    try {
+        std::get<INDEX>(the_tuple) = caster(split_components[INDEX]);
+    } catch (const StringConversionException& e) {
+        throw StringConversionException(e.get_exception_info() +
+                                        "\nWhen parsing tuple type: " +
+                                        typeid(TheTupleType).name() + ", and while parsing " +
+                                        "value of type: " + typeid(ElemType).name() + " at " +
+                                        "tuple index: " + std::to_string(INDEX) + ". Value " +
+                                        " string: \"" + split_components[INDEX] + "\".");
+
+    }
+
+    populate_tuple<INDEX+1, TupleTypes...>(the_tuple, split_components);
+}
+
+template <u64 INDEX, typename... TupleTypes>
+inline typename std::enable_if<INDEX == sizeof...(TupleTypes), void>::type
+populate_tuple(std::tuple<TupleTypes...>& the_tuple,
+               const ac::Vector<std::string>& split_components)
+{
+    return;
+}
+
+} /* end namespace detail */
+
 template <typename... TupleTypes>
 class StringCaster<std::tuple<TupleTypes...> >
 {
 public:
-    inline std::tuple<TupleTypes...> operator () (const std::string& the_string) const
+    inline std::tuple<TupleTypes...> operator () (const std::string& the_string,
+                                                  const std::string& separator = "") const
     {
         auto&& split_components = strutils::split_on_whitespace(the_string);
         if (split_components.size() != sizeof...(TupleTypes)) {
@@ -296,6 +335,18 @@ public:
                                             " components.");
         }
 
+        std::tuple<TupleTypes...> retval;
+        detail::populate_tuple<0, TupleTypes...>(the_tuple, split_components);
+        return retval;
+    }
+};
+
+template <typename T1, typename T2>
+class StringCaster<std::pair<T1, T2> >
+{
+public:
+    inline std::pair<T1, T2> operator () (const std::string& the_string) const
+    {
 
     }
 };
