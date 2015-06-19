@@ -162,7 +162,15 @@ private:
 
     inline T* allocate_data(u64 num_elements)
     {
+// check if libstdc++ defines the appropriate values
+// the magic number 1008 corresponds to when the "is_trivially_default_constructible"
+// type trait was supported in libstdc++
+#if __GXX_ABI_VERSION >= 1008
         typename std::is_trivially_default_constructible<T>::type is_trivial_value;
+#else
+        typename std::has_trivial_default_constructor<T>::type is_trivial_value;
+#endif /* __GXX_ABI_VERSION check */
+
         return allocate_data(num_elements, is_trivial_value);
     }
 
@@ -404,7 +412,7 @@ public:
         assign(init_list.begin(), init_list.end());
     }
 
-    explicit VectorBase()
+    VectorBase()
         : m_data(nullptr)
     {
         // Nothing here

@@ -1,6 +1,6 @@
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.1.0")
-    message(FATAL_ERROR "GCC version must be greater than or equal to 5.1.0!")
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.8.1")
+    message(FATAL_ERROR "GCC version must be greater than or equal to 4.8.1!")
   endif()
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
