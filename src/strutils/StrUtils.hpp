@@ -139,7 +139,8 @@ template <typename T>
 class StringCaster
 {
 public:
-    inline T operator () (const std::string& the_string) const
+    inline T operator () (const std::string& the_string,
+                          const std::string& separator = "") const
     {
         std::istringstream istr(the_string);
         T retval;
@@ -157,7 +158,8 @@ template <>
 class StringCaster<bool>
 {
 public:
-    inline bool operator () (const std::string& the_string) const
+    inline bool operator () (const std::string& the_string,
+                             const std::string& separator = "") const
     {
         auto&& local_string = trim_copy(the_string);
         to_lowercase(local_string);
@@ -176,7 +178,8 @@ template <>
 class StringCaster<i64>
 {
 public:
-    inline i64 operator () (const std::string& the_string) const
+    inline i64 operator () (const std::string& the_string,
+                            const std::string& separator = "") const
     {
         return to_integer(the_string);
     }
@@ -186,7 +189,8 @@ template <>
 class StringCaster<u64>
 {
 public:
-    inline u64 operator () (const std::string& the_string) const
+    inline u64 operator () (const std::string& the_string,
+                            const std::string& separator = "") const
     {
         return to_integer(the_string);
     }
@@ -196,7 +200,8 @@ template <>
 class StringCaster<i32>
 {
 public:
-    inline i32 operator () (const std::string& the_string) const
+    inline i32 operator () (const std::string& the_string,
+                            const std::string& separator = "") const
     {
         return to_integer(the_string);
     }
@@ -206,7 +211,8 @@ template <>
 class StringCaster<u32>
 {
 public:
-    inline u32 operator () (const std::string& the_string) const
+    inline u32 operator () (const std::string& the_string,
+                            const std::string& separator = "") const
     {
         return to_integer(the_string);
     }
@@ -216,7 +222,8 @@ template <>
 class StringCaster<i16>
 {
 public:
-    inline i16 operator () (const std::string& the_string) const
+    inline i16 operator () (const std::string& the_string,
+                            const std::string& separator = "") const
     {
         return to_integer(the_string);
     }
@@ -226,7 +233,8 @@ template <>
 class StringCaster<u16>
 {
 public:
-    inline u16 operator () (const std::string& the_string) const
+    inline u16 operator () (const std::string& the_string,
+                            const std::string& separator = "") const
     {
         return to_integer(the_string);
     }
@@ -236,7 +244,8 @@ template <>
 class StringCaster<i08>
 {
 public:
-    inline i08 operator () (const std::string& the_string) const
+    inline i08 operator () (const std::string& the_string,
+                            const std::string& separator = "") const
     {
         return to_integer(the_string);
     }
@@ -246,7 +255,8 @@ template <>
 class StringCaster<u08>
 {
 public:
-    inline u08 operator () (const std::string& the_string) const
+    inline u08 operator () (const std::string& the_string,
+                            const std::string& separator = "") const
     {
         return to_integer(the_string);
     }
@@ -256,7 +266,8 @@ template <>
 class StringCaster<float>
 {
 public:
-    inline float operator () (const std::string& the_string) const
+    inline float operator () (const std::string& the_string,
+                              const std::string& separator = "") const
     {
         return (float)to_double(the_string);
     }
@@ -266,7 +277,8 @@ template <>
 class StringCaster<double>
 {
 public:
-    inline double operator () (const std::string& the_string) const
+    inline double operator () (const std::string& the_string,
+                               const std::string& separator = "") const
     {
         return to_double(the_string);
     }
@@ -276,7 +288,8 @@ template <>
 class StringCaster<std::string>
 {
 public:
-    inline std::string operator () (const std::string& the_string) const
+    inline std::string operator () (const std::string& the_string,
+                                    const std::string& separator = "") const
     {
         return the_string;
     }
@@ -291,7 +304,7 @@ populate_tuple(std::tuple<TupleTypes...>& the_tuple,
 {
     typedef std::tuple<TupleTypes...> TheTupleType;
     typedef typename std::tuple_element<INDEX, TheTupleType>::type ElemType;
-    strutils::StringCaster<ElementType> caster;
+    strutils::StringCaster<ElemType> caster;
 
     try {
         std::get<INDEX>(the_tuple) = caster(split_components[INDEX]);
@@ -325,7 +338,14 @@ public:
     inline std::tuple<TupleTypes...> operator () (const std::string& the_string,
                                                   const std::string& separator = "") const
     {
-        auto&& split_components = strutils::split_on_whitespace(the_string);
+        ac::Vector<std::string> split_components;
+        std::tuple<TupleTypes...> the_tuple;
+
+        if (separator == "") {
+            split_components = strutils::split_on_whitespace(the_string);
+        } else {
+            split_components = strutils::split(the_string, separator);
+        }
         if (split_components.size() != sizeof...(TupleTypes)) {
             throw StringConversionException((std::string)"Wrong number of components in string " +
                                             "for conversion to a tuple. Expected " +
@@ -345,9 +365,49 @@ template <typename T1, typename T2>
 class StringCaster<std::pair<T1, T2> >
 {
 public:
-    inline std::pair<T1, T2> operator () (const std::string& the_string) const
+    inline std::pair<T1, T2> operator () (const std::string& the_string,
+                                          const std::string& separator = "") const
     {
+        StringCaster<std::tuple<T1, T2> > caster;
+        std::pair<T1, T2> retval;
+        std::tuple<T1, T2> the_tuple = caster(the_string, separator);
+        retval.first = std::get<0>(the_tuple);
+        retval.second = std::get<1>(the_tuple);
+        return retval;
+    }
+};
 
+template <typename ElemType>
+class StringCaster<ac::Vector<ElemType> >
+{
+public:
+    inline ac::Vector<ElemType> operator () (const std::string& the_string,
+                                             const std::string& separator = "") const
+    {
+        ac::Vector<std::string> split_components;
+
+        if (separator == "") {
+            split_components = strutils::split_on_whitespace(the_string);
+        } else {
+            split_components = strutils::split(the_string, separator);
+        }
+
+        auto const num_components = split_components.size();
+
+        ac::Vector<ElemType> retval(num_components);
+        StringCaster<ElemType> caster;
+
+        for (u64 i = 0; i < num_components; ++i) {
+            try {
+                retval[i] = caster(split_components[i]);
+            } catch (const StringConversionException& e) {
+                throw StringConversionException(e.get_exception_info() + "\nWhen parsing " +
+                                                "value of vector type: " + typeid(retval).name() +
+                                                " at index: " + std::to_string(i) +
+                                                ".\nValue string: \"" + the_string + "\".");
+            }
+        }
+        return retval;
     }
 };
 

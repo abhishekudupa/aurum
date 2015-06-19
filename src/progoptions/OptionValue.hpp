@@ -370,16 +370,9 @@ static inline void trim_components(ac::Vector<std::string>& component_vector)
 template <typename T1, typename T2>
 inline void OptionValue<std::pair<T1, T2> >::store(const std::string& textual_value)
 {
-    auto split_components = strutils::split(textual_value, this->m_separator);
-    if (split_components.size() != 2) {
-        throw ProgramOptionException("Wrong number of arguments for a pair option");
-    }
-
-    trim_components(split_components);
-
     try {
         strutils::StringCaster<std::pair<T1, T2> > caster;
-        *(this->m_storage_ptr) = caster(textual_value);
+        *(this->m_storage_ptr) = caster(textual_value, this->m_separator);
     } catch (const strutils::StringConversionException& e) {
         this->rethrow_storage_exception(e);
     }
@@ -388,40 +381,12 @@ inline void OptionValue<std::pair<T1, T2> >::store(const std::string& textual_va
     this->m_has_been_stored_to = true;
 }
 
-namespace detail {
-template <u64 INDEX, typename... TupleTypes>
-inline typename std::enable_if<INDEX == sizeof...(TupleTypes), void>::type
-populate_tuple(std::tuple<TupleTypes...>& the_tuple,
-               const ac::Vector<std::string>& split_components)
-{
-    return;
-}
-
-template <u64 INDEX, typename... TupleTypes>
-inline typename std::enable_if<INDEX != sizeof...(TupleTypes), void>::type
-populate_tuple(std::tuple<TupleTypes...>& the_tuple,
-               const ac::Vector<std::string>& split_components)
-{
-    typedef std::tuple<TupleTypes...> TheTupleType;
-    typedef typename std::tuple_element<INDEX, TheTupleType>::type ElementType;
-    strutils::StringCaster<ElementType> caster;
-
-    std::get<INDEX>(the_tuple) = caster(split_components[INDEX]);
-}
-
-} /* end namespace detail */
-
 template <typename... TupleTypes>
 inline void OptionValue<std::tuple<TupleTypes...> >::store(const std::string& textual_value)
 {
-    auto split_components = strutils::split(textual_value, this->m_separator);
-    if (split_components.size() != sizeof...(TupleTypes)) {
-        throw ProgramOptionException("Wrong number of arguments for a tuple option");
-    }
-
-    trim_components(split_components);
     try {
-        detail::populate_tuple<0, TupleTypes...>(split_components, *(this->m_storage_ptr));
+        strutils::StringCaster<std::tuple<TupleTypes...> > caster;
+        *(this->m_storage_ptr) = caster(textual_value, this->m_separator);
     } catch (const strutils::StringConversionException& e) {
         this->rethrow_storage_exception(e);
     }
@@ -432,14 +397,9 @@ inline void OptionValue<std::tuple<TupleTypes...> >::store(const std::string& te
 template <typename ElemType>
 inline void OptionValue<ac::Vector<ElemType> >::store(const std::string& textual_value)
 {
-    auto split_components = strutils::split(textual_value, this->m_separator);
-    trim_components(split_components);
-
     try {
-        strutils::StringCaster<ElemType> caster;
-        for (auto const& component : split_components) {
-            this->m_storage_ptr->push_back(caster(component));
-        }
+        strutils::StringCaster<ac::Vector<ElemType> > caster;
+        *(this->m_storage_ptr) = caster(textual_value, this->m_separator);
     } catch (const strutils::StringConversionException& e) {
         this->rethrow_storage_exception(e);
     }
@@ -464,7 +424,6 @@ OptionValue<std::pair<T1, T2> >::OptionValue(ValueType* storage_ptr,
 {
     this->multitoken();
 }
-
 
 template <typename... TupleTypes>
 inline OptionValue<std::tuple<TupleTypes...> >::OptionValue(ValueType* storage_ptr)
