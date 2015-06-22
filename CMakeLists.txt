@@ -55,7 +55,7 @@ if(CMAKE_BUILDSYS_CONFIG_HAS_LTO_BUILDS)
 endif()
 
 set(CMAKE_CXX_FLAGS_DEBUG
-  "${AURUM_DEFAULT_CXX_FLAGS} -ggdb3 -fnoinline -DAURUM_CFG_ASSERTIONS_ENABLED_"
+  "${AURUM_DEFAULT_CXX_FLAGS} -ggdb3 -fno-inline -DAURUM_CFG_ASSERTIONS_ENABLED_ -DAURUM_CFG_DEBUG_MODE_BUILD_"
   CACHE STRING "CXX COMPILER flags for debug build" FORCE)
 
 mark_as_advanced(CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_CXX_FLAGS_RELEASELTO)
@@ -109,6 +109,8 @@ set(AURUM_CXX_SOURCE_FILES
   src/progoptions/ProgramOptions.cpp
   src/progoptions/OptionMap.cpp
   src/progoptions/OptionValue.cpp
+
+  src/shell/ShellExpansion.cpp
 
   src/strutils/StrUtils.cpp
 
@@ -185,6 +187,7 @@ install(DIRECTORY
   src/memory
   src/primeutils
   src/progoptions
+  src/shell
   src/strutils
   src/timers
   DESTINATION ${AURUM_INC_DIR}

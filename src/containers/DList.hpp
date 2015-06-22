@@ -204,7 +204,7 @@ private:
     }
 
 public:
-    explicit DListBase()
+    DListBase()
         : m_pool_allocator(nullptr), m_size(0),
           m_root(&(this->m_root), &(this->m_root)), m_pool_owned(true)
     {

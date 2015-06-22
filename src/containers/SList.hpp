@@ -255,7 +255,7 @@ class SListBase final : public AurumObject
     }
 
  public:
-    explicit SListBase()
+    SListBase()
         : m_pool_or_size(), m_node_before_head(nullptr), m_tail(nullptr)
     {
         // Nothing here
@@ -268,7 +268,7 @@ class SListBase final : public AurumObject
     }
 
 
-    explicit SListBase(u64 n, const ValueType& value)
+    SListBase(u64 n, const ValueType& value)
         : SListBase()
     {
         if (n == 0) {

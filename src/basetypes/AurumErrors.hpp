@@ -79,11 +79,11 @@ extern void invoke_debugger();
 
 #define AURUM_ASSERT_WITH_MSG(CONDITION__, MESSAGE__)                         \
     if (!(CONDITION__)) {                                                     \
-        notify_assertion_violation(__FUNCTION__,                              \
-                                   __FILE__,                                  \
-                                   __LINE__,                                  \
-                                   #CONDITION__,                              \
-                                   MESSAGE__);                                \
+        aurum::error_handlers::notify_assertion_violation(__FUNCTION__,       \
+                                                          __FILE__,           \
+                                                          __LINE__,           \
+                                                          #CONDITION__,       \
+                                                          MESSAGE__);         \
     }                                                                         \
     ((void)0)
 

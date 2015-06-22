@@ -98,7 +98,12 @@ public:
 
     static inline DequeBlock* construct(void* mem_ptr)
     {
+#if __GXX_ABI_VERSION >= 1008
         typename std::is_trivially_default_constructible<T>::type is_trivial_value;
+#else
+        typename std::has_trivial_default_constructor<T>::type is_trivial_value;
+#endif /* __GXX_ABI_VERSION check */
+
         return construct(mem_ptr, is_trivial_value);
     }
 
