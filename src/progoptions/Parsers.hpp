@@ -60,6 +60,10 @@ extern void parse_config_file(const std::string& config_file_name,
                               const ProgramOptions& program_options,
                               ParseMap& parse_map);
 
+extern void parse_option_string(const std::string& option_string,
+                                const ProgramOptions& program_options,
+                                ParseMap& parse_map);
+
 } /* end namespace parsers */
 } /* end namespace program_options */
 } /* end namespace aurum */

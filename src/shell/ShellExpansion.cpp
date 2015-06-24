@@ -43,7 +43,6 @@
 
 #include "../strutils/StrUtils.hpp"
 #include "../allocators/MemoryManager.hpp"
-#include "../basetypes/AurumErrors.hpp"
 
 #include "ShellExpansion.hpp"
 
@@ -117,7 +116,7 @@ std::string apply_shell_expansion(const std::string& the_string,
 
         close(read_fd);
 
-        return sstr.str();
+        return strutils::trim_copy(sstr.str());
     }
 
     // to avoid compiler warnings
