@@ -75,6 +75,7 @@ protected:
     // separator for multitoken strings
     // default is to use a comma
     bool m_is_multitoken;
+    bool m_is_positional;
     std::string m_separator;
 
 public:
@@ -87,12 +88,14 @@ public:
     bool has_implicit_value() const;
     bool has_been_stored_to() const;
     bool is_multitoken() const;
+    bool is_positional() const;
 
     OptionValueBase* required();
     OptionValueBase* default_value(const std::string& textual_default_value);
     OptionValueBase* implicit_value(const std::string& textual_implicit_value);
     OptionValueBase* separator(const std::string& separator);
     OptionValueBase* multitoken();
+    OptionValueBase* positional();
 
     const std::string& get_textual_default_value() const;
     const std::string& get_textual_implicit_value() const;

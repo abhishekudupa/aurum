@@ -80,6 +80,11 @@ bool OptionValueBase::is_multitoken() const
     return m_is_multitoken;
 }
 
+bool OptionValueBase::is_positional() const
+{
+    return m_is_positional;
+}
+
 OptionValueBase* OptionValueBase::required()
 {
     if (m_has_default_value) {
@@ -96,6 +101,10 @@ OptionValueBase* OptionValueBase::default_value(const std::string& textual_defau
         throw ProgramOptionException((std::string)"Cannot mark an option as required and also " +
                                      "set a default value for it.");
     }
+    if (m_is_positional) {
+        throw ProgramOptionException((std::string)"A positional option cannot have a default" +
+                                     " value associated with it.");
+    }
     m_has_default_value = true;
     m_textual_default_value = textual_default_value;
     return this;
@@ -103,6 +112,10 @@ OptionValueBase* OptionValueBase::default_value(const std::string& textual_defau
 
 OptionValueBase* OptionValueBase::implicit_value(const std::string& textual_implicit_value)
 {
+    if (m_is_positional) {
+        throw ProgramOptionException((std::string)"A positional option cannot have an implicit" +
+                                     " value associated with it.");
+    }
     m_has_implicit_value = true;
     m_textual_implicit_value = textual_implicit_value;
     return this;
@@ -116,8 +129,21 @@ OptionValueBase* OptionValueBase::separator(const std::string& separator)
 
 OptionValueBase* OptionValueBase::multitoken()
 {
+    if (m_is_positional) {
+        throw ProgramOptionException((std::string)"An option cannot be positional and " +
+                                     "also be multitoken.");
+    }
     m_is_multitoken = true;
     return this;
+}
+
+OptionValueBase* OptionValueBase::positional()
+{
+    if (m_is_multitoken) {
+        throw ProgramOptionException((std::string)"An option cannot be positional and " +
+                                     "also be multitoken.");
+    }
+    m_is_positional = true;
 }
 
 const std::string& OptionValueBase::get_textual_default_value() const

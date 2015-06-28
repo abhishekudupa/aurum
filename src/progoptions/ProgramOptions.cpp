@@ -193,29 +193,17 @@ void ProgramOptions::add_option(const std::string& full_name, const std::string&
 }
 
 // Option value cannot be empty for positional values
-void ProgramOptions::add_positional_option(u64 option_position,
-                                           const std::string& full_name,
+void ProgramOptions::add_positional_option(const std::string& full_name,
                                            const std::string& option_description,
                                            const OptionValueRef& option_value)
 {
-    if (option_position != m_next_positional_option) {
-        throw ProgramOptionException((std::string)"Positional options have to be specified " +
-                                     "in order. Option at position " + to_string(option_position) +
-                                     "with full name \"" + full_name + "\" is specified out of " +
-                                     "sequence!");
-    }
-    ++m_next_positional_option;
+    u64 option_position = ++m_next_positional_option;
 
     if (find(full_name) != OptionValueRef::null_pointer) {
-        throw ProgramOptionException((std::string)"ProgramOptions::add_option() : " +
+        throw ProgramOptionException((std::string)"ProgramOptions::add_positional_option() : " +
                                      "Duplicate option \"" + full_name + "\" added.");
     }
     std::string positional_name = positional_option_prefix_ + to_string(option_position);
-    if (find(positional_name) != OptionValueRef::null_pointer) {
-        throw ProgramOptionException((std::string)"ProgramOptions::add_option() : " +
-                                     "Duplicate positional option added at position " +
-                                     to_string(option_position));
-    }
 
     m_description_map[full_name] = detail::OptionDescription(full_name, option_position,
                                                              option_description);
@@ -223,6 +211,7 @@ void ProgramOptions::add_positional_option(u64 option_position,
 
     OptionMap::insert((std::string)"--" + full_name, option_value);
     OptionMap::insert(positional_name, option_value);
+    option_value->positional();
 }
 
 ProgramOptions::Iterator ProgramOptions::begin() const

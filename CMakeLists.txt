@@ -106,11 +106,12 @@ set(AURUM_CXX_SOURCE_FILES
   src/primeutils/PrecomputedPrimeList.cpp
   src/primeutils/PrimeGenerator.cpp
 
+  src/progoptions/Parsers.cpp
   src/progoptions/ProgramOptions.cpp
   src/progoptions/OptionMap.cpp
   src/progoptions/OptionValue.cpp
 
-  src/shell/ShellExpansion.cpp
+  src/shell/ShellUtils.cpp
 
   src/strutils/StrUtils.cpp
 

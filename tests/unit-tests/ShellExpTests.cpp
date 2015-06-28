@@ -37,7 +37,7 @@
 
 // Code:
 
-#include "../../src/shell/ShellExpansion.hpp"
+#include "../../src/shell/ShellUtils.hpp"
 #include <iostream>
 
 #include <gtest/gtest.h>

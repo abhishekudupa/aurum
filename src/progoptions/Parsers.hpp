@@ -37,7 +37,7 @@
 
 // Code:
 
-#include "../AurumTypes.hpp"
+#include "../basetypes/AurumTypes.hpp"
 #include "../containers/UnorderedMap.hpp"
 
 namespace aurum {
@@ -51,18 +51,23 @@ namespace ac = aurum::containers;
 
 typedef ac::UnifiedUnorderedMap<std::string, std::string> ParseMap;
 
-
+// First escape processing is done, after which shell expansion is applied
 extern void parse_command_line(int argc, char* argv[],
                                const ProgramOptions& program_options,
-                               ParseMap& parse_map);
+                               ParseMap& parse_map,
+                               bool do_escape_processing = false);
 
 extern void parse_config_file(const std::string& config_file_name,
                               const ProgramOptions& program_options,
-                              ParseMap& parse_map);
+                              ParseMap& parse_map,
+                              bool do_escape_processing = false,
+                              bool do_shell_expansion = false);
 
 extern void parse_option_string(const std::string& option_string,
                                 const ProgramOptions& program_options,
-                                ParseMap& parse_map);
+                                ParseMap& parse_map,
+                                bool do_escape_processing = false,
+                                bool do_shell_expansion = false);
 
 } /* end namespace parsers */
 } /* end namespace program_options */

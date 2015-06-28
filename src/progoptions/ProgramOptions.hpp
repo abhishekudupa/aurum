@@ -106,7 +106,7 @@ public:
                     const std::string& option_description,
                     const OptionValueRef& option_value = OptionValueRef::null_pointer);
 
-    void add_positional_option(u64 option_position, const std::string& full_name,
+    void add_positional_option(const std::string& full_name,
                                const std::string& option_description,
                                const OptionValueRef& option_value);
 

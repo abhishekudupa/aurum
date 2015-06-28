@@ -1,6 +1,6 @@
-// ShellExpansion.hpp ---
+// ShellUtils.hpp ---
 //
-// Filename: ShellExpansion.hpp
+// Filename: ShellUtils.hpp
 // Author: Abhishek Udupa
 // Created: Sun Jun 21 14:53:14 2015 (-0400)
 //
@@ -37,8 +37,8 @@
 
 // Code:
 
-#if !defined AURUM_SHELL_SHELL_EXPANSION_HPP_
-#define AURUM_SHELL_SHELL_EXPANSION_HPP_
+#if !defined AURUM_SHELL_SHELL_UTILS_HPP_
+#define AURUM_SHELL_SHELL_UTILS_HPP_
 
 #include "../basetypes/AurumTypes.hpp"
 #include "../containers/Vector.hpp"
@@ -53,10 +53,17 @@ extern std::string apply_shell_expansion(const std::string& the_string,
 
 extern std::string apply_shell_expansion(const ac::Vector<std::string>& arg_strings,
                                          const std::string& shell_command = "/bin/sh");
+
+// execute a command and obtain its stdout and stderr
+// the first element of the returned value is the stdout
+// the second element is the stderr
+extern std::pair<std::string, std::string>
+execute_command(const ac::Vector<std::string>& command_line);
+
 } /* end namespace shell */
 } /* end namespace aurum */
 
-#endif /* AURUM_SHELL_SHELL_EXPANSION_HPP_ */
+#endif /* AURUM_SHELL_SHELL_UTILS_HPP_ */
 
 //
-// ShellExpansion.hpp ends here
+// ShellUtils.hpp ends here
