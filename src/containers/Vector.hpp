@@ -44,6 +44,9 @@
 #include <initializer_list>
 #include <algorithm>
 #include <functional>
+#include <sstream>
+#include <iomanip>
+#include <typeinfo>
 
 #include "../basetypes/AurumBase.hpp"
 #include "../basetypes/AurumTypes.hpp"
@@ -59,7 +62,7 @@ namespace containers {
 namespace aa = aurum::allocators;
 
 template <typename T>
-class VectorBase final : public AurumObject
+class VectorBase final : public AurumObject, public Stringifiable<VectorBase<T> >
 {
 public:
     typedef T ValueType;
@@ -914,6 +917,23 @@ public:
     inline i64 compare(const VectorBase& other) const
     {
         return compare(other, std::less<T>());
+    }
+
+    std::string to_string(u32 verbosity) const
+    {
+        std::ostringstream sstr;
+
+        sstr << "VectorBase<" << typeid(T).name() << "> with "
+             << size() << " elements:" << std::endl
+             << "<<" << std::endl;
+        auto const num_elements = size();
+
+        for (u64 i = 0; i < num_elements; ++i) {
+            sstr << std::setw(16) << std::setfill(' ') << i
+                 << " : " << to_string((*this)[i]) << std::endl;
+        }
+        sstr << ">>" << std::endl;
+        return sstr.str();
     }
 };
 

@@ -43,7 +43,7 @@
 namespace aurum {
 namespace containers {
 
-class BitSet final : public AurumObject
+class BitSet final : public AurumObject, public Stringifiable<BitSet>
 {
 private:
     u64 m_num_bits;
@@ -113,7 +113,7 @@ public:
 
     u64 size() const;
     void resize_and_clear(u64 new_num_bits);
-    std::string to_string() const;
+    std::string to_string(u32 verbosity) const;
 };
 
 } /* end namespace containers */

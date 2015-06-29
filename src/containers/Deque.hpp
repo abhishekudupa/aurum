@@ -40,6 +40,9 @@
 
 #include <initializer_list>
 #include <algorithm>
+#include <sstream>
+#include <iomanip>
+#include <typeinfo>
 
 #include "../basetypes/AurumTypes.hpp"
 
@@ -51,6 +54,7 @@ namespace containers {
 template <typename T>
 class DequeBase final :
         public AurumObject,
+        public Stringifiable<DequeBase<T> >,
         protected deque_detail_::DequeInternal<T>
 {
 public:
@@ -567,6 +571,23 @@ public:
     void reverse()
     {
         std::reverse(begin(), end());
+    }
+
+    std::string to_string(u32 verbosity) const
+    {
+        std::ostringstream sstr;
+
+        sstr << "DequeBase<" << typeid(T).name() << "> with "
+             << size() << " elements:" << std::endl << "<<" << std::endl;
+        auto const num_elements = size();
+
+        u64 i = 0;
+        for (auto const& elem : *this) {
+            sstr << std::setw(16) << std::setfill(' ') << i++ << " : "
+                 << to_string(elem) << std::endl;
+        }
+        sstr << ">>" << std::endl;
+        return sstr.str();
     }
 };
 

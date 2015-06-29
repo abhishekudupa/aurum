@@ -38,6 +38,7 @@
 // Code:
 
 #include <sstream>
+#include <iomanip>
 #include <cstring>
 #include <utility>
 #include <string>
@@ -345,18 +346,19 @@ u64 BitSet::size() const
     return m_num_bits;
 }
 
-std::string BitSet::to_string() const
+std::string BitSet::to_string(u32 verbosity) const
 {
     std::ostringstream sstr;
-    sstr << "{\n";
+    sstr << "BitSet with " << m_num_bits << " bits: " << std::endl;
+    sstr << "<<" << std::endl;
     for (u64 i = 0; i < m_num_bits; ++i) {
         if (test(i)) {
-            sstr << " " << i << " -> 1";
+            sstr << std::setw(16) << std::setfill(' ') << i << " -> 1" << std::endl;
         } else {
-            sstr << " " << i << " -> 0";
+            sstr << std::setw(16) << std::setfill(' ') << i << " -> 0" << std::endl;
         }
     }
-    sstr << " }";
+    sstr << ">>" << std::endl;
     return sstr.str();
 }
 

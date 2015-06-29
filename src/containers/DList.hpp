@@ -39,6 +39,9 @@
 #define AURUM_CONTAINERS_DLIST_HPP_
 
 #include <initializer_list>
+#include <iomanip>
+#include <sstream>
+#include <typeinfo>
 
 #include "../basetypes/AurumTypes.hpp"
 #include "../allocators/MemoryManager.hpp"
@@ -52,8 +55,8 @@ namespace containers {
 namespace aa = aurum::allocators;
 namespace ac = aurum::containers;
 
-template <typename T,bool USEPOOLS>
-class DListBase final : public AurumObject
+template <typename T, bool USEPOOLS>
+class DListBase final : public AurumObject, public Stringifiable<DListBase<T, USEPOOLS> >
 {
 public:
     typedef T ValueType;
@@ -1126,6 +1129,30 @@ public:
         }
 
         return 0;
+    }
+
+    std::string to_string(u32 verbosity) const
+    {
+        std::ostringstream sstr;
+
+        if (USEPOOLS) {
+            sstr << "Pooled DListBase<" << typeid(T).name() << "> with " << size()
+                 << " elements:" << std::endl;
+            sstr << "<<" << std::endl;
+        } else {
+            sstr << "Unpooled DListBase<" << typeid(T).name() << "> with " << size()
+                 << " elements:" << std::endl;
+            sstr << "<<" << std::endl;
+        }
+
+        u64 i = 0;
+        for (auto const& elem : *this) {
+            sstr << std::setw(16) << std::setfill(' ') << i++ << " : "
+                 << to_string(elem) << std::endl;
+        }
+
+        sstr << ">>" << std::endl;
+        return sstr.str();
     }
 };
 
