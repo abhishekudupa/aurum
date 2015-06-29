@@ -12,6 +12,10 @@ set(CMAKE_MODULE_PATH
 
 set(AURUM_DEFAULT_CXX_FLAGS "-Wall -pedantic -std=c++11")
 
+# set ar and ranlib
+set(CMAKE_AR "gcc-ar")
+set(CMAKE_RANLIB "gcc-ranlib")
+
 include(CheckCompiler)
 
 # configure for the platform
