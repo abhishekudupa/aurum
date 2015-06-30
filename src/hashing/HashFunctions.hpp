@@ -35,8 +35,8 @@
 
 // Code:
 
-#if !defined AURUM_HASHFUNCS_HASHFUNCTIONS_HPP_
-#define AURUM_HASHFUNCS_HASHFUNCTIONS_HPP_
+#if !defined AURUM_HASHING_HASHFUNCTIONS_HPP_
+#define AURUM_HASHING_HASHFUNCTIONS_HPP_
 
 #include <array>
 
@@ -47,7 +47,7 @@
 #include "SpookyHash.hpp"
 
 namespace aurum {
-namespace utils {
+namespace hashing {
 
 namespace hash_combine_detail_ {
 
@@ -130,10 +130,10 @@ static inline u64 hash_combine(ArgTypes&&... args)
 }
 
 
-} /* end namespace utils */
+} /* end namespace hashing */
 } /* end namespace aurum */
 
-#endif /* AURUM_HASHFUNCS_HASHFUNCTIONS_HPP_ */
+#endif /* AURUM_HASHING_HASHFUNCTIONS_HPP_ */
 
 //
 // HashFunctions.hpp ends here

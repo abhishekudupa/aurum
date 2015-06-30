@@ -13,7 +13,7 @@
 #include "SpookyHash.hpp"
 
 namespace aurum {
-namespace utils {
+namespace hashing {
 namespace spooky_hash_detail_ {
 
 static constexpr u32 ALLOW_UNALIGNED_READS = 0;
@@ -352,5 +352,5 @@ void SpookyHash::Final(uint64 *hash1, uint64 *hash2)
 }
 
 } /* end namespace spooky_hash_detail_ */
-} /* end namespace utils */
+} /* end namespace hashing */
 } /* end namespace aurum */

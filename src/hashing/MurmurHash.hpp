@@ -4,15 +4,15 @@
 
 // audupa: adapted from public domain source for use in aurum
 
-#if !defined AURUM_HASHFUNCS_MURMUR_HASH_HPP_
-#define AURUM_HASHFUNCS_MURMUR_HASH_HPP_
+#if !defined AURUM_HASHING_MURMUR_HASH_HPP_
+#define AURUM_HASHING_MURMUR_HASH_HPP_
 
 #include <cstdint>
 
 #include "../basetypes/AurumBase.hpp"
 
 namespace aurum {
-namespace utils {
+namespace hashing {
 namespace murmur_hash_detail_ {
 
 extern void MurmurHash3_x86_32  (const void * key, u64 len, u32 seed, void* out);
@@ -54,7 +54,7 @@ static inline u64 murmur_hash_64(const void* key, u64 length)
     return murmur_hash_64(key, length, seed);
 }
 
-} /* end namespace utils */
+} /* end namespace hashing */
 } /* end namespace aurum */
 
-#endif /* AURUM_HASHFUNCS_MURMUR_HASH_HPP_ */
+#endif /* AURUM_HASHING_MURMUR_HASH_HPP_ */

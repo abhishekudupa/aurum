@@ -1,5 +1,5 @@
-// Hash.hpp ---
-// Filename: Hash.hpp
+// Hashers.hpp ---
+// Filename: Hashers.hpp
 // Author: Abhishek Udupa
 // Created: Mon Feb 16 18:49:12 2015 (-0500)
 //
@@ -35,8 +35,8 @@
 
 // Code:
 
-#if !defined AURUM_HASHFUNCS_HASH_HPP_
-#define AURUM_HASHFUNCS_HASH_HPP_
+#if !defined AURUM_HASHING_HASHERS_HPP_
+#define AURUM_HASHING_HASHERS_HPP_
 
 // this file contains the definition of builtin hash
 // functions for common types, as well as facilities
@@ -53,7 +53,7 @@
 #include "HashFunctions.hpp"
 
 namespace aurum {
-namespace utils {
+namespace hashing {
 
 namespace am = aurum::memory;
 
@@ -316,10 +316,10 @@ public:
 };
 
 
-} /* end namespace utils */
+} /* end namespace hashing */
 } /* end namespace aurum */
 
-#endif /* AURUM_HASHFUNCS_HASH_HPP_ */
+#endif /* AURUM_HASHING_HASH_HPP_ */
 
 //
-// Hash.hpp ends here
+// Hashers.hpp ends here

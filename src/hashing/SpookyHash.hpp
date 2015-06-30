@@ -28,8 +28,8 @@
 
 // audupa: adapted from public domain for use in aurum
 
-#if !defined AURUM_HASHFUNCS_SPOOKYHASH_HPP_
-#define AURUM_HASHFUNCS_SPOOKYHASH_HPP_
+#if !defined AURUM_HASHING_SPOOKYHASH_HPP_
+#define AURUM_HASHING_SPOOKYHASH_HPP_
 
 #include <cstddef>
 #include <cstdint>
@@ -37,7 +37,7 @@
 #include "../basetypes/AurumBase.hpp"
 
 namespace aurum {
-namespace utils {
+namespace hashing {
 namespace spooky_hash_detail_ {
 
 typedef  uint64_t  uint64;
@@ -343,7 +343,7 @@ static inline u128 spooky_hash_128(const void* data, u64 length)
     return retval;
 }
 
-} /* end namespace utils */
+} /* end namespace hashing */
 } /* end namespace aurum */
 
-#endif /* AURUM_HASHFUNCS_SPOOKYHASH_HPP_ */
+#endif /* AURUM_HASHING_SPOOKYHASH_HPP_ */

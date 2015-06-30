@@ -37,8 +37,8 @@
 
 // Code:
 
-#if !defined AURUM_STRUTILS_STR_UTILS_HPP_
-#define AURUM_STRUTILS_STR_UTILS_HPP_
+#if !defined AURUM_STRINGIFICATION_STR_UTILS_HPP_
+#define AURUM_STRINGIFICATION_STR_UTILS_HPP_
 
 #include <string>
 #include <sstream>
@@ -414,7 +414,7 @@ public:
 } /* end namespace strutils */
 } /* end namespace aurum */
 
-#endif /* AURUM_STRUTILS_STR_UTILS_HPP_ */
+#endif /* AURUM_STRINGIFICATION_STR_UTILS_HPP_ */
 
 //
 // StrUtils.hpp ends here

@@ -96,10 +96,10 @@ set(AURUM_CXX_SOURCE_FILES
 
   src/containers/BitSet.cpp
 
-  src/hashfuncs/CityHash.cpp
-  src/hashfuncs/FNVHash.cpp
-  src/hashfuncs/MurmurHash.cpp
-  src/hashfuncs/SpookyHash.cpp
+  src/hashing/CityHash.cpp
+  src/hashing/FNVHash.cpp
+  src/hashing/MurmurHash.cpp
+  src/hashing/SpookyHash.cpp
 
   src/logging/LogManager.cpp
 
@@ -113,7 +113,7 @@ set(AURUM_CXX_SOURCE_FILES
 
   src/shell/ShellUtils.cpp
 
-  src/strutils/StrUtils.cpp
+  src/stringification/StrUtils.cpp
 
   src/timers/Timers.cpp)
 

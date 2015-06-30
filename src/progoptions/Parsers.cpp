@@ -38,7 +38,7 @@
 #include <sstream>
 #include <fstream>
 
-#include "../strutils/StrUtils.hpp"
+#include "../stringification/StrUtils.hpp"
 #include "../allocators/MemoryManager.hpp"
 
 #include "Parsers.hpp"

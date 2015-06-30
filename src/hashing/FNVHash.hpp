@@ -75,8 +75,8 @@
 
 // audupa: adapted for use with aurum
 
-#if !defined AURUM_HASHFUNCS_FNV_HASH_HPP_
-#define AURUM_HASHFUNCS_FNV_HASH_HPP_
+#if !defined AURUM_HASHING_FNV_HASH_HPP_
+#define AURUM_HASHING_FNV_HASH_HPP_
 
 #include <sys/types.h>
 #include <cstdint>
@@ -84,7 +84,7 @@
 #include "../basetypes/AurumBase.hpp"
 
 namespace aurum {
-namespace utils {
+namespace hashing {
 namespace fnv_hash_detail_ {
 /*
  * 32 bit FNV-0 hash type
@@ -179,7 +179,7 @@ static inline u64 fnv_hash_64a(const void* data, u64 length, u64 seed)
     return fnv_hash_detail_::fnv_64a_buf(data, length, seed);
 }
 
-} /* end namespace utils */
+} /* end namespace hashing */
 } /* end namespace aurum */
 
-#endif /* AURUM_HASHFUNCS_FNV_HASH_HPP_ */
+#endif /* AURUM_HASHING_FNV_HASH_HPP_ */

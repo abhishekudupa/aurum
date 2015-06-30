@@ -61,8 +61,8 @@
 
 // audupa: adapted from the sources by google for use in aurum
 
-#if !defined AURUM_HASHFUNCS_CITY_HASH_HPP_
-#define AURUM_HASHFUNCS_CITY_HASH_HPP_
+#if !defined AURUM_HASHING_CITY_HASH_HPP_
+#define AURUM_HASHING_CITY_HASH_HPP_
 
 #include <cstdlib>
 #include <utility>
@@ -70,7 +70,7 @@
 #include "../basetypes/AurumBase.hpp"
 
 namespace aurum {
-namespace utils {
+namespace hashing {
 namespace cityhash_detail_ {
 
 typedef uint8_t uint8;
@@ -152,7 +152,7 @@ static inline u128 city_hash_128_with_seed(const void* data, u64 length,
                                                  std::make_pair(seed1, seed2));
 }
 
-} /* end namespace utils */
+} /* end namespace hashing */
 } /* end namespace aurum */
 
-#endif  /* AURUM_HASHFUNCS_CITY_HASH_HPP_ */
+#endif  /* AURUM_HASHING_CITY_HASH_HPP_ */

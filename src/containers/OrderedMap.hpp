@@ -47,6 +47,7 @@ namespace ordered_map_detail_ {
 namespace ac = aurum::containers;
 namespace aa = aurum::allocators;
 namespace au = aurum::utils;
+namespace ah = aurum::hashing;
 
 // forward declaration for use in iterator
 template <typename KeyType, typename MappedType, typename KeyHash,
@@ -727,7 +728,7 @@ public:
 
 // some useful typedefs
 template <typename KeyType, typename MappedType,
-          typename KeyHash = au::Hasher<KeyType>,
+          typename KeyHash = ah::Hasher<KeyType>,
           typename KeyEquals = au::Equal<KeyType>,
           typename KeyLess = au::Less<KeyType> >
 using OrderedMap = ordered_map_detail_::OrderedMapBase<KeyType, MappedType,

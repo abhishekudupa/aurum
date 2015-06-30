@@ -40,7 +40,7 @@
 
 #include <stdexcept>
 
-#include "../hashfuncs/Hash.hpp"
+#include "../hashing/Hashers.hpp"
 #include "../basetypes/Comparators.hpp"
 
 #include "HashTable.hpp"
@@ -49,6 +49,7 @@ namespace aurum {
 namespace containers {
 
 namespace ac = aurum::containers;
+namespace ah = aurum::hashing;
 namespace au = aurum::utils;
 
 namespace unordered_map_detail_ {
@@ -558,7 +559,7 @@ public:
 // Some useful typedefs
 
 template <typename MappedKeyType, typename MappedValueType,
-          typename HashFunction = au::Hasher<MappedKeyType>,
+          typename HashFunction = ah::Hasher<MappedKeyType>,
           typename EqualsFunction = au::Equal<MappedKeyType> >
 using UnifiedUnorderedMap =
     unordered_map_detail_::UnorderedMapBase<MappedKeyType, MappedValueType,
@@ -566,7 +567,7 @@ using UnifiedUnorderedMap =
                                             hash_table_detail_::UnifiedHashTable>;
 
 template <typename MappedKeyType, typename MappedValueType,
-          typename HashFunction = au::Hasher<MappedKeyType>,
+          typename HashFunction = ah::Hasher<MappedKeyType>,
           typename EqualsFunction = au::Equal<MappedKeyType> >
 using SegregatedUnorderedMap =
     unordered_map_detail_::UnorderedMapBase<MappedKeyType, MappedValueType,
@@ -574,7 +575,7 @@ using SegregatedUnorderedMap =
                                             hash_table_detail_::SegregatedHashTable>;
 
 template <typename MappedKeyType, typename MappedValueType,
-          typename HashFunction = au::Hasher<MappedKeyType>,
+          typename HashFunction = ah::Hasher<MappedKeyType>,
           typename EqualsFunction = au::Equal<MappedKeyType> >
 using RestrictedUnorderedMap =
     unordered_map_detail_::UnorderedMapBase<MappedKeyType, MappedValueType,

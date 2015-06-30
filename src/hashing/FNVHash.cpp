@@ -38,7 +38,7 @@
 #include "FNVHash.hpp"
 
 namespace aurum {
-namespace utils {
+namespace hashing {
 namespace fnv_hash_detail_ {
 
 Fnv32_t
@@ -149,7 +149,7 @@ fnv_64a_str(const char *str, Fnv64_t hval)
 
 
 } /* end namespace fnv_hash_detail_ */
-} /* end namespace utils */
+} /* end namespace hashing */
 } /* end namespace aurum */
 
 //

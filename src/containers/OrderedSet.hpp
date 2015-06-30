@@ -47,6 +47,7 @@ namespace ordered_set_detail_ {
 
 namespace aa = aurum::allocators;
 namespace au = aurum::utils;
+namespace ah = aurum::hashing;
 
 template <typename T, typename HashFunction, typename EqualsFunction, typename LessFunction>
 class OrderedSetBase : public AurumObject
@@ -532,7 +533,7 @@ public:
 } /* end namespace ordered_set_detail_ */
 
 // Some useful typedefs
-template <typename T, typename HashFunction = au::Hasher<T>,
+template <typename T, typename HashFunction = ah::Hasher<T>,
           typename EqualsFunction = au::Equal<T>, typename LessFunction = au::Less<T> >
 using OrderedSet = ordered_set_detail_::OrderedSetBase<T, HashFunction,
                                                        EqualsFunction, LessFunction>;

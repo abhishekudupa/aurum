@@ -12,7 +12,7 @@
 #include "MurmurHash.hpp"
 
 namespace aurum {
-namespace utils {
+namespace hashing {
 namespace murmur_hash_detail_ {
 
 #define	FORCE_INLINE inline __attribute__((always_inline))
@@ -334,5 +334,5 @@ void MurmurHash3_x64_128(const void* key, const u64 len,
 
 //-----------------------------------------------------------------------------
 } /* end namespace murmur_hash_detail_ */
-} /* end namespace utils */
+} /* end namespace hashing */
 } /* end namespace aurum */

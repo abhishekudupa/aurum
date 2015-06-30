@@ -27,8 +27,8 @@
 
 // audupa: adapted from the sources by google for use in aurum
 
-#if !defined AURUM_HASHFUNCS_CITY_CRC_HPP_
-#define AURUM_HASHFUNCS_CITY_CRC_HPP_
+#if !defined AURUM_HASHING_CITY_CRC_HPP_
+#define AURUM_HASHING_CITY_CRC_HPP_
 
 #include "CityHash.hpp"
 
@@ -36,7 +36,7 @@
 #ifdef __SSE4_2__
 
 namespace aurum {
-namespace utils {
+namespace hashing {
 namespace cityhash_detail_ {
 
 // Hash function for a byte array.
@@ -67,8 +67,8 @@ static inline void city_hash_crc_256(const char* data, u64 length, u64* result)
     return cityhash_detail_::CityHashCrc256(data, length, result);
 }
 
-} /* end namespace utils */
+} /* end namespace hashing */
 } /* end namespace aurum */
 
 #endif /* __SSE4_2__ */
-#endif /* AURUM_HASHFUNCS_CITY_CRC_HPP_ */
+#endif /* AURUM_HASHING_CITY_CRC_HPP_ */

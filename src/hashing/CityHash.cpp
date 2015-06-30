@@ -35,7 +35,7 @@
 #include <string.h>  // for memcpy and memset
 
 namespace aurum {
-namespace utils {
+namespace hashing {
 namespace cityhash_detail_ {
 
 using namespace std;
@@ -622,5 +622,5 @@ uint128 CityHashCrc128(const char *s, size_t len) {
 #endif
 
 } /* end namespace cityhash_detail_ */
-} /* end namespace utils */
+} /* end namespace hashing */
 } /* end namespace aurum */

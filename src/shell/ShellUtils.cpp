@@ -44,7 +44,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include "../strutils/StrUtils.hpp"
+#include "../stringification/StrUtils.hpp"
 #include "../allocators/MemoryManager.hpp"
 #include "../basetypes/AurumErrors.hpp"
 

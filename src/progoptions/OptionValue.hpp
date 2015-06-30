@@ -47,7 +47,7 @@
 #include "../basetypes/AurumTypes.hpp"
 #include "../memory/RefCountable.hpp"
 #include "../memory/ManagedPointer.hpp"
-#include "../strutils/StrUtils.hpp"
+#include "../stringification/StrUtils.hpp"
 #include "../containers/Vector.hpp"
 
 #include "ProgramOptionException.hpp"

@@ -130,14 +130,14 @@ template <typename DerivedClass>
 class Stringifiable : public StringifiableEBC
 {
 public:
-    inline std::string to_string(u32 verbosity) const
+    inline std::string to_string(i64 verbosity) const
     {
         return static_cast<const DerivedClass*>(this)->to_string(verbosity);
     }
 
     inline std::string to_string() const
     {
-        return static_cast<const DerivedClass*>(this)->to_string();
+        return static_cast<const DerivedClass*>(this)->to_string(0);
     }
 };
 
@@ -400,38 +400,6 @@ public:
         return m_exception_info;
     }
 };
-
-
-namespace stringification_detail_ {
-
-template <typename T>
-inline std::string to_string_(const T& object,
-                              std::true_type is_stringifiable)
-{
-    return object.to_string();
-}
-
-template <typename T>
-inline std::string to_string_(const T& object,
-                              std::false_type is_stringifiable)
-{
-    return std::to_string(object);
-}
-
-template <typename T>
-inline std::string to_string_(const T& object)
-{
-    typename std::is_base_of<StringifiableEBC, T>::type is_stringifiable;
-    return to_string_(object, is_stringifiable);
-}
-
-} /* end namespace stringification_detail_ */
-
-template <typename T>
-inline std::string to_string(const T& object)
-{
-    return stringification_detail_::to_string_(object);
-}
 
 } /* end namespace aurum */
 
