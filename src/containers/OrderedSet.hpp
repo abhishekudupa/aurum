@@ -38,6 +38,8 @@
 #if !defined AURUM_CONTAINERS_ORDERED_SET_HPP_
 #define AURUM_CONTAINERS_ORDERED_SET_HPP_
 
+#include "../stringification/Stringifiers.hpp"
+
 #include "UnorderedSet.hpp"
 #include "DList.hpp"
 
@@ -48,14 +50,20 @@ namespace ordered_set_detail_ {
 namespace aa = aurum::allocators;
 namespace au = aurum::utils;
 namespace ah = aurum::hashing;
+namespace as = aurum::stringification;
+namespace acd = aurum::containers::ordered_set_detail_;
 
 template <typename T, typename HashFunction, typename EqualsFunction, typename LessFunction>
-class OrderedSetBase : public AurumObject
+class OrderedSetBase : public AurumObject,
+                       public Stringifiable<acd::OrderedSetBase<T, HashFunction,
+                                                                EqualsFunction,
+                                                                LessFunction> >
 {
 private:
     typedef PoolDList<T> ListType;
     typedef typename ListType::Iterator ListIterator;
     typedef ListIterator HashTableValueType;
+    typedef typename acd::OrderedSetBase<T, HashFunction, EqualsFunction, LessFunction> MyType;
 
     class HashTableEqualsFunction : private EqualsFunction
     {
@@ -450,6 +458,17 @@ public:
         merge_newly_inserted_elements();
         m_hash_table.shrink_to_fit();
         m_pool_allocator->garbage_collect();
+    }
+
+    inline std::string as_string(i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        sstr << "OrderedSet<" << type_name<T>() << "> with " << size()
+             << " elements:" << std::endl;
+
+        as::IterableStringifier<MyType, T> iter_stringifier;
+        sstr << "<<" << iter_stringifier(*this, verbosity) << ">>";
+        return sstr.str();
     }
 
     inline Iterator lower_bound(const ValueType& value) const

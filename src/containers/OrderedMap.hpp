@@ -38,6 +38,8 @@
 #if !defined AURUM_CONTAINERS_ORDERED_MAP_HPP_
 #define AURUM_CONTAINERS_ORDERED_MAP_HPP_
 
+#include "../stringification/Stringifiers.hpp"
+
 #include "OrderedSet.hpp"
 
 namespace aurum {
@@ -48,6 +50,8 @@ namespace ac = aurum::containers;
 namespace aa = aurum::allocators;
 namespace au = aurum::utils;
 namespace ah = aurum::hashing;
+namespace as = aurum::stringification;
+namespace acd = aurum::containers::ordered_map_detail_;
 
 // forward declaration for use in iterator
 template <typename KeyType, typename MappedType, typename KeyHash,
@@ -187,7 +191,12 @@ public:
 
 template <typename KeyType, typename MappedType, typename KeyHash,
           typename KeyEquals, typename KeyLess>
-class OrderedMapBase : public AurumObject
+class OrderedMapBase : public AurumObject,
+                       public Stringifiable<acd::OrderedMapBase<KeyType,
+                                                                MappedType,
+                                                                KeyHash,
+                                                                KeyEquals,
+                                                                KeyLess> >
 {
 public:
     typedef std::pair<const KeyType, MappedType> ValueType;
@@ -615,6 +624,24 @@ public:
         merge_newly_inserted_elements();
         m_hash_table.shrink_to_fit();
         m_pool_allocator->garbage_collect();
+    }
+
+    inline std::string as_string(i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        sstr << "OrderedMap<" << type_name<KeyType>() << ", "
+             << type_name<MappedType>() << "> with " << size()
+             << " elements:" << std::endl << "<<" << std::endl;
+
+        as::Stringifier<KeyType> key_stringifier;
+        as::Stringifier<MappedType> map_stringifier;
+
+        for (auto it = begin(), last = end(); it != last; ++it) {
+            sstr << "  {" << key_stringifier(it->first, verbosity) << " |--> "
+                 << map_stringifier(it->second, verbosity) << "}" << std::endl;
+        }
+        sstr << ">>" << std::endl;
+        return sstr.str();
     }
 
     inline Iterator lower_bound(const KeyType& key)

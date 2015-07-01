@@ -292,6 +292,20 @@ TEST(StdVsOrderedMapTest, Performance)
     }
 }
 
+TEST(OrderedMapTest, Stringification)
+{
+    u64u64OrderedMap the_map;
+    the_map[0] = 42;
+    the_map[1] = 43;
+    the_map[2000] = 2042;
+    the_map[42] = 84;
+    the_map[20] = 62;
+
+
+    EXPECT_EQ((std::string)"OrderedMap<unsigned long, unsigned long> with 5 elements:\n<<\n  {0 |--> 42}\n  {1 |--> 43}\n  {20 |--> 62}\n  {42 |--> 84}\n  {2000 |--> 2042}\n>>\n",
+              the_map.to_string());
+}
+
 
 //
 // OrderedMapTests.cpp ends here

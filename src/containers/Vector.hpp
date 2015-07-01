@@ -46,11 +46,11 @@
 #include <functional>
 #include <sstream>
 #include <iomanip>
-#include <typeinfo>
 
 #include "../basetypes/AurumBase.hpp"
 #include "../basetypes/AurumTypes.hpp"
 #include "../allocators/MemoryManager.hpp"
+#include "../stringification/Stringifiers.hpp"
 
 namespace aurum {
 namespace containers {
@@ -60,6 +60,7 @@ namespace containers {
 // bit, which we tailor to use our allocator
 
 namespace aa = aurum::allocators;
+namespace as = aurum::stringification;
 
 template <typename T>
 class VectorBase final : public AurumObject, public Stringifiable<VectorBase<T> >
@@ -82,6 +83,8 @@ public:
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
 private:
+    typedef aurum::containers::VectorBase<T> MyType;
+
     T* m_data;
 
     static constexpr u64 sc_array_overhead = (sizeof(u64) * 2);
@@ -919,20 +922,15 @@ public:
         return compare(other, std::less<T>());
     }
 
-    std::string to_string(u32 verbosity) const
+    std::string as_string(i64 verbosity) const
     {
         std::ostringstream sstr;
 
-        sstr << "VectorBase<" << typeid(T).name() << "> with "
-             << size() << " elements:" << std::endl
-             << "<<" << std::endl;
-        auto const num_elements = size();
+        sstr << "VectorBase<" << type_name<T>() << "> with "
+             << size() << " elements:" << std::endl << "<<";
 
-        for (u64 i = 0; i < num_elements; ++i) {
-            sstr << std::setw(16) << std::setfill(' ') << i
-                 << " : " << to_string((*this)[i]) << std::endl;
-        }
-        sstr << ">>" << std::endl;
+        as::IterableStringifier<MyType, T> iter_stringifier;
+        sstr << iter_stringifier(*this, verbosity) << ">>";
         return sstr.str();
     }
 };

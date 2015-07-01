@@ -43,6 +43,7 @@
 #include "../basetypes/AurumTypes.hpp"
 #include <type_traits>
 #include <sstream>
+#include <typeinfo>
 
 namespace aurum {
 namespace stringification {
@@ -60,9 +61,7 @@ private:
     inline std::string to_string_(const T& object, i64 verbosity,
                                   const std::false_type& is_stringifiable) const
     {
-        std::ostringstream sstr;
-        sstr << object;
-        return sstr.str();
+        return (std::string)"object[" + std::to_string(sizeof(T)) + "]";
     }
 
 public:
@@ -71,16 +70,187 @@ public:
         typename std::is_base_of<StringifiableEBC, T>::type is_stringifiable;
         return to_string_(object, verbosity, is_stringifiable);
     }
+
+    inline std::string operator () (const T& object) const
+    {
+        return (*this)(object, 0);
+    }
 };
 
 // Specializations
+
+// An ugly macro for creating classes for which predefined to_string methods exist
+#define MAKE_PREDEF_STRINGIFIER_(TYPENAME_)                                           \
+    template <>                                                                       \
+    class Stringifier<TYPENAME_>                                                      \
+    {                                                                                 \
+    public:                                                                           \
+        inline std::string operator () (const TYPENAME_& object, i64 verbosity) const \
+        {                                                                             \
+            return std::to_string(object);                                            \
+        }                                                                             \
+        inline std::string operator () (const TYPENAME_& object) const                \
+        {                                                                             \
+            return std::to_string(object);                                            \
+        }                                                                             \
+    }
+
+MAKE_PREDEF_STRINGIFIER_(u16);
+MAKE_PREDEF_STRINGIFIER_(u32);
+MAKE_PREDEF_STRINGIFIER_(u64);
+MAKE_PREDEF_STRINGIFIER_(i16);
+MAKE_PREDEF_STRINGIFIER_(i32);
+MAKE_PREDEF_STRINGIFIER_(i64);
+MAKE_PREDEF_STRINGIFIER_(float);
+MAKE_PREDEF_STRINGIFIER_(double);
+
+#undef MAKE_PREDEF_STRINGIFIER_
+
+template <>
+class Stringifier<bool>
+{
+public:
+    inline std::string operator () (bool object, i64 verbosity) const
+    {
+        if (object) {
+            return "true";
+        } else {
+            return "false";
+        }
+    }
+
+    inline std::string operator () (bool object) const
+    {
+        if (object) {
+            return "true";
+        } else {
+            return "false";
+        }
+    }
+};
+
+template <>
+class Stringifier<char>
+{
+public:
+    inline std::string operator () (char object, i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        sstr << object;
+        return sstr.str();
+    }
+
+    inline std::string operator () (char object) const
+    {
+        std::ostringstream sstr;
+        sstr << object;
+        return sstr.str();
+    }
+};
+
+template <>
+class Stringifier<unsigned char>
+{
+public:
+    inline std::string operator () (unsigned char object, i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        sstr << object;
+        return sstr.str();
+    }
+
+    inline std::string operator () (char object) const
+    {
+        std::ostringstream sstr;
+        sstr << object;
+        return sstr.str();
+    }
+};
+
+template <typename T>
+class Stringifier<T*>
+{
+public:
+    inline std::string operator () (const T* object, i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        sstr << object;
+        return sstr.str();
+    }
+
+    inline std::string operator () (const T* object) const
+    {
+        std::ostringstream sstr;
+        sstr << object;
+        return sstr.str();
+    }
+};
+
+template <typename T>
+class Stringifier<const T*>
+{
+public:
+    inline std::string operator () (const T* object, i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        sstr << object;
+        return sstr.str();
+    }
+
+    inline std::string operator () (const T* object) const
+    {
+        std::ostringstream sstr;
+        sstr << object;
+        return sstr.str();
+    }
+};
+
+template <typename T>
+class Stringifier<memory::ManagedPointer<T> >
+{
+public:
+    inline std::string operator () (const memory::ManagedPointer<T>& object, i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        sstr << object;
+        return sstr.str();
+    }
+
+    inline std::string operator () (const memory::ManagedPointer<T>& object) const
+    {
+        std::ostringstream sstr;
+        sstr << object;
+        return sstr.str();
+    }
+};
+
+template <typename T>
+class Stringifier<memory::ManagedConstPointer<T> >
+{
+public:
+    inline std::string operator () (const memory::ManagedConstPointer<T>& object,
+                                    i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        sstr << object;
+        return sstr.str();
+    }
+
+    inline std::string operator () (const memory::ManagedConstPointer<T>& object) const
+    {
+        std::ostringstream sstr;
+        sstr << object;
+        return sstr.str();
+    }
+};
+
 template <typename T1, typename T2>
 class Stringifier<std::pair<T1, T2> >
 {
 public:
-    inline std::string operator () (const T& object, i64 verbosity) const
+    inline std::string operator () (const std::pair<T1, T2>& object, i64 verbosity) const
     {
-        ostringstream sstr;
+        std::ostringstream sstr;
         Stringifier<T1> stringifier1;
         Stringifier<T2> stringifier2;
 
@@ -88,19 +258,87 @@ public:
              << stringifier2(object, verbosity) << ">";
         return sstr.str();
     }
+
+    inline std::string operator () (const std::pair<T1, T2>& object) const
+    {
+        return (*this)(object, 0);
+    }
 };
 
 namespace detail {
 
+template <u64 INDEX, typename... TupleTypes>
+inline typename std::enable_if<INDEX == sizeof...(TupleTypes), void>::type
+stringify_tuple(const std::tuple<TupleTypes...>& the_tuple,
+                std::ostringstream& sstr, i64 verbosity)
+{
+    return;
+}
+
+template <u64 INDEX, typename... TupleTypes>
+inline typename std::enable_if<INDEX != sizeof...(TupleTypes), void>::type
+stringify_tuple(const std::tuple<TupleTypes...>& the_tuple,
+                std::ostringstream& sstr, i64 verbosity)
+{
+    typedef std::tuple<TupleTypes...> TheTupleType;
+    typedef typename std::tuple_element<INDEX, TheTupleType>::type ElementType;
+    Stringifier<ElementType> stringifier;
+
+    if (INDEX > 0) {
+        sstr << ", ";
+    }
+
+    sstr << stringifier(std::get<INDEX>(the_tuple), verbosity);
+    stringify_tuple<INDEX+1, TupleTypes...>(the_tuple, sstr, verbosity);
+}
 
 } /* end namespace detail */
 
 template <typename... TupleTypes>
 class Stringifier<std::tuple<TupleTypes...> >
 {
-private:
+public:
+    inline std::string operator () (const std::tuple<TupleTypes...>& object, i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        sstr << "<" << detail::stringify_tuple<0, TupleTypes...>(object, sstr, verbosity)
+             << ">";
+        return sstr.str();
+    }
 
+    inline std::string operator () (const std::tuple<TupleTypes...>& object) const
+    {
+        return (*this)(object, 0);
+    }
 };
+
+template <typename ContainerType, typename ElementType>
+class IterableStringifier
+{
+public:
+    inline std::string operator () (const ContainerType& container, i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        Stringifier<ElementType> stringifier;
+        auto first = std::begin(container);
+        auto last = std::end(container);
+        for (auto it = first; it != last; ++it) {
+            if (it != first) {
+                sstr << ", ";
+            }
+            sstr << stringifier(*it);
+        }
+        return sstr.str();
+    }
+};
+
+// define some to_string methods
+template <typename T>
+inline std::string to_string(const T& object)
+{
+    Stringifier<T> stringifier;
+    return stringifier(object);
+}
 
 } /* end namespace stringification */
 } /* end namespace aurum */

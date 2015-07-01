@@ -533,5 +533,11 @@ TEST(DequeTest, RefCountableTests)
     EXPECT_EQ((u64)MAX_TEST_SIZE, deque2.size());
 }
 
+TEST(DequeTest, Stringification)
+{
+    u32Deque deque1 = {1, 2, 3, 4, 5};
+    EXPECT_EQ((std::string)"DequeBase<unsigned int> with 5 elements:\n<<1, 2, 3, 4, 5>>", deque1.to_string());
+}
+
 //
 // DListTests.cpp ends here

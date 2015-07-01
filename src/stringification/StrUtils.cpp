@@ -275,7 +275,7 @@ std::string to_uppercase_copy(const std::string& the_string)
 static inline u64 to_number(const std::string& the_string, u32 base)
 {
     if (base > 16 || base < 1) {
-        throw StringConversionException((std::string)"Base = " + to_string(base) +
+        throw StringConversionException((std::string)"Base = " + std::to_string(base) +
                                         " is too large or too small to convert string \"" +
                                         the_string + "\" to a number");
     }
@@ -286,7 +286,7 @@ static inline u64 to_number(const std::string& the_string, u32 base)
             if (the_string[i] < '0' || the_string[i] > (unsigned char)('0' + base - 1)) {
                 throw StringConversionException((std::string)"The string \"" + the_string +
                                                 "contains characters invalid for base " +
-                                                to_string(base) + " number.");
+                                                std::to_string(base) + " number.");
             }
         } else {
             if ((the_string[i] < '0' || the_string[i] > '9') &&
@@ -294,7 +294,7 @@ static inline u64 to_number(const std::string& the_string, u32 base)
                  std::tolower(the_string[i]) > 'a' + (unsigned char)(base - 11))) {
                 throw StringConversionException((std::string)"The string \"" + the_string +
                                                 "contains characters invalid for a base " +
-                                                to_string(base) + " number.");
+                                                std::to_string(base) + " number.");
             }
         }
     }

@@ -157,6 +157,14 @@ TEST(OrderedSetTest, Assignment)
     EXPECT_TRUE(it3 == set3.end());
 }
 
+TEST(OrderedSetTest, Stringification)
+{
+    typedef u64OrderedSet SetType;
+    SetType set1 = {32, 54, 42, 1, 10};
+    EXPECT_EQ((std::string)"OrderedSet<unsigned long> with 5 elements:\n<<1, 10, 32, 42, 54>>",
+              set1.to_string());
+}
+
 TEST(OrderedSetTest, Functional)
 {
     typedef u64OrderedSet SetType;

@@ -203,7 +203,7 @@ void ProgramOptions::add_positional_option(const std::string& full_name,
         throw ProgramOptionException((std::string)"ProgramOptions::add_positional_option() : " +
                                      "Duplicate option \"" + full_name + "\" added.");
     }
-    std::string positional_name = positional_option_prefix_ + to_string(option_position);
+    std::string positional_name = positional_option_prefix_ + std::to_string(option_position);
 
     m_description_map[full_name] = detail::OptionDescription(full_name, option_position,
                                                              option_description);
@@ -250,11 +250,11 @@ std::string ProgramOptions::get_description(const std::string& option_name) cons
 
 std::string ProgramOptions::get_description(u64 option_position) const
 {
-    std::string search_string = positional_option_prefix_ + to_string(option_position);
+    std::string search_string = positional_option_prefix_ + std::to_string(option_position);
     auto it = m_description_map.find(search_string);
     if (it == m_description_map.end()) {
         return (std::string)"No description available for option at position " +
-            to_string(option_position);
+            std::to_string(option_position);
     } else {
         return it->second.to_string();
     }

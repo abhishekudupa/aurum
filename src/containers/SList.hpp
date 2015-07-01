@@ -43,6 +43,7 @@
 #include "../basetypes/AurumTypes.hpp"
 #include "../allocators/MemoryManager.hpp"
 #include "../allocators/PoolAllocator.hpp"
+#include "../stringification/Stringifiers.hpp"
 
 #include "SListTypes.hpp"
 
@@ -51,6 +52,7 @@ namespace containers {
 
 namespace aa = aurum::allocators;
 namespace ac = aurum::containers;
+namespace as = aurum::stringification;
 
 /*
   A singly-linked list:
@@ -63,9 +65,9 @@ namespace ac = aurum::containers;
 */
 
 template <typename T, bool USEPOOLS>
-class SListBase final : public AurumObject
+class SListBase final : public AurumObject, public Stringifiable<SListBase<T, USEPOOLS> >
 {
- public:
+public:
     typedef T ValueType;
     typedef T value_type;
     typedef T* PtrType;
@@ -80,9 +82,10 @@ class SListBase final : public AurumObject
 
     // No reverse iteration is possible!
 
- private:
+private:
     typedef slist_detail_::SListNode<T> NodeType;
     typedef slist_detail_::SListNodeBase NodeBaseType;
+    typedef aurum::containers::SListBase<T, USEPOOLS> MyType;
 
     union PoolSizeUnionType
     {
@@ -1342,6 +1345,17 @@ class SListBase final : public AurumObject
     }
 
     // Functions/methods not part of stl
+    inline std::string as_string(i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        sstr << (USEPOOLS ? "Pooled " : "Unpooled ") << "SListBase<"
+             << type_name<T>() << "> with " << size() << " elements:" << std::endl;
+
+        as::IterableStringifier<MyType, T> iter_stringifier;
+        sstr << "<<" << iter_stringifier(*this, verbosity) << ">>";
+        return sstr.str();
+    }
+
     inline void garbage_collect()
     {
         if (!USEPOOLS) {

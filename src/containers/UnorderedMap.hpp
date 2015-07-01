@@ -39,9 +39,11 @@
 #define AURUM_CONTAINERS_UNORDERED_MAP_HPP_
 
 #include <stdexcept>
+#include <sstream>
 
 #include "../hashing/Hashers.hpp"
 #include "../basetypes/Comparators.hpp"
+#include "../stringification/Stringifiers.hpp"
 
 #include "HashTable.hpp"
 
@@ -51,8 +53,11 @@ namespace containers {
 namespace ac = aurum::containers;
 namespace ah = aurum::hashing;
 namespace au = aurum::utils;
+namespace as = aurum::stringification;
 
 namespace unordered_map_detail_ {
+
+namespace acd = ac::unordered_map_detail_;
 
 template <typename KeyType, typename ValueType, typename HashFunction>
 class KeyValuePairHasher : private HashFunction
@@ -169,6 +174,11 @@ template <typename MappedKeyType, typename MappedValueType,
           template <typename, typename, typename> class HashTableTemplateType>
 class UnorderedMapBase :
         public AurumObject,
+        public Stringifiable<acd::UnorderedMapBase<MappedKeyType,
+                                                   MappedValueType,
+                                                   HashFunction,
+                                                   EqualsFunction,
+                                                   HashTableTemplateType> >,
         private HashTableTemplateType<std::pair<const MappedKeyType,
                                                 MappedValueType>,
                                       KeyValuePairHasher<MappedKeyType,
@@ -551,6 +561,27 @@ public:
     inline bool operator != (const UnorderedMapBase& other) const
     {
         return (!((*this) == other));
+    }
+
+    inline std::string as_string(i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        sstr << "UnorderedMapBase<" << type_name<MappedKeyType>() << ", "
+             << type_name<MappedValueType>() << "> with " << size()
+             << " elements:" << std::endl << "<<" << std::endl;
+        auto first = begin();
+        auto last = end();
+
+        as::Stringifier<MappedKeyType> key_stringifier;
+        as::Stringifier<MappedValueType> map_stringifier;
+
+        for (auto it = first; it != last; ++it) {
+            sstr << "  {" << key_stringifier(it->first, verbosity) << " |--> "
+                 << map_stringifier(it->second, verbosity) << "}" << std::endl;
+        }
+
+        sstr << ">>" << std::endl;
+        return sstr.str();
     }
 };
 

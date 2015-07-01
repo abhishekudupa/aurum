@@ -41,6 +41,11 @@
 #include <ostream>
 #include <type_traits>
 #include <string>
+#include <cstddef>
+
+#ifdef __GLIBCXX__
+#include <cxxabi.h>
+#endif /* __GLIBCXX__ */
 
 #include "../memory/RefCountable.hpp"
 #include "../memory/ManagedPointer.hpp"
@@ -132,12 +137,12 @@ class Stringifiable : public StringifiableEBC
 public:
     inline std::string to_string(i64 verbosity) const
     {
-        return static_cast<const DerivedClass*>(this)->to_string(verbosity);
+        return static_cast<const DerivedClass*>(this)->as_string(verbosity);
     }
 
     inline std::string to_string() const
     {
-        return static_cast<const DerivedClass*>(this)->to_string(0);
+        return static_cast<const DerivedClass*>(this)->as_string(0);
     }
 };
 
@@ -400,6 +405,23 @@ public:
         return m_exception_info;
     }
 };
+
+template <typename T>
+inline std::string type_name()
+{
+    std::string tname = typeid(T).name();
+
+#ifdef __GLIBCXX__
+    int status;
+    char* demangled_name = abi::__cxa_demangle(tname.c_str(), nullptr, nullptr, &status);
+    if (status == 0) {
+        tname = demangled_name;
+        std::free(demangled_name);
+    }
+#endif /* __GLIBCXX__ */
+
+    return tname;
+}
 
 } /* end namespace aurum */
 

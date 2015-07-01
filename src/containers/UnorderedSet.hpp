@@ -38,8 +38,11 @@
 #if !defined AURUM_CONTAINERS_UNORDERED_SET_HPP_
 #define AURUM_CONTAINERS_UNORDERED_SET_HPP_
 
+#include <sstream>
+
 #include "../hashing/Hashers.hpp"
 #include "../basetypes/Comparators.hpp"
+#include "../stringification/Stringifiers.hpp"
 
 #include "HashTable.hpp"
 
@@ -48,17 +51,24 @@ namespace containers {
 
 namespace ah = aurum::hashing;
 namespace au = aurum::utils;
+namespace as = aurum::stringification;
 
 namespace unordered_set_detail_ {
+
+namespace acd = aurum::containers::unordered_set_detail_;
 
 template <typename T, typename HashFunction, typename EqualsFunction,
           template <typename, typename, typename> class HashTableTemplateType>
 class UnorderedSetBase :
         public AurumObject,
+        public Stringifiable<acd::UnorderedSetBase<T, HashFunction,
+                                                   EqualsFunction,
+                                                   HashTableTemplateType> >,
         private HashTableTemplateType<T, HashFunction, EqualsFunction>
 {
 private:
     typedef HashTableTemplateType<T, HashFunction, EqualsFunction> HashTableType;
+    typedef acd::UnorderedSetBase<T, HashFunction, EqualsFunction, HashTableTemplateType> MyType;
 
 public:
     typedef T ValueType;
@@ -265,7 +275,7 @@ public:
     inline std::pair<Iterator, bool> insert(T&& value)
     {
         bool already_present;
-        auto it = HashTableType::insert(std::move(value));
+        auto it = HashTableType::insert(std::move(value), already_present);
         return std::make_pair(Iterator(it), already_present);
     }
 
@@ -299,6 +309,17 @@ public:
     inline void shrink_to_fit()
     {
         HashTableType::shrink_to_fit();
+    }
+
+    inline std::string as_string(i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        sstr << "UnorderedSet<" << type_name<T>() << "> with " << size()
+             << " elements:" << std::endl;
+
+        as::IterableStringifier<MyType, T> iter_stringifier;
+        sstr << "<<" << iter_stringifier(*this, verbosity) << ">>";
+        return sstr.str();
     }
 
     inline bool operator == (const UnorderedSetBase& other) const

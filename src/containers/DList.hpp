@@ -41,11 +41,11 @@
 #include <initializer_list>
 #include <iomanip>
 #include <sstream>
-#include <typeinfo>
 
 #include "../basetypes/AurumTypes.hpp"
 #include "../allocators/MemoryManager.hpp"
 #include "../allocators/PoolAllocator.hpp"
+#include "../stringification/Stringifiers.hpp"
 
 #include "DListTypes.hpp"
 
@@ -54,6 +54,7 @@ namespace containers {
 
 namespace aa = aurum::allocators;
 namespace ac = aurum::containers;
+namespace as = aurum::stringification;
 
 template <typename T, bool USEPOOLS>
 class DListBase final : public AurumObject, public Stringifiable<DListBase<T, USEPOOLS> >
@@ -78,6 +79,7 @@ public:
 private:
     typedef dlist_detail_::DListNodeBase NodeBaseType;
     typedef dlist_detail_::DListNode<T> NodeType;
+    typedef aurum::containers::DListBase<T, USEPOOLS> MyType;
 
 public:
     static const u64 sc_node_size;
@@ -1131,27 +1133,16 @@ public:
         return 0;
     }
 
-    std::string to_string(u32 verbosity) const
+    inline std::string as_string(i64 verbosity) const
     {
         std::ostringstream sstr;
+        sstr << (USEPOOLS ? "Pooled " : "Unpooled ") << "DListBase<"
+             << type_name<T>() << "> with " << size() << " elements:"
+             << std::endl;
 
-        if (USEPOOLS) {
-            sstr << "Pooled DListBase<" << typeid(T).name() << "> with " << size()
-                 << " elements:" << std::endl;
-            sstr << "<<" << std::endl;
-        } else {
-            sstr << "Unpooled DListBase<" << typeid(T).name() << "> with " << size()
-                 << " elements:" << std::endl;
-            sstr << "<<" << std::endl;
-        }
+        as::IterableStringifier<MyType, T> iter_stringifier;
+        sstr << "<<" << iter_stringifier(*this, verbosity) << ">>";
 
-        u64 i = 0;
-        for (auto const& elem : *this) {
-            sstr << std::setw(16) << std::setfill(' ') << i++ << " : "
-                 << to_string(elem) << std::endl;
-        }
-
-        sstr << ">>" << std::endl;
         return sstr.str();
     }
 };

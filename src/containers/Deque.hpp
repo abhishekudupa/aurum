@@ -42,14 +42,16 @@
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
-#include <typeinfo>
 
 #include "../basetypes/AurumTypes.hpp"
+#include "../stringification/Stringifiers.hpp"
 
 #include "DequeTypes.hpp"
 
 namespace aurum {
 namespace containers {
+
+namespace as = aurum::stringification;
 
 template <typename T>
 class DequeBase final :
@@ -77,6 +79,8 @@ public:
     typedef ConstReverseIterator const_reverse_iterator;
 
 private:
+    typedef aurum::containers::DequeBase<T> MyType;
+
     // assumes that the object isn't constructed yet
     template <typename InputIterator>
     inline void construct_range(const InputIterator& first,
@@ -573,20 +577,16 @@ public:
         std::reverse(begin(), end());
     }
 
-    std::string to_string(u32 verbosity) const
+    std::string as_string(i64 verbosity) const
     {
         std::ostringstream sstr;
 
-        sstr << "DequeBase<" << typeid(T).name() << "> with "
-             << size() << " elements:" << std::endl << "<<" << std::endl;
-        auto const num_elements = size();
+        sstr << "DequeBase<" << type_name<T>() << "> with "
+             << size() << " elements:" << std::endl << "<<";
 
-        u64 i = 0;
-        for (auto const& elem : *this) {
-            sstr << std::setw(16) << std::setfill(' ') << i++ << " : "
-                 << to_string(elem) << std::endl;
-        }
-        sstr << ">>" << std::endl;
+        as::IterableStringifier<MyType, T> iter_stringifier;
+        sstr << iter_stringifier(*this, verbosity) << ">>";
+
         return sstr.str();
     }
 };

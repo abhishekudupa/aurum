@@ -51,7 +51,8 @@ namespace aurum {
 namespace containers {
 
 template <u64 SIZE>
-class StaticBitSet final : public AurumObject
+class StaticBitSet final : public AurumObject,
+                           public Stringifiable<aurum::containers::StaticBitSet<SIZE> >
 {
 private:
     static constexpr u64 sc_num_bits = SIZE;
@@ -306,15 +307,16 @@ public:
         return sc_num_bits;
     }
 
-    inline std::string to_string() const
+    inline std::string as_string(i64 verbosity) const
     {
         std::ostringstream sstr;
-        sstr << "{\n";
+        sstr << "StaticBitSet<" << SIZE << ">:" << std::endl;
+        sstr << "{" << std::endl;
         for (u64 i = 0; i < sc_num_bits; ++i) {
             if (test(i)) {
-                sstr << " " << i << " -> 1";
+                sstr << " " << i << " -> 1" << std::endl;
             } else {
-                sstr << " " << i << " -> 0";
+                sstr << " " << i << " -> 0" << std::endl;
             }
         }
         sstr << " }";

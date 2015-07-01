@@ -253,9 +253,31 @@ public:
     }
 };
 
+template <typename T>
+class RawHasher<memory::ManagedPointer<T> >
+{
+public:
+    inline u64 operator () (const memory::ManagedPointer<T>& object) const
+    {
+        std::hash<T*> hasher;
+        return hasher(object.get_raw_pointer());
+    }
+};
+
+template <typename T>
+class RawHasher<memory::ManagedConstPointer<T> >
+{
+public:
+    inline u64 operator () (const memory::ManagedConstPointer<T>& object) const
+    {
+        std::hash<const T*> hasher;
+        return hasher(object.get_raw_pointer());
+    }
+};
+
 // Specialization of raw hash for pairs
 template <typename T1, typename T2>
-class RawHasher<std::pair<T1, T2>>
+class RawHasher<std::pair<T1, T2> >
 {
 public:
     inline u64 operator () (const std::pair<T1, T2>& the_pair) const

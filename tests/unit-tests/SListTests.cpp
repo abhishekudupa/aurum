@@ -691,6 +691,14 @@ TYPED_TEST_P(RCSListTest, RefCountableTests)
     list1.clear();
 }
 
+TYPED_TEST_P(u32SListTest, Stringification)
+{
+    typedef TypeParam u32ListType;
+    u32ListType list1 = {5, 4, 3, 2, 1};
+    EXPECT_TRUE((std::string)"Unpooled SListBase<unsigned int> with 5 elements:\n<<5, 4, 3, 2, 1>>" == list1.to_string() ||
+                (std::string)"Pooled SListBase<unsigned int> with 5 elements:\n<<5, 4, 3, 2, 1>>" == list1.to_string());
+}
+
 REGISTER_TYPED_TEST_CASE_P(u32SListTest,
                            Constructor,
                            Assignment,
@@ -701,7 +709,8 @@ REGISTER_TYPED_TEST_CASE_P(u32SListTest,
                            Unique,
                            SortMerge,
                            Reverse,
-                           Relational);
+                           Relational,
+                           Stringification);
 
 REGISTER_TYPED_TEST_CASE_P(RCSListTest, RefCountableTests);
 

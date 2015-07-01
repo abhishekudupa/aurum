@@ -318,11 +318,26 @@ TEST(StdUnorderedMapTest, Performance)
     }
 }
 
+TYPED_TEST_P(UnorderedMapTest, Stringification)
+{
+    typedef TypeParam MapType;
+    MapType the_map;
+
+    the_map[0] = 42;
+    the_map[1] = 43;
+    the_map[2000] = 2042;
+    the_map[42] = 84;
+    the_map[20] = 62;
+
+    EXPECT_EQ((u64)147, the_map.to_string().length());
+}
+
 REGISTER_TYPED_TEST_CASE_P(UnorderedMapTest,
                            Constructor,
                            Assignment,
                            Functional,
-                           Performance);
+                           Performance,
+                           Stringification);
 
 typedef Types<UnifiedUnorderedMap<u64, u64>,
               SegregatedUnorderedMap<u64, u64>,

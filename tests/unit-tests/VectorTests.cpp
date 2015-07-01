@@ -263,5 +263,11 @@ TEST(Vector, Reverse)
     EXPECT_EQ(10u, i);
 }
 
+TEST(Vector, Stringification)
+{
+    u32Vector vec1 = {5, 4, 3, 42, 1};
+    EXPECT_EQ((std::string)"VectorBase<unsigned int> with 5 elements:\n<<5, 4, 3, 42, 1>>", vec1.to_string());
+}
+
 //
 // VectorTests.cpp ends here

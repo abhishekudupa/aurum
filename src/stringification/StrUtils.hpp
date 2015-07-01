@@ -47,6 +47,8 @@
 #include "../containers/Vector.hpp"
 #include "../basetypes/AurumTypes.hpp"
 
+#include "Stringifiers.hpp"
+
 namespace ac = aurum::containers;
 
 namespace aurum {
@@ -148,7 +150,7 @@ public:
         if (istr.get() != EOF) {
             throw StringConversionException((std::string)"Leftover characters in string_cast " +
                                             "of string \"" + the_string + "\" to type: " +
-                                            typeid(T).name());
+                                            type_name<T>());
         }
         return retval;
     }
@@ -311,8 +313,8 @@ populate_tuple(std::tuple<TupleTypes...>& the_tuple,
     } catch (const StringConversionException& e) {
         throw StringConversionException(e.get_exception_info() +
                                         "\nWhen parsing tuple type: " +
-                                        typeid(TheTupleType).name() + ", and while parsing " +
-                                        "value of type: " + typeid(ElemType).name() + " at " +
+                                        type_name<TheTupleType>() + ", and while parsing " +
+                                        "value of type: " + type_name<ElemType>() + " at " +
                                         "tuple index: " + std::to_string(INDEX) + ". Value " +
                                         " string: \"" + split_components[INDEX] + "\".");
 
@@ -351,7 +353,7 @@ public:
                                             "for conversion to a tuple. Expected " +
                                             std::to_string(sizeof...(TupleTypes)) +
                                             " components, but got " +
-                                            to_string(split_components.size()) +
+                                            stringification::to_string(split_components.size()) +
                                             " components.");
         }
 
@@ -402,7 +404,8 @@ public:
                 retval[i] = caster(split_components[i]);
             } catch (const StringConversionException& e) {
                 throw StringConversionException(e.get_exception_info() + "\nWhen parsing " +
-                                                "value of vector type: " + typeid(retval).name() +
+                                                "value of vector type: " +
+                                                type_name<decltype(retval)>() +
                                                 " at index: " + std::to_string(i) +
                                                 ".\nValue string: \"" + the_string + "\".");
             }

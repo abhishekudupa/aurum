@@ -295,6 +295,22 @@ TYPED_TEST_P(UnorderedSetTest, Performance)
     }
 }
 
+TYPED_TEST_P(UnorderedSetTest, Stringification)
+{
+    typedef TypeParam SetType;
+
+    SetType set1;
+    set1.set_deleted_value(gc_deleted_value);
+    set1.set_nonused_value(gc_nonused_value);
+    set1.insert(32);
+    set1.insert(54);
+    set1.insert(42);
+    set1.insert(1);
+    set1.insert(10);
+
+    EXPECT_EQ((u64)66, set1.to_string().length());
+}
+
 TEST(StdUnorderedSetTest, Performance)
 {
     std::unordered_set<u64> std_set;
@@ -321,7 +337,8 @@ REGISTER_TYPED_TEST_CASE_P(UnorderedSetTest,
                            Constructor,
                            Assignment,
                            Functional,
-                           Performance);
+                           Performance,
+                           Stringification);
 
 typedef Types<UnifiedUnorderedSet<u64>,
               SegregatedUnorderedSet<u64>,

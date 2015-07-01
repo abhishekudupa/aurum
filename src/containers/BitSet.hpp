@@ -113,7 +113,7 @@ public:
 
     u64 size() const;
     void resize_and_clear(u64 new_num_bits);
-    std::string to_string(u32 verbosity) const;
+    std::string as_string(i64 verbosity) const;
 };
 
 } /* end namespace containers */

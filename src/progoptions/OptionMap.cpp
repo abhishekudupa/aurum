@@ -115,7 +115,7 @@ const OptionValueRef& OptionMap::find(const std::string& option_name) const
 
 const OptionValueRef& OptionMap::find(u64 option_position) const
 {
-    std::string index_string = positional_option_prefix_ + to_string(option_position);
+    std::string index_string = positional_option_prefix_ + std::to_string(option_position);
     return find(index_string);
 }
 

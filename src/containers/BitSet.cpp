@@ -346,7 +346,7 @@ u64 BitSet::size() const
     return m_num_bits;
 }
 
-std::string BitSet::to_string(u32 verbosity) const
+std::string BitSet::as_string(i64 verbosity) const
 {
     std::ostringstream sstr;
     sstr << "BitSet with " << m_num_bits << " bits: " << std::endl;
