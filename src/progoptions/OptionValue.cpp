@@ -70,6 +70,11 @@ bool OptionValueBase::has_implicit_value() const
     return m_has_implicit_value;
 }
 
+const std::string& OptionValueBase::get_separator() const
+{
+    return m_separator;
+}
+
 bool OptionValueBase::has_been_stored_to() const
 {
     return m_has_been_stored_to;
@@ -144,6 +149,7 @@ OptionValueBase* OptionValueBase::positional()
                                      "also be multitoken.");
     }
     m_is_positional = true;
+    return this;
 }
 
 const std::string& OptionValueBase::get_textual_default_value() const

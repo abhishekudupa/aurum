@@ -40,6 +40,8 @@
 #include "../basetypes/AurumTypes.hpp"
 #include "../containers/UnorderedMap.hpp"
 
+#include "ProgramOptions.hpp"
+
 namespace aurum {
 namespace program_options {
 
@@ -48,8 +50,6 @@ class ProgramOptions;
 namespace parsers {
 
 namespace ac = aurum::containers;
-
-typedef ac::UnifiedUnorderedMap<std::string, std::string> ParseMap;
 
 // First escape processing is done, after which shell expansion is applied
 extern void parse_command_line(int argc, char* argv[],

@@ -54,6 +54,11 @@ OptionMap::~OptionMap()
     // Nothing here
 }
 
+u64 OptionMap::size() const
+{
+    return m_option_map.size();
+}
+
 void OptionMap::insert(const std::string& option_name, const OptionValueRef& option_value)
 {
     m_option_map[option_name] = option_value;
@@ -115,7 +120,7 @@ const OptionValueRef& OptionMap::find(const std::string& option_name) const
 
 const OptionValueRef& OptionMap::find(u64 option_position) const
 {
-    std::string index_string = positional_option_prefix_ + std::to_string(option_position);
+    std::string index_string = gc_positional_option_prefix_ + std::to_string(option_position);
     return find(index_string);
 }
 

@@ -52,7 +52,14 @@ namespace program_options {
 
 namespace ac = aurum::containers;
 
-extern const std::string positional_option_prefix_;
+// forward declaration
+namespace parsers {
+
+typedef ac::UnifiedUnorderedMap<std::string, ac::Vector<std::string> > ParseMap;
+
+} /* end namespace parsers */
+
+extern const std::string gc_positional_option_prefix_;
 
 namespace detail {
 
@@ -95,6 +102,14 @@ private:
     DescriptionMap m_description_map;
     ac::Vector<u32> m_anon_option_values;
     u64 m_next_positional_option;
+    u64 m_num_specified_options_parsed;
+    u64 m_num_unspecified_options_parsed;
+    ac::UnifiedUnorderedMap<std::string, ac::Vector<std::string> > m_unspecified_options;
+    const ac::Vector<std::string> m_empty_string_vector;
+
+    // helper functions
+    inline void store_options_from_parse_map(const parsers::ParseMap& parse_map,
+                                             bool allow_unspecified_options);
 
 public:
     typedef OptionMap::ConstIterator Iterator;
@@ -116,13 +131,31 @@ public:
     Iterator begin() const;
     Iterator end() const;
 
-    void parse_command_line(int argc, char* argv[]);
+    void parse_command_line(int argc, char* argv[],
+                            bool allow_unspecified_options = true,
+                            bool process_escapes = true);
+    void parse_config_file(const std::string& config_file_name,
+                           bool allow_unspecified_options = true,
+                           bool do_shell_expansion = true,
+                           bool process_escapes = true);
+    void parse_option_string(const std::string& option_string,
+                             bool allow_unspecified_options = true,
+                             bool do_shell_expansion = true,
+                             bool process_escapes = true);
 
     void get_descriptions(std::ostream& out) const;
     std::string get_descriptions() const;
 
     std::string get_description(const std::string& option_name) const;
     std::string get_description(u64 option_position) const;
+
+    u64 get_num_specified_options_parsed() const;
+
+    u64 get_num_unspecified_options_parsed() const;
+    const ac::Vector<std::string>&
+    get_unspecified_option_value(const std::string& option_name) const;
+    const ac::Vector<std::string>&
+    get_unspecified_option_value(u64 option_position) const;
 };
 
 extern std::ostream& operator << (std::ostream& out, const ProgramOptions& prog_options);

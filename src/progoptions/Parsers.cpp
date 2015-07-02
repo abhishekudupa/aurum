@@ -40,9 +40,9 @@
 
 #include "../stringification/StrUtils.hpp"
 #include "../allocators/MemoryManager.hpp"
+#include "../shell/ShellUtils.hpp"
 
 #include "Parsers.hpp"
-#include "ProgramOptions.hpp"
 #include "ProgramOptionException.hpp"
 
 namespace aurum {
@@ -217,6 +217,24 @@ parse_value(const ac::Vector<std::string>::iterator& token_iterator,
     auto cur_iter = token_iterator;
     auto option_value = program_options.find(option_name);
 
+    if (option_value == OptionValueRef::null_pointer) {
+        // unspecified option. just parse until we hit another
+        // option
+        ++cur_iter;
+        std::ostringstream sstr;
+        while (!strutils::begins_with(*cur_iter, "--") &&
+               !strutils::begins_with(*cur_iter, "-")) {
+            if (sstr.str().length() > 0) {
+                sstr << " " << *cur_iter;
+            } else {
+                sstr << *cur_iter;
+            }
+            ++cur_iter;
+        }
+        parsed_value = sstr.str();
+        return cur_iter;
+    }
+
     if (option_value->has_implicit_value()) {
         auto const& next_token = *(cur_iter + 1);
         if (strutils::begins_with(next_token, "--") ||
@@ -231,17 +249,33 @@ parse_value(const ac::Vector<std::string>::iterator& token_iterator,
         auto const& next_token = *cur_iter;
         if (strutils::begins_with(next_token, "--") ||
             strutils::begins_with(next_token, "-")) {
-            throw ProgramOptionException((std::string)"Option \"" + option_name + "\" requires " +
-                                         "an argument, but no argument was provided.");
+            throw ProgramOptionException((std::string)"Option \"" + option_name + "\"" +
+                                         "requires an argument, but no argument was provided.");
         }
         parsed_value = *cur_iter;
         return (++cur_iter);
     } else {
+        ++cur_iter;
         std::ostringstream sstr;
+        auto const& separator = option_value->get_separator();
         while (!strutils::begins_with(*cur_iter, "--") &&
                !strutils::begins_with(*cur_iter, "-")) {
-
+            auto&& split_components = strutils::split(*cur_iter, separator);
+            for (auto const& component : split_components) {
+                if (sstr.str().length() > 0) {
+                    sstr << "," << component;
+                } else {
+                    sstr << component;
+                }
+            }
         }
+        if (sstr.str().length() == 0) {
+            throw ProgramOptionException((std::string)"Option \"" + option_name + "\" " +
+                                         "requires an arguments, but no arguments were " +
+                                         "provided.");
+        }
+        parsed_value = sstr.str();
+        return cur_iter;
     }
 }
 
@@ -253,7 +287,6 @@ void parse_option_string(const std::string& option_string,
 {
     auto&& option_tokens = tokenize_option_string(option_string);
 
-    std::string current_option;
     u64 next_positional_option = 1;
 
     auto token_iter = option_tokens.begin();
@@ -264,9 +297,33 @@ void parse_option_string(const std::string& option_string,
 
         if (strutils::begins_with(current_token, "--") ||
             strutils::begins_with(current_token, "-")) {
-
+            std::string parsed_value;
+            token_iter = parse_value(token_iter, current_token, program_options, parsed_value);
+            parse_map[current_token].push_back(parsed_value);
+        } else {
+            std::string option_name = gc_positional_option_prefix_ +
+                std::to_string(next_positional_option++);
+            parse_map[option_name].push_back(current_token);
+            ++token_iter;
         }
     }
+    // do shell expansions first
+    // followed by escape processing
+    if (do_shell_expansion) {
+        for (auto& option_value_pair : parse_map) {
+            for (auto& option_value : option_value_pair.second) {
+                option_value = shell::apply_shell_expansion(option_value);
+            }
+        }
+    }
+    if (do_escape_processing) {
+        for (auto& option_value_pair : parse_map) {
+            for (auto& option_value : option_value_pair.second) {
+                option_value = process_escapes(option_value);
+            }
+        }
+    }
+    return;
 }
 
 } /* end namespace parsers */

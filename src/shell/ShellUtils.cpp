@@ -165,7 +165,8 @@ execute_command(const ac::Vector<std::string>& command_line)
             auto const select_status = select(maxfd, &select_fds, nullptr, nullptr, nullptr);
 
             if (select_status < 0) {
-                throw AurumException((std::string)"select() system call failed in execute_command()");
+                throw AurumException((std::string)"select() system call failed in " +
+                                     "execute_command()");
             }
 
             bool out_has_data = FD_ISSET(stdout_read_fd, &select_fds);
@@ -175,7 +176,8 @@ execute_command(const ac::Vector<std::string>& command_line)
                 auto const bytes_read = read(stdout_read_fd, read_buffer, read_block_size - 1);
 
                 if (bytes_read < 0) {
-                    throw AurumException((std::string)"read() system call failed in execute_command()");
+                    throw AurumException((std::string)"read() system call failed in " +
+                                         "execute_command()");
                 }
 
                 read_buffer[bytes_read] = 0;
@@ -190,7 +192,8 @@ execute_command(const ac::Vector<std::string>& command_line)
                 auto const bytes_read = read(stderr_read_fd, read_buffer, read_block_size - 1);
 
                 if (bytes_read < 0) {
-                    throw AurumException((std::string)"read() system call failed in execute_command()");
+                    throw AurumException((std::string)"read() system call failed in " +
+                                         "execute_command()");
                 }
 
                 read_buffer[bytes_read] = 0;

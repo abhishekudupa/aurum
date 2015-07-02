@@ -86,6 +86,7 @@ public:
     bool is_required() const;
     bool has_default_value() const;
     bool has_implicit_value() const;
+    const std::string& get_separator() const;
     bool has_been_stored_to() const;
     bool is_multitoken() const;
     bool is_positional() const;

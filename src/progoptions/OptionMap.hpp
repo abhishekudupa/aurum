@@ -66,6 +66,8 @@ public:
     OptionMap();
     ~OptionMap();
 
+    u64 size() const;
+
     const OptionValueRef& operator [] (const std::string& option_name) const;
     const OptionValueRef& operator [] (const u64 option_position) const;
     const OptionValueRef& find(const std::string& option_name) const;

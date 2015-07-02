@@ -40,11 +40,12 @@
 #include <sstream>
 
 #include "ProgramOptions.hpp"
+#include "Parsers.hpp"
 
 namespace aurum {
 namespace program_options {
 
-const std::string positional_option_prefix_("__@position_");
+const std::string gc_positional_option_prefix_("__@position_");
 
 namespace detail {
 
@@ -150,7 +151,8 @@ std::ostream& operator << (std::ostream& out, const OptionDescription& option_de
 } /* end namespace detail */
 
 ProgramOptions::ProgramOptions()
-    : OptionMap(), m_anon_option_values(), m_next_positional_option((u64)0)
+    : OptionMap(), m_anon_option_values(), m_next_positional_option((u64)0),
+      m_num_specified_options_parsed(0), m_num_unspecified_options_parsed(0)
 {
     // Nothing here
 }
@@ -177,6 +179,7 @@ void ProgramOptions::add_option(const std::string& full_name, const std::string&
     }
 
     auto actual_value = option_value;
+
     if (actual_value == OptionValueRef::null_pointer) {
         m_anon_option_values.push_back(0);
         auto val_ptr = static_cast<bool*>(static_cast<void*>(&(m_anon_option_values.back())));
@@ -203,7 +206,7 @@ void ProgramOptions::add_positional_option(const std::string& full_name,
         throw ProgramOptionException((std::string)"ProgramOptions::add_positional_option() : " +
                                      "Duplicate option \"" + full_name + "\" added.");
     }
-    std::string positional_name = positional_option_prefix_ + std::to_string(option_position);
+    std::string positional_name = gc_positional_option_prefix_ + std::to_string(option_position);
 
     m_description_map[full_name] = detail::OptionDescription(full_name, option_position,
                                                              option_description);
@@ -250,7 +253,7 @@ std::string ProgramOptions::get_description(const std::string& option_name) cons
 
 std::string ProgramOptions::get_description(u64 option_position) const
 {
-    std::string search_string = positional_option_prefix_ + std::to_string(option_position);
+    std::string search_string = gc_positional_option_prefix_ + std::to_string(option_position);
     auto it = m_description_map.find(search_string);
     if (it == m_description_map.end()) {
         return (std::string)"No description available for option at position " +
@@ -258,6 +261,113 @@ std::string ProgramOptions::get_description(u64 option_position) const
     } else {
         return it->second.to_string();
     }
+}
+
+inline void ProgramOptions::store_options_from_parse_map(const parsers::ParseMap& parse_map,
+                                                         bool allow_unspecified_options)
+{
+    for (auto const& parse_entry : parse_map) {
+        auto const& option_name = parse_entry.first;
+        auto const& option_value = OptionMap::find(option_name);
+        auto const& parsed_value = parse_entry.second;
+
+        if (option_value == OptionValueRef::null_pointer) {
+            if (!allow_unspecified_options) {
+                throw ProgramOptionException((std::string)"Unknown option: \"" + option_name +
+                                             "\" encountered while parsing options");
+            }
+            m_unspecified_options[option_name] = parsed_value;
+            m_num_unspecified_options_parsed++;
+            continue;
+        }
+
+        if (option_value->is_multitoken()) {
+            std::ostringstream sstr;
+            for (auto const& parsed_value_comp : parsed_value) {
+                if (sstr.str().length() > 0) {
+                    sstr << option_value->get_separator() << parsed_value_comp;
+                } else {
+                    sstr << parsed_value_comp;
+                }
+            }
+
+            try {
+                option_value->store(sstr.str());
+            } catch (const AurumException& e) {
+                throw ProgramOptionException(e.get_exception_info() + "\nWhen parsing value " +
+                                             "for option \"" + option_name + "\"");
+            }
+            m_num_specified_options_parsed++;
+
+        } else {
+            if (parsed_value.size() > 1) {
+                throw ProgramOptionException((std::string)"Multiple values given for option \"" +
+                                             option_name + "\" which cannot accept multiple " +
+                                             "values.");
+            }
+            option_value->store(parsed_value[0]);
+            m_num_specified_options_parsed++;
+        }
+    }
+}
+
+void ProgramOptions::parse_command_line(int argc, char *argv[],
+                                        bool allow_unspecified_options,
+                                        bool process_escapes)
+{
+    parsers::ParseMap parse_map;
+    parsers::parse_command_line(argc, argv, *this, parse_map, process_escapes);
+    store_options_from_parse_map(parse_map, allow_unspecified_options);
+}
+
+void ProgramOptions::parse_config_file(const std::string& config_file_name,
+                                       bool allow_unspecified_options,
+                                       bool do_shell_expansion,
+                                       bool process_escapes)
+{
+    parsers::ParseMap parse_map;
+    parsers::parse_config_file(config_file_name, *this, parse_map,
+                               do_shell_expansion, process_escapes);
+    store_options_from_parse_map(parse_map, allow_unspecified_options);
+}
+
+void ProgramOptions::parse_option_string(const std::string& option_string,
+                                         bool allow_unspecified_options,
+                                         bool do_shell_expansion,
+                                         bool process_escapes)
+{
+    parsers::ParseMap parse_map;
+    parsers::parse_option_string(option_string, *this, parse_map,
+                                 process_escapes, do_shell_expansion);
+    store_options_from_parse_map(parse_map, allow_unspecified_options);
+}
+
+u64 ProgramOptions::get_num_specified_options_parsed() const
+{
+    return m_num_specified_options_parsed;
+}
+
+u64 ProgramOptions::get_num_unspecified_options_parsed() const
+{
+    return m_num_unspecified_options_parsed;
+}
+
+const ac::Vector<std::string>&
+ProgramOptions::get_unspecified_option_value(const std::string& option_name) const
+{
+    auto it = m_unspecified_options.find(option_name);
+    if (it == m_unspecified_options.end()) {
+        return m_empty_string_vector;
+    } else {
+        return it->second;
+    }
+}
+
+const ac::Vector<std::string>&
+ProgramOptions::get_unspecified_option_value(u64 option_position) const
+{
+    return get_unspecified_option_value(gc_positional_option_prefix_ +
+                                        std::to_string(option_position));
 }
 
 std::ostream& operator << (std::ostream& out, const ProgramOptions& prog_options)
