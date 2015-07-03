@@ -180,13 +180,13 @@ static inline std::string get_next_token(const std::string& the_string,
     }
 
     if (the_string[current_offset] == '\"') {
-        return read_until_end_quote(the_string, current_offset, new_offset);
+        return read_until_end_quote(the_string, current_offset + 1, new_offset);
     } else {
         new_offset = strutils::find_next_whitespace(the_string, current_offset);
         if (new_offset == current_offset) {
             return "";
         }
-        return the_string.substr(current_offset, new_offset - current_offset - 1);
+        return the_string.substr(current_offset, new_offset - current_offset);
     }
 }
 
