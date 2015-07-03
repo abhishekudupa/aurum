@@ -67,9 +67,8 @@ static inline std::string process_escapes(const std::string& the_string)
             case '\'': sstr << '\''; break;
             case '\"': sstr << '\"'; break;
             case ' ' : sstr << ' '; break;
-            default:
-                throw ProgramOptionException((std::string)"Bad escaped character: \'\\" +
-                                             cur_char + "\' in option string");
+            // we allow ANY character to be escaped
+            default: sstr << cur_char; break;
             }
         } else if (cur_char == '\\') {
             in_escaped_state = true;
@@ -210,63 +209,77 @@ static inline ac::Vector<std::string> tokenize_option_string(const std::string& 
 
 ac::Vector<std::string>::iterator
 parse_value(const ac::Vector<std::string>::iterator& token_iterator,
+            const ac::Vector<std::string>::iterator& tokens_end,
             const std::string& option_name,
             const ProgramOptions& program_options,
             std::string& parsed_value)
 {
     auto cur_iter = token_iterator;
     auto option_value = program_options.find(option_name);
+    parsed_value = "";
 
     if (option_value == OptionValueRef::null_pointer) {
         // unspecified option. just parse until we hit another
         // option
-        ++cur_iter;
         std::ostringstream sstr;
-        while (!strutils::begins_with(*cur_iter, "--") &&
+
+        while (++cur_iter != tokens_end &&
+               !strutils::begins_with(*cur_iter, "--") &&
                !strutils::begins_with(*cur_iter, "-")) {
             if (sstr.str().length() > 0) {
                 sstr << " " << *cur_iter;
             } else {
                 sstr << *cur_iter;
             }
-            ++cur_iter;
         }
         parsed_value = sstr.str();
         return cur_iter;
     }
 
     if (option_value->has_implicit_value()) {
-        auto const& next_token = *(cur_iter + 1);
-        if (strutils::begins_with(next_token, "--") ||
-            strutils::begins_with(next_token, "-")) {
+        if (cur_iter + 1 == tokens_end ||
+            strutils::begins_with(*(cur_iter + 1), "--") ||
+            strutils::begins_with(*(cur_iter + 1), "-")) {
             parsed_value = option_value->get_textual_implicit_value();
-            return (++cur_iter);
         }
+        return (++cur_iter);
     }
 
     if (!option_value->is_multitoken()) {
         ++cur_iter;
-        auto const& next_token = *cur_iter;
-        if (strutils::begins_with(next_token, "--") ||
-            strutils::begins_with(next_token, "-")) {
+        if (cur_iter == tokens_end ||
+            strutils::begins_with(*cur_iter, "--") ||
+            strutils::begins_with(*cur_iter, "-")) {
             throw ProgramOptionException((std::string)"Option \"" + option_name + "\"" +
                                          "requires an argument, but no argument was provided.");
         }
         parsed_value = *cur_iter;
         return (++cur_iter);
     } else {
-        ++cur_iter;
         std::ostringstream sstr;
-        auto const& separator = option_value->get_separator();
-        while (!strutils::begins_with(*cur_iter, "--") &&
+        // auto const& separator = option_value->get_separator();
+        while (++cur_iter != tokens_end &&
+               !strutils::begins_with(*cur_iter, "--") &&
                !strutils::begins_with(*cur_iter, "-")) {
-            auto&& split_components = strutils::split(*cur_iter, separator);
-            for (auto const& component : split_components) {
+
+            if (strutils::begins_with(*cur_iter, "\"")) {
+                // assume that quoted strings are one token!
                 if (sstr.str().length() > 0) {
-                    sstr << "," << component;
+                    sstr << "," << *cur_iter;
                 } else {
-                    sstr << component;
+                    sstr << *cur_iter;
                 }
+            } else {
+
+                // audupa: TODO: Fix me
+                // auto&& split_components = strutils::split(*cur_iter, separator);
+                // for (auto const& component : split_components) {
+                //     if (sstr.str().length() > 0 && !strutils::ends_with(component, separator)) {
+                //         sstr << "," << component;
+                //     } else {
+                //         sstr << component;
+                //     }
+                // }
             }
         }
         if (sstr.str().length() == 0) {
@@ -278,6 +291,7 @@ parse_value(const ac::Vector<std::string>::iterator& token_iterator,
         return cur_iter;
     }
 }
+
 
 void parse_option_string(const std::string& option_string,
                          const ProgramOptions& program_options,
@@ -298,7 +312,8 @@ void parse_option_string(const std::string& option_string,
         if (strutils::begins_with(current_token, "--") ||
             strutils::begins_with(current_token, "-")) {
             std::string parsed_value;
-            token_iter = parse_value(token_iter, current_token, program_options, parsed_value);
+            token_iter = parse_value(token_iter, tokens_end, current_token,
+                                     program_options, parsed_value);
             parse_map[current_token].push_back(parsed_value);
         } else {
             std::string option_name = gc_positional_option_prefix_ +

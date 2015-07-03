@@ -53,6 +53,7 @@
 #include <exception>
 #include <utility>
 #include <functional>
+#include <tuple>
 
 namespace aurum {
 

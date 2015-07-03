@@ -74,11 +74,34 @@ static inline i64 find_first_match_internal(const std::string& the_string,
 
     auto position = start_offset;
 
-    while (position + pat_length < str_length) {
+    while (position + pat_length <= str_length) {
         if (match_on_position(the_string, pattern, str_length,
                               pat_length, position, case_insensitive)) {
             return position;
         }
+        ++position;
+    }
+    return INT64_MAX;
+}
+
+static inline i64 find_first_unescaped_match_internal(const std::string& the_string,
+                                                      char pattern, i64 start_offset)
+{
+    auto const str_length = the_string.length();
+
+    u64 position = start_offset;
+    bool is_escaped = false;
+    while (position < str_length) {
+        if (!is_escaped) {
+            if (the_string[position] == pattern) {
+                return position;
+            } else if (the_string[position] == '\\') {
+                is_escaped = true;
+            }
+        } else {
+            is_escaped = false;
+        }
+        ++position;
     }
     return INT64_MAX;
 }
@@ -102,7 +125,43 @@ static inline i64 find_last_match_internal(const std::string& the_string,
     return INT64_MIN;
 }
 
+static inline bool is_character_escaped(const std::string& the_string,
+                                        i64 char_offset)
+{
+    if (char_offset == 0) {
+        return false;
+    } else if (char_offset == 1) {
+        if (the_string[0] != '\\') {
+            return false;
+        } else {
+            return true;
+        }
+    } else {
+        // char_offset >= 2
+        if (the_string[char_offset - 1] == '\\' &&
+            the_string[char_offset - 2] != '\\') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
 
+static inline i64 find_last_unescaped_match_internal(const std::string& the_string,
+                                                     char pattern, i64 start_offset)
+{
+    auto const str_length = the_string.length();
+
+    auto position = std::min((i64)str_length - 1, start_offset);
+    while (position >= 0) {
+        bool is_escaped = is_character_escaped(the_string, position);
+        if (!is_escaped && the_string[position] == pattern) {
+            return position;
+        }
+        --position;
+    }
+    return INT64_MIN;
+}
 
 i64 find_first_match(const std::string& the_string,
                      const std::string& pattern,
@@ -130,6 +189,18 @@ i64 ifind_last_match(const std::string& the_string,
                      i64 start_offset)
 {
     return find_last_match_internal(the_string, pattern, start_offset, true);
+}
+
+i64 find_first_unescaped_match(const std::string& the_string,
+                               char pattern, i64 start_offset)
+{
+    return find_first_unescaped_match_internal(the_string, pattern, start_offset);
+}
+
+i64 find_last_unescaped_match(const std::string& the_string,
+                              char pattern, i64 start_offset)
+{
+    return find_last_unescaped_match_internal(the_string, pattern, start_offset);
 }
 
 void reverse(std::string& the_string)
@@ -196,16 +267,33 @@ ac::Vector<std::string> split(const std::string& the_string,
     ac::Vector<std::string> retval;
 
     u64 current_offset = 0;
-    u64 prev_match_pos = 0;
 
     while (current_offset < str_len) {
         auto sep_match_pos = find_first_match(the_string, separator, current_offset);
         // compress successive matches of separator
-        if (sep_match_pos - prev_match_pos > 0) {
-            retval.push_back(the_string.substr(prev_match_pos, sep_match_pos - prev_match_pos));
+        if (sep_match_pos - current_offset > 0) {
+            retval.push_back(the_string.substr(current_offset, sep_match_pos - current_offset));
         }
         current_offset = sep_match_pos + sep_len;
-        prev_match_pos = current_offset;
+    }
+    return retval;
+}
+
+ac::Vector<std::string> split_on_unescaped(const std::string& the_string,
+                                           char separator)
+{
+    auto const str_len = the_string.length();
+
+    ac::Vector<std::string> retval;
+
+    u64 current_offset = 0;
+
+    while (current_offset < str_len) {
+        auto sep_match_pos = find_first_unescaped_match(the_string, separator, current_offset);
+        if (sep_match_pos - current_offset > 0) {
+            retval.push_back(the_string.substr(current_offset, sep_match_pos - current_offset));
+        }
+        current_offset = sep_match_pos + 1;
     }
     return retval;
 }

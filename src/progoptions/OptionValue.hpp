@@ -72,11 +72,11 @@ protected:
     bool m_has_implicit_value;
     std::string m_textual_implicit_value;
     bool m_has_been_stored_to;
-    // separator for multitoken strings
-    // default is to use a comma
     bool m_is_multitoken;
     bool m_is_positional;
-    std::string m_separator;
+    // separator for multitoken strings
+    // default is to use a comma
+    char m_separator;
 
 public:
     OptionValueBase();
@@ -86,7 +86,7 @@ public:
     bool is_required() const;
     bool has_default_value() const;
     bool has_implicit_value() const;
-    const std::string& get_separator() const;
+    char get_separator() const;
     bool has_been_stored_to() const;
     bool is_multitoken() const;
     bool is_positional() const;
@@ -94,7 +94,7 @@ public:
     OptionValueBase* required();
     OptionValueBase* default_value(const std::string& textual_default_value);
     OptionValueBase* implicit_value(const std::string& textual_implicit_value);
-    OptionValueBase* separator(const std::string& separator);
+    OptionValueBase* separator(char separator);
     OptionValueBase* multitoken();
     OptionValueBase* positional();
 
@@ -103,6 +103,7 @@ public:
     const std::string& get_textual_value() const;
 
     virtual void store(const std::string& textual_value) = 0;
+    virtual void store(const ac::Vector<std::string>& textual_values) = 0;
 
     template <typename TargetType>
     inline TargetType get_value() const
@@ -155,6 +156,24 @@ protected:
         m_has_been_stored_to = true;
     }
 
+    template <typename CastType>
+    inline void do_store(const ac::Vector<std::string>& textual_values)
+    {
+        if (textual_values.size() != 1) {
+            throw ProgramOptionException((std::string)"Called do_store on scalar type " +
+                                         "with more than one value string");
+        }
+        strutils::StringCaster<CastType> caster;
+        try {
+            *m_storage_ptr = caster(textual_values[0]);
+        } catch (const AurumException& e) {
+            rethrow_storage_exception(e);
+        }
+        run_local_check();
+        m_has_been_stored_to = true;
+    }
+
+
 public:
     inline OptionValueImpl(ValueType* storage_ptr)
         : OptionValueBase(),
@@ -193,6 +212,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <>
@@ -203,6 +223,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <>
@@ -213,6 +234,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <>
@@ -223,6 +245,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <>
@@ -233,6 +256,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <>
@@ -243,6 +267,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <>
@@ -253,6 +278,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <>
@@ -263,6 +289,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <>
@@ -273,6 +300,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <>
@@ -283,6 +311,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <>
@@ -293,6 +322,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <>
@@ -303,6 +333,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <typename T1, typename T2>
@@ -320,6 +351,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <typename... TupleTypes>
@@ -338,6 +370,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <typename ElemType>
@@ -355,6 +388,7 @@ public:
     virtual ~OptionValue();
 
     virtual void store(const std::string& textual_value) override;
+    virtual void store(const ac::Vector<std::string>& textual_values) override;
 };
 
 template <typename ValueType>
@@ -385,6 +419,23 @@ inline void OptionValue<std::pair<T1, T2> >::store(const std::string& textual_va
     this->m_has_been_stored_to = true;
 }
 
+template <typename T1, typename T2>
+inline void OptionValue<std::pair<T1, T2> >::store(const ac::Vector<std::string> &textual_values)
+{
+    if (textual_values.size() != 2) {
+        throw ProgramOptionException((std::string)"Incorrect number of values in store() to " +
+                                     "a pair OptionValue.");
+    }
+    try {
+        strutils::StringCaster<T1> caster1;
+        strutils::StringCaster<T2> caster2;
+        *(this->m_storage_ptr) = std::make_pair(caster1(textual_values[0]),
+                                                caster2(textual_values[1]));
+    } catch (const strutils::StringConversionException& e) {
+        this->rethrow_storage_exception(e);
+    }
+}
+
 template <typename... TupleTypes>
 inline void OptionValue<std::tuple<TupleTypes...> >::store(const std::string& textual_value)
 {
@@ -398,9 +449,49 @@ inline void OptionValue<std::tuple<TupleTypes...> >::store(const std::string& te
     this->m_has_been_stored_to = true;
 }
 
+namespace detail_ {
+
+template <u64 INDEX, typename... TupleTypes>
+inline typename std::enable_if<INDEX == sizeof...(TupleTypes), void>::type
+populate_tuple(std::tuple<TupleTypes...>& the_tuple,
+               const ac::Vector<std::string>& textual_values)
+{
+    return;
+}
+
+template <u64 INDEX, typename... TupleTypes>
+inline typename std::enable_if<INDEX != sizeof...(TupleTypes), void>::type
+populate_tuple(std::tuple<TupleTypes...>& the_tuple,
+               const ac::Vector<std::string>& textual_values)
+{
+    typedef std::tuple<TupleTypes...> TheTupleType;
+    typedef typename std::tuple_element<INDEX, TheTupleType>::type ElemType;
+    strutils::StringCaster<ElemType> caster;
+
+    std::get<INDEX>(the_tuple) = caster(textual_values[INDEX]);
+
+    populate_tuple<INDEX+1, TupleTypes...>(the_tuple, textual_values);
+}
+
+} /* end namespace detail_ */
+
+template <typename... TupleTypes>
+inline void
+OptionValue<std::tuple<TupleTypes...> >::store(const ac::Vector<std::string>& textual_values)
+{
+    if (textual_values.size() != sizeof...(TupleTypes)) {
+        throw ProgramOptionException((std::string)"Incorrect number of values in store() to " +
+                                     "a tuple OptionValue.");
+    }
+    detail_::populate_tuple<0, TupleTypes...>(*(this->m_storage_ptr), textual_values);
+    this->run_local_check();
+    this->m_has_been_stored_to = true;
+}
+
 template <typename ElemType>
 inline void OptionValue<ac::Vector<ElemType> >::store(const std::string& textual_value)
 {
+    this->m_storage_ptr->clear();
     try {
         strutils::StringCaster<ac::Vector<ElemType> > caster;
         *(this->m_storage_ptr) = caster(textual_value, this->m_separator);
@@ -408,6 +499,22 @@ inline void OptionValue<ac::Vector<ElemType> >::store(const std::string& textual
         this->rethrow_storage_exception(e);
     }
 
+    this->run_local_check();
+    this->m_has_been_stored_to = true;
+}
+
+template <typename ElemType>
+inline void OptionValue<ac::Vector<ElemType> >::store(const ac::Vector<std::string>& textual_values)
+{
+    this->m_storage_ptr->clear();
+    strutils::StringCaster<ElemType> caster;
+    try {
+        for (auto const& textual_value : textual_values) {
+            this->m_storage_ptr->push_back(caster(textual_value));
+        }
+    } catch (const AurumException& e) {
+        this->rethrow_storage_exception(e);
+    }
     this->run_local_check();
     this->m_has_been_stored_to = true;
 }
@@ -461,6 +568,24 @@ OptionValue<ac::Vector<ElemType> >::OptionValue(ValueType* storage_ptr,
     : BaseType(storage_ptr, local_option_checker)
 {
     this->multitoken();
+}
+
+template <typename ElemType>
+inline OptionValue<ac::Vector<ElemType> >::~OptionValue()
+{
+    // Nothing here
+}
+
+template <typename T1, typename T2>
+inline OptionValue<std::pair<T1, T2> >::~OptionValue()
+{
+    // Nothing here
+}
+
+template <typename... TupleTypes>
+inline OptionValue<std::tuple<TupleTypes...> >::~OptionValue()
+{
+    // Nothing here
 }
 
 } /* end namespace program_options */

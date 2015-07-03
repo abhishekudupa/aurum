@@ -44,6 +44,7 @@
 
 #include "../basetypes/AurumTypes.hpp"
 #include "../containers/UnorderedMap.hpp"
+#include "../containers/OrderedMap.hpp"
 
 #include "OptionMap.hpp"
 
@@ -98,7 +99,7 @@ extern std::ostream& operator << (std::ostream& out,
 class ProgramOptions : private OptionMap
 {
 private:
-    typedef ac::UnifiedUnorderedMap<std::string, detail::OptionDescription> DescriptionMap;
+    typedef ac::OrderedMap<std::string, detail::OptionDescription> DescriptionMap;
     DescriptionMap m_description_map;
     ac::Vector<u32> m_anon_option_values;
     u64 m_next_positional_option;

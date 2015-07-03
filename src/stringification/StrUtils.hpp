@@ -102,6 +102,11 @@ extern i64 ifind_last_match(const std::string& the_string,
                             const std::string& pattern,
                             i64 start_offset = INT64_MAX);
 
+extern i64 find_first_unescaped_match(const std::string& the_string,
+                                      char pattern, i64 start_offset = 0);
+extern i64 find_last_unescaped_match(const std::string& the_string,
+                                     char pattern, i64 start_offset = 0);
+
 extern void reverse(std::string& the_string);
 extern std::string reverse_copy(const std::string& the_string);
 
@@ -110,6 +115,9 @@ extern std::string trim_copy(const std::string& the_string);
 
 extern ac::Vector<std::string> split(const std::string& the_string,
                                      const std::string& separator);
+
+extern ac::Vector<std::string> split_on_unescaped(const std::string& the_string,
+                                                  char separator);
 
 extern bool begins_with(const std::string& the_string,
                         const std::string& pattern);
@@ -142,7 +150,7 @@ class StringCaster
 {
 public:
     inline T operator () (const std::string& the_string,
-                          const std::string& separator = "") const
+                          char separator = ',') const
     {
         std::istringstream istr(the_string);
         T retval;
@@ -161,7 +169,7 @@ class StringCaster<bool>
 {
 public:
     inline bool operator () (const std::string& the_string,
-                             const std::string& separator = "") const
+                             char separator = ',') const
     {
         auto&& local_string = trim_copy(the_string);
         to_lowercase(local_string);
@@ -181,7 +189,7 @@ class StringCaster<i64>
 {
 public:
     inline i64 operator () (const std::string& the_string,
-                            const std::string& separator = "") const
+                            char separator = ',') const
     {
         return to_integer(the_string);
     }
@@ -192,7 +200,7 @@ class StringCaster<u64>
 {
 public:
     inline u64 operator () (const std::string& the_string,
-                            const std::string& separator = "") const
+                            char separator = ',') const
     {
         return to_integer(the_string);
     }
@@ -203,7 +211,7 @@ class StringCaster<i32>
 {
 public:
     inline i32 operator () (const std::string& the_string,
-                            const std::string& separator = "") const
+                            char separator = ',') const
     {
         return to_integer(the_string);
     }
@@ -214,7 +222,7 @@ class StringCaster<u32>
 {
 public:
     inline u32 operator () (const std::string& the_string,
-                            const std::string& separator = "") const
+                            char separator = ',') const
     {
         return to_integer(the_string);
     }
@@ -225,7 +233,7 @@ class StringCaster<i16>
 {
 public:
     inline i16 operator () (const std::string& the_string,
-                            const std::string& separator = "") const
+                            char separator = ',') const
     {
         return to_integer(the_string);
     }
@@ -236,7 +244,7 @@ class StringCaster<u16>
 {
 public:
     inline u16 operator () (const std::string& the_string,
-                            const std::string& separator = "") const
+                            char separator = ',') const
     {
         return to_integer(the_string);
     }
@@ -247,7 +255,7 @@ class StringCaster<i08>
 {
 public:
     inline i08 operator () (const std::string& the_string,
-                            const std::string& separator = "") const
+                            char separator = ',') const
     {
         return to_integer(the_string);
     }
@@ -258,7 +266,7 @@ class StringCaster<u08>
 {
 public:
     inline u08 operator () (const std::string& the_string,
-                            const std::string& separator = "") const
+                            char separator = ',') const
     {
         return to_integer(the_string);
     }
@@ -269,7 +277,7 @@ class StringCaster<float>
 {
 public:
     inline float operator () (const std::string& the_string,
-                              const std::string& separator = "") const
+                              char separator = ',') const
     {
         return (float)to_double(the_string);
     }
@@ -280,7 +288,7 @@ class StringCaster<double>
 {
 public:
     inline double operator () (const std::string& the_string,
-                               const std::string& separator = "") const
+                               char separator = ',') const
     {
         return to_double(the_string);
     }
@@ -291,7 +299,7 @@ class StringCaster<std::string>
 {
 public:
     inline std::string operator () (const std::string& the_string,
-                                    const std::string& separator = "") const
+                                    char separator = ',') const
     {
         return the_string;
     }
@@ -338,16 +346,13 @@ class StringCaster<std::tuple<TupleTypes...> >
 {
 public:
     inline std::tuple<TupleTypes...> operator () (const std::string& the_string,
-                                                  const std::string& separator = "") const
+                                                  char separator = ',') const
     {
         ac::Vector<std::string> split_components;
         std::tuple<TupleTypes...> the_tuple;
 
-        if (separator == "") {
-            split_components = strutils::split_on_whitespace(the_string);
-        } else {
-            split_components = strutils::split(the_string, separator);
-        }
+        split_components = strutils::split_on_unescaped(the_string, separator);
+
         if (split_components.size() != sizeof...(TupleTypes)) {
             throw StringConversionException((std::string)"Wrong number of components in string " +
                                             "for conversion to a tuple. Expected " +
@@ -368,7 +373,7 @@ class StringCaster<std::pair<T1, T2> >
 {
 public:
     inline std::pair<T1, T2> operator () (const std::string& the_string,
-                                          const std::string& separator = "") const
+                                          char separator = ',') const
     {
         StringCaster<std::tuple<T1, T2> > caster;
         std::pair<T1, T2> retval;
@@ -384,15 +389,11 @@ class StringCaster<ac::Vector<ElemType> >
 {
 public:
     inline ac::Vector<ElemType> operator () (const std::string& the_string,
-                                             const std::string& separator = "") const
+                                             char separator = ',') const
     {
         ac::Vector<std::string> split_components;
 
-        if (separator == "") {
-            split_components = strutils::split_on_whitespace(the_string);
-        } else {
-            split_components = strutils::split(the_string, separator);
-        }
+        split_components = strutils::split_on_unescaped(the_string, separator);
 
         auto const num_components = split_components.size();
 

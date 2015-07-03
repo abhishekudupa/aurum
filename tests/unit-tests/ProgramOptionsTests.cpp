@@ -37,6 +37,8 @@
 
 // Code:
 
+#include <sstream>
+
 #include "../../src/progoptions/ProgramOptions.hpp"
 #include "../../src/allocators/MemoryManager.hpp"
 
@@ -117,13 +119,81 @@ TEST(ProgramOptions, Basic1)
                                make_value<float>(&option_c_value));
     program_options.add_option("option-d", "d", "Option d");
 
-    std::cout << program_options << std::endl;
+    std::ostringstream sstr;
+    sstr << program_options;
+
+    EXPECT_EQ("--option-a, -a:\n    Option a\n--option-b, -b:\n    Option b\n--option-c, -c:\n    Option c\n--option-d, -d:\n    Option d\n",
+              sstr.str());
 
     program_options.parse_command_line(argv.size(), argv_ptr);
-    std::cout << option_a_value << std::endl
-              << option_b_value << std::endl
-              << option_c_value << std::endl;
+
+    EXPECT_EQ(12345, option_a_value);
+    EXPECT_EQ("Test String", option_b_value);
+    EXPECT_LE(123.4f, option_c_value);
+    EXPECT_GE(123.5f, option_c_value);
+
+    free_argv(argv_ptr);
 }
+
+TEST(ProgramOptions, Basic2)
+{
+    ac::Vector<std::string> argv;
+    argv.push_back("program_name");
+    argv.push_back("-a");
+    argv.push_back("4,5,6,7,8");
+
+    ac::Vector<u32> option_a_value;
+
+    ProgramOptions program_options;
+    program_options.add_option("option-a", "a", "Option a", make_value<ac::Vector<u32> >(&option_a_value)->multitoken()->separator(','));
+
+    auto argv_ptr = allocate_argv();
+    populate_argv(argv_ptr, argv);
+
+    program_options.parse_command_line(argv.size(), argv_ptr);
+
+    EXPECT_EQ((u64)5, option_a_value.size());
+    EXPECT_EQ(4, option_a_value[0]);
+    EXPECT_EQ(5, option_a_value[1]);
+    EXPECT_EQ(6, option_a_value[2]);
+    EXPECT_EQ(7, option_a_value[3]);
+    EXPECT_EQ(8, option_a_value[4]);
+
+    free_argv(argv_ptr);
+}
+
+TEST(ProgramOptions, Basic3)
+{
+    ac::Vector<std::string> argv;
+    argv.push_back("program_name");
+    argv.push_back("-a");
+    argv.push_back("4,");
+    argv.push_back("5,");
+    argv.push_back("6,");
+    argv.push_back("--option-b");
+    argv.push_back("Test String");
+
+    ac::Vector<u32> option_a_value;
+    std::string option_b_value;
+
+    ProgramOptions program_options;
+    program_options.add_option("option-a", "a", "Option a", make_value<ac::Vector<u32> >(&option_a_value)->multitoken()->separator(','));
+    program_options.add_option("option-b", "b", "Option b", make_value<std::string>(&option_b_value));
+
+    auto argv_ptr = allocate_argv();
+    populate_argv(argv_ptr, argv);
+
+    program_options.parse_command_line(argv.size(), argv_ptr);
+
+    EXPECT_EQ((u64)3, option_a_value.size());
+    EXPECT_EQ(4, option_a_value[0]);
+    EXPECT_EQ(5, option_a_value[1]);
+    EXPECT_EQ(6, option_a_value[2]);
+
+
+    free_argv(argv_ptr);
+}
+
 
 //
 // ProgramOptionsTests.cpp ends here

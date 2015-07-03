@@ -45,7 +45,8 @@ namespace program_options {
 OptionValueBase::OptionValueBase()
     : m_textual_value(), m_is_required(false), m_has_default_value(false),
       m_textual_default_value(), m_has_implicit_value(false), m_textual_implicit_value(),
-      m_has_been_stored_to(false), m_is_multitoken(false), m_separator(",")
+      m_has_been_stored_to(false), m_is_multitoken(false), m_is_positional(false),
+      m_separator(',')
 {
     // Nothing here
 }
@@ -70,7 +71,7 @@ bool OptionValueBase::has_implicit_value() const
     return m_has_implicit_value;
 }
 
-const std::string& OptionValueBase::get_separator() const
+char OptionValueBase::get_separator() const
 {
     return m_separator;
 }
@@ -126,8 +127,13 @@ OptionValueBase* OptionValueBase::implicit_value(const std::string& textual_impl
     return this;
 }
 
-OptionValueBase* OptionValueBase::separator(const std::string& separator)
+OptionValueBase* OptionValueBase::separator(char separator)
 {
+    // we don't allow some special characters as separators
+    if (separator == '\\' || separator == '\"' || separator == '\'' || separator == ' ') {
+        throw ProgramOptionException((std::string)"\'\\\', \'\"\', \'\'\' and whitespace " +
+                                     "cannot be used as separators");
+    }
     m_separator = separator;
     return this;
 }
