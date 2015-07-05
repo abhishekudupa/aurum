@@ -125,26 +125,25 @@ static inline i64 find_last_match_internal(const std::string& the_string,
     return INT64_MIN;
 }
 
+static inline u64 count_escape_characters_behind(const std::string& the_string,
+                                                 i64 char_offset)
+{
+    u64 retval = 0;
+    for (i64 i = char_offset - 1; i >= 0; ++i) {
+        if (the_string[i] == '\\') {
+            ++retval;
+        } else {
+            return retval;
+        }
+    }
+    return retval;
+}
+
 static inline bool is_character_escaped(const std::string& the_string,
                                         i64 char_offset)
 {
-    if (char_offset == 0) {
-        return false;
-    } else if (char_offset == 1) {
-        if (the_string[0] != '\\') {
-            return false;
-        } else {
-            return true;
-        }
-    } else {
-        // char_offset >= 2
-        if (the_string[char_offset - 1] == '\\' &&
-            the_string[char_offset - 2] != '\\') {
-            return true;
-        } else {
-            return false;
-        }
-    }
+    auto const num_escapes_behind = count_escape_characters_behind(the_string, char_offset);
+    return ((num_escapes_behind % 2) == 0);
 }
 
 static inline i64 find_last_unescaped_match_internal(const std::string& the_string,
@@ -460,7 +459,7 @@ void unquote_string(std::string& the_string)
             the_string[end_offset] == '\'')) {
         --end_offset;
     }
-    if (start_offset < end_offset) {
+    if (start_offset >= end_offset) {
         the_string.clear();
     } else {
         the_string = the_string.substr(start_offset, end_offset - start_offset + 1);
@@ -485,7 +484,7 @@ std::string unquote_string_copy(const std::string& the_string)
             the_string[end_offset] == '\'')) {
         --end_offset;
     }
-    if (start_offset < end_offset) {
+    if (start_offset >= end_offset) {
         return "";
     } else {
         return the_string.substr(start_offset, end_offset - start_offset + 1);
@@ -524,6 +523,30 @@ u64 find_next_non_whitespace(const std::string& the_string, u64 start_offset)
     return str_length;
 }
 
+u64 find_next_unescaped_whitespace(const std::string& the_string, u64 start_offset)
+{
+    auto current_offset = start_offset;
+    auto const str_len = the_string.length();
+
+    bool is_escaped = false;
+    while (current_offset < str_len) {
+        if (!is_escaped) {
+            if (the_string[current_offset] == '\t' ||
+                the_string[current_offset] == '\n' ||
+                the_string[current_offset] == ' ' ||
+                the_string[current_offset] == '\r') {
+                return current_offset;
+            } else if (the_string[current_offset] == '\\') {
+                is_escaped = true;
+            }
+        } else {
+            is_escaped = false;
+        }
+        ++current_offset;
+    }
+    return INT64_MAX;
+}
+
 ac::Vector<std::string> split_on_whitespace(const std::string& the_string)
 {
     ac::Vector<std::string> retval;
@@ -535,6 +558,21 @@ ac::Vector<std::string> split_on_whitespace(const std::string& the_string)
         u64 end_position = find_next_whitespace(the_string, begin_position);
         retval.push_back(the_string.substr(begin_position, end_position - begin_position));
         begin_position = find_next_non_whitespace(the_string, end_position);
+    }
+
+    return retval;
+}
+
+ac::Vector<std::string> split_on_unescaped_whitespace(const std::string& the_string)
+{
+    ac::Vector<std::string> retval;
+
+    auto const str_length = the_string.length();
+
+    u64 begin_position = find_next_non_whitespace(the_string, 0);
+    while (begin_position < str_length) {
+        u64 end_position = find_next_unescaped_whitespace(the_string, begin_position);
+        retval.push_back(the_string.substr(begin_position, end_position - begin_position));
     }
 
     return retval;

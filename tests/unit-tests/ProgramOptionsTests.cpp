@@ -127,7 +127,7 @@ TEST(ProgramOptions, Basic1)
 
     program_options.parse_command_line(argv.size(), argv_ptr);
 
-    EXPECT_EQ(12345, option_a_value);
+    EXPECT_EQ((u32)12345, option_a_value);
     EXPECT_EQ("Test String", option_b_value);
     EXPECT_LE(123.4f, option_c_value);
     EXPECT_GE(123.5f, option_c_value);
@@ -153,11 +153,11 @@ TEST(ProgramOptions, Basic2)
     program_options.parse_command_line(argv.size(), argv_ptr);
 
     EXPECT_EQ((u64)5, option_a_value.size());
-    EXPECT_EQ(4, option_a_value[0]);
-    EXPECT_EQ(5, option_a_value[1]);
-    EXPECT_EQ(6, option_a_value[2]);
-    EXPECT_EQ(7, option_a_value[3]);
-    EXPECT_EQ(8, option_a_value[4]);
+    EXPECT_EQ((u32)4, option_a_value[0]);
+    EXPECT_EQ((u32)5, option_a_value[1]);
+    EXPECT_EQ((u32)6, option_a_value[2]);
+    EXPECT_EQ((u32)7, option_a_value[3]);
+    EXPECT_EQ((u32)8, option_a_value[4]);
 
     free_argv(argv_ptr);
 }
@@ -171,14 +171,15 @@ TEST(ProgramOptions, Basic3)
     argv.push_back("5,");
     argv.push_back("6,");
     argv.push_back("--option-b");
-    argv.push_back("Test String");
+    argv.push_back("Test String1, for option b");
+    argv.push_back("Test String2, for option b");
 
     ac::Vector<u32> option_a_value;
-    std::string option_b_value;
+    ac::Vector<std::string> option_b_value;
 
     ProgramOptions program_options;
     program_options.add_option("option-a", "a", "Option a", make_value<ac::Vector<u32> >(&option_a_value)->multitoken()->separator(','));
-    program_options.add_option("option-b", "b", "Option b", make_value<std::string>(&option_b_value));
+    program_options.add_option("option-b", "b", "Option b", make_value<ac::Vector<std::string> >(&option_b_value)->multitoken()->separator(','));
 
     auto argv_ptr = allocate_argv();
     populate_argv(argv_ptr, argv);
@@ -186,10 +187,75 @@ TEST(ProgramOptions, Basic3)
     program_options.parse_command_line(argv.size(), argv_ptr);
 
     EXPECT_EQ((u64)3, option_a_value.size());
-    EXPECT_EQ(4, option_a_value[0]);
-    EXPECT_EQ(5, option_a_value[1]);
-    EXPECT_EQ(6, option_a_value[2]);
+    EXPECT_EQ(4u, option_a_value[0]);
+    EXPECT_EQ(5u, option_a_value[1]);
+    EXPECT_EQ(6u, option_a_value[2]);
 
+    EXPECT_EQ((u64)2, option_b_value.size());
+    EXPECT_EQ("Test String1, for option b", option_b_value[0]);
+    EXPECT_EQ("Test String2, for option b", option_b_value[1]);
+
+    free_argv(argv_ptr);
+}
+
+TEST(ProgramOptions, Basic4)
+{
+    ac::Vector<std::string> argv;
+    argv.push_back("program_name");
+    argv.push_back("-a");
+    argv.push_back("4");
+    argv.push_back("String argument for option a");
+    argv.push_back("123.45");
+
+    std::tuple<u32, std::string, float> option_a_value;
+
+    ProgramOptions program_options;
+    program_options.add_option("option-a", "a", "Option a", make_value<std::tuple<u32, std::string, float> > (&option_a_value)->multitoken());
+
+    auto argv_ptr = allocate_argv();
+    populate_argv(argv_ptr, argv);
+
+    program_options.parse_command_line(argv.size(), argv_ptr);
+
+    EXPECT_EQ(4u, std::get<0>(option_a_value));
+    EXPECT_EQ("String argument for option a", std::get<1>(option_a_value));
+    EXPECT_EQ(123.45f, std::get<2>(option_a_value));
+
+    free_argv(argv_ptr);
+}
+
+TEST(ProgramOptions, Positional1)
+{
+    std::ostringstream sstr;
+    ac::Vector<std::string> argv;
+    argv.push_back("program_name");
+    argv.push_back("foo.txt");
+    argv.push_back("-a");
+    argv.push_back("4");
+    argv.push_back("String argument for option a");
+    argv.push_back("123.45");
+
+    std::tuple<u32, std::string, float> option_a_value;
+    std::string positional_1_value;
+
+    ProgramOptions program_options;
+    program_options.add_option("option-a", "a", "Option a", make_value<std::tuple<u32, std::string, float> > (&option_a_value)->multitoken());
+    program_options.add_positional_option("input-file", "Input File", make_value<std::string>(&positional_1_value));
+
+    sstr << program_options;
+
+    EXPECT_EQ("--input-file, positional at 1:\n    Input File\n--option-a, -a:\n    Option a\n",
+              sstr.str());
+
+    auto argv_ptr = allocate_argv();
+    populate_argv(argv_ptr, argv);
+
+    program_options.parse_command_line(argv.size(), argv_ptr);
+
+    EXPECT_EQ(4u, std::get<0>(option_a_value));
+    EXPECT_EQ("String argument for option a", std::get<1>(option_a_value));
+    EXPECT_EQ(123.45f, std::get<2>(option_a_value));
+    EXPECT_EQ("foo.txt", positional_1_value);
 
     free_argv(argv_ptr);
 }

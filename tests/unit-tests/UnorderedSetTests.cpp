@@ -277,10 +277,13 @@ TYPED_TEST_P(UnorderedSetTest, Performance)
 
     SetType aurum_set;
 
+    aurum_set.set_deleted_value(gc_deleted_value);
+    aurum_set.set_nonused_value(gc_nonused_value);
+
     std::default_random_engine generator;
     std::uniform_int_distribution<u64> distribution(0, 1);
 
-    for (u64 j = 0; j < (1 << 4); ++j) {
+    for (u64 j = 0; j < max_test_iterations; ++j) {
         aurum_set.clear();
 
         for (u64 i = 0; i < 64 * max_insertion_value; ++i) {
@@ -302,6 +305,7 @@ TYPED_TEST_P(UnorderedSetTest, Stringification)
     SetType set1;
     set1.set_deleted_value(gc_deleted_value);
     set1.set_nonused_value(gc_nonused_value);
+
     set1.insert(32);
     set1.insert(54);
     set1.insert(42);
@@ -318,7 +322,7 @@ TEST(StdUnorderedSetTest, Performance)
     std::default_random_engine generator;
     std::uniform_int_distribution<u64> distribution(0, 1);
 
-    for (u64 j = 0; j < (1 << 4); ++j) {
+    for (u64 j = 0; j < max_test_iterations; ++j) {
         std_set.clear();
 
         for (u64 i = 0; i < 64 * max_insertion_value; ++i) {

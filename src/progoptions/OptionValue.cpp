@@ -179,6 +179,11 @@ void OptionValue<bool>::store(const std::string& textual_value)
     do_store<bool>(textual_value);
 }
 
+void OptionValue<bool>::store(const ac::Vector<std::string>& textual_values)
+{
+    do_store<bool>(textual_values);
+}
+
 OptionValue<bool>::~OptionValue()
 {
     // Nothing here
@@ -187,6 +192,11 @@ OptionValue<bool>::~OptionValue()
 void OptionValue<i64>::store(const std::string& textual_value)
 {
     do_store<i64>(textual_value);
+}
+
+void OptionValue<i64>::store(const ac::Vector<std::string>& textual_values)
+{
+    do_store<i64>(textual_values);
 }
 
 OptionValue<i64>::~OptionValue()
@@ -199,6 +209,11 @@ void OptionValue<u64>::store(const std::string& textual_value)
     do_store<u64>(textual_value);
 }
 
+void OptionValue<u64>::store(const ac::Vector<std::string>& textual_values)
+{
+    do_store<u64>(textual_values);
+}
+
 OptionValue<u64>::~OptionValue()
 {
     // Nothing here
@@ -207,6 +222,11 @@ OptionValue<u64>::~OptionValue()
 void OptionValue<i32>::store(const std::string& textual_value)
 {
     do_store<i32>(textual_value);
+}
+
+void OptionValue<i32>::store(const ac::Vector<std::string>& textual_values)
+{
+    do_store<i32>(textual_values);
 }
 
 OptionValue<i32>::~OptionValue()
@@ -219,6 +239,11 @@ void OptionValue<u32>::store(const std::string& textual_value)
     do_store<u32>(textual_value);
 }
 
+void OptionValue<u32>::store(const ac::Vector<std::string>& textual_values)
+{
+    do_store<u32>(textual_values);
+}
+
 OptionValue<u32>::~OptionValue()
 {
     // Nothing here
@@ -227,6 +252,11 @@ OptionValue<u32>::~OptionValue()
 void OptionValue<i16>::store(const std::string& textual_value)
 {
     do_store<i16>(textual_value);
+}
+
+void OptionValue<i16>::store(const ac::Vector<std::string>& textual_values)
+{
+    do_store<i16>(textual_values);
 }
 
 OptionValue<i16>::~OptionValue()
@@ -239,6 +269,11 @@ void OptionValue<u16>::store(const std::string& textual_value)
     do_store<u16>(textual_value);
 }
 
+void OptionValue<u16>::store(const ac::Vector<std::string>& textual_values)
+{
+    do_store<u16>(textual_values);
+}
+
 OptionValue<u16>::~OptionValue()
 {
     // Nothing here
@@ -247,6 +282,11 @@ OptionValue<u16>::~OptionValue()
 void OptionValue<i08>::store(const std::string& textual_value)
 {
     do_store<i08>(textual_value);
+}
+
+void OptionValue<i08>::store(const ac::Vector<std::string>& textual_values)
+{
+    do_store<i08>(textual_values);
 }
 
 OptionValue<i08>::~OptionValue()
@@ -259,6 +299,11 @@ void OptionValue<u08>::store(const std::string& textual_value)
     do_store<u08>(textual_value);
 }
 
+void OptionValue<u08>::store(const ac::Vector<std::string>& textual_values)
+{
+    do_store<u08>(textual_values);
+}
+
 OptionValue<u08>::~OptionValue()
 {
     // Nothing here
@@ -267,6 +312,11 @@ OptionValue<u08>::~OptionValue()
 void OptionValue<float>::store(const std::string& textual_value)
 {
     do_store<float>(textual_value);
+}
+
+void OptionValue<float>::store(const ac::Vector<std::string>& textual_values)
+{
+    do_store<float>(textual_values);
 }
 
 OptionValue<float>::~OptionValue()
@@ -279,6 +329,11 @@ void OptionValue<double>::store(const std::string& textual_value)
     do_store<double>(textual_value);
 }
 
+void OptionValue<double>::store(const ac::Vector<std::string>& textual_values)
+{
+    do_store<double>(textual_values);
+}
+
 OptionValue<double>::~OptionValue()
 {
     // Nothing here
@@ -287,6 +342,11 @@ OptionValue<double>::~OptionValue()
 void OptionValue<std::string>::store(const std::string& textual_value)
 {
     do_store<std::string>(textual_value);
+}
+
+void OptionValue<std::string>::store(const ac::Vector<std::string>& textual_values)
+{
+    do_store<std::string>(textual_values);
 }
 
 OptionValue<std::string>::~OptionValue()

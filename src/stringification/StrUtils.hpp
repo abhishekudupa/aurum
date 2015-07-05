@@ -141,8 +141,11 @@ extern void unquote_string(std::string& the_string);
 extern std::string unquote_string_copy(const std::string& the_string);
 
 extern u64 find_next_whitespace(const std::string& the_string, u64 start_offset);
+extern u64 find_next_unescaped_whitespace(const std::string& the_string, u64 start_offset);
+
 extern u64 find_next_non_whitespace(const std::string& the_string, u64 start_offset);
 extern ac::Vector<std::string> split_on_whitespace(const std::string& the_string);
+extern ac::Vector<std::string> split_on_unescaped_whitespace(const std::string& the_string);
 
 // caster classes
 template <typename T>
@@ -308,6 +311,14 @@ public:
 namespace detail {
 
 template <u64 INDEX, typename... TupleTypes>
+inline typename std::enable_if<INDEX == sizeof...(TupleTypes), void>::type
+populate_tuple(std::tuple<TupleTypes...>& the_tuple,
+               const ac::Vector<std::string>& split_components)
+{
+    return;
+}
+
+template <u64 INDEX, typename... TupleTypes>
 inline typename std::enable_if<INDEX != sizeof...(TupleTypes), void>::type
 populate_tuple(std::tuple<TupleTypes...>& the_tuple,
                const ac::Vector<std::string>& split_components)
@@ -328,15 +339,7 @@ populate_tuple(std::tuple<TupleTypes...>& the_tuple,
 
     }
 
-    populate_tuple<INDEX+1, TupleTypes...>(the_tuple, split_components);
-}
-
-template <u64 INDEX, typename... TupleTypes>
-inline typename std::enable_if<INDEX == sizeof...(TupleTypes), void>::type
-populate_tuple(std::tuple<TupleTypes...>& the_tuple,
-               const ac::Vector<std::string>& split_components)
-{
-    return;
+    populate_tuple<(u64)(INDEX+1), TupleTypes...>(the_tuple, split_components);
 }
 
 } /* end namespace detail */
@@ -363,7 +366,7 @@ public:
         }
 
         std::tuple<TupleTypes...> retval;
-        detail::populate_tuple<0, TupleTypes...>(the_tuple, split_components);
+        detail::populate_tuple<(u64)0, TupleTypes...>(the_tuple, split_components);
         return retval;
     }
 };

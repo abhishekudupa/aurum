@@ -1203,6 +1203,8 @@ public:
 
         m_deleted_entries = std::move(m_new_deleted_entries);
         m_nonused_entries = std::move(m_new_nonused_entries);
+        m_new_nonused_entries.reset();
+        m_new_deleted_entries.reset();
     }
 
     inline bool is_new_entry_used(EntryType* new_table,

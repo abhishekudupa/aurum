@@ -210,7 +210,6 @@ void ProgramOptions::add_positional_option(const std::string& full_name,
 
     m_description_map[full_name] = detail::OptionDescription(full_name, option_position,
                                                              option_description);
-    m_description_map[positional_name] = m_description_map[full_name];
 
     OptionMap::insert((std::string)"--" + full_name, option_value);
     OptionMap::insert(positional_name, option_value);
@@ -269,43 +268,33 @@ inline void ProgramOptions::store_options_from_parse_map(const parsers::ParseMap
     for (auto const& parse_entry : parse_map) {
         auto const& option_name = parse_entry.first;
         auto const& option_value = OptionMap::find(option_name);
-        auto const& parsed_value = parse_entry.second;
+        auto const& parsed_values = parse_entry.second;
 
         if (option_value == OptionValueRef::null_pointer) {
             if (!allow_unspecified_options) {
                 throw ProgramOptionException((std::string)"Unknown option: \"" + option_name +
                                              "\" encountered while parsing options");
             }
-            m_unspecified_options[option_name] = parsed_value;
+            m_unspecified_options[option_name] = parsed_values;
             m_num_unspecified_options_parsed++;
             continue;
         }
 
         if (option_value->is_multitoken()) {
-            std::ostringstream sstr;
-            for (auto const& parsed_value_comp : parsed_value) {
-                if (sstr.str().length() > 0) {
-                    sstr << option_value->get_separator() << parsed_value_comp;
-                } else {
-                    sstr << parsed_value_comp;
-                }
-            }
-
             try {
-                option_value->store(sstr.str());
+                option_value->store(parsed_values);
             } catch (const AurumException& e) {
                 throw ProgramOptionException(e.get_exception_info() + "\nWhen parsing value " +
                                              "for option \"" + option_name + "\"");
             }
             m_num_specified_options_parsed++;
-
         } else {
-            if (parsed_value.size() > 1) {
+            if (parsed_values.size() > 1) {
                 throw ProgramOptionException((std::string)"Multiple values given for option \"" +
                                              option_name + "\" which cannot accept multiple " +
                                              "values.");
             }
-            option_value->store(parsed_value[0]);
+            option_value->store(parsed_values);
             m_num_specified_options_parsed++;
         }
     }
