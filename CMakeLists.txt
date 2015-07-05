@@ -30,8 +30,11 @@ if(NOT CMAKE_BUILDSYS_CONFIG_HAVE_64_BIT)
 endif()
 
 if(CMAKE_BUILDSYS_CONFIG_HAVE_LIBRT)
-  set(AURUM_LINK_LIBS "-lrt")
+  set(AURUM_LINK_LIBS "-lrt -ldl")
   set(AURUM_CFG_HAVE_LIBRT_ ON)
+else()
+  set(AURUM_LINK_LIBS "-ldl")
+  set(AURUM_CFG_HAVE_LIBRT_ OFF)
 endif()
 
 if(CMAKE_BUILDSYS_CONFIG_HAVE_GDB)
@@ -102,6 +105,8 @@ set(AURUM_CXX_SOURCE_FILES
   src/hashing/SpookyHash.cpp
 
   src/logging/LogManager.cpp
+
+  src/plugins/PluginLoader.cpp
 
   src/primeutils/PrecomputedPrimeList.cpp
   src/primeutils/PrimeGenerator.cpp
@@ -183,13 +188,14 @@ install(DIRECTORY
   src/allocators
   src/basetypes
   src/containers
-  src/hashfuncs
+  src/hashing
   src/logging
   src/memory
+  src/plugins
   src/primeutils
   src/progoptions
   src/shell
-  src/strutils
+  src/stringification
   src/timers
   DESTINATION ${AURUM_INC_DIR}
   COMPONENT dev
