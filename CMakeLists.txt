@@ -10,7 +10,12 @@ set(AURUM_VERSION
 set(CMAKE_MODULE_PATH
   "${CMAKE_CURRENT_LIST_DIR}/cmake-modules;${CMAKE_CURRENT_LIST_DIR}/cmake-modules/config-tests")
 
-set(AURUM_DEFAULT_CXX_FLAGS "-Wall -pedantic -std=c++11")
+set(AURUM_DEFAULT_CXX_FLAGS "-Wall -pedantic -std=c++14")
+
+# set ar to gcc-ar
+set(CMAKE_AR "gcc-ar")
+set(CMAKE_RANLIB "gcc-ranlib")
+set(CMAKE_NM "gcc-nm")
 
 include(CheckCompiler)
 
