@@ -243,6 +243,32 @@ inline void decrement_big_endian_iterator_(IteratorTupleType& the_tuple,
     }
 }
 
+template <u64 INDEX, typename IteratorTupleType, typename ValueTupleType>
+inline typename
+std::enable_if<INDEX == std::tuple_size<std::decay<IteratorTupleType>::type>::value, void>::type
+inline void update_value_at_index_(const IteratorTupleType& iterator_tuple,
+                                   ValueTupleType& value_tuple)
+{
+    return;
+}
+
+template <u64 INDEX, typename IteratorTupleType, typename ValueTupleType>
+inline typename
+std::enable_if<INDEX != std::tuple_size<std::decay<IteratorTupleType>::type>::value, void>::type
+inline void update_value_at_index_(const IteratorTupleType& iterator_tuple,
+                                   ValueTupleType& value_tuple)
+{
+    std::get<INDEX>(value_tuple) = *(std::get<INDEX>(iterator_tuple));
+    update_value_at_index_<INDEX+1>(iterator_tuple, value_tuple);
+}
+
+template <typename IteratorTupleType, typename ValueTupleType>
+inline void update_value_tuple_with_iterator_tuple_(const IteratorTupleType& iterator_tuple,
+                                                    ValueTupleType& value_tuple)
+{
+    update_value_at_index_<0>(iterator_tuple, value_tuple);
+}
+
 } /* end namespace detail_ */
 
 template <bool LITTLE_ENDIAN_ITERATORS, typename... IterableTypes>
@@ -271,7 +297,7 @@ public:
 
         inline void update_cached_value()
         {
-            // TODO: Implement me
+            detail_::update_value_tuple_with_iterator_tuple_(m_current, m_cached_value);
         }
 
     public:
@@ -395,7 +421,108 @@ public:
             return retval;
         }
     };
+
+    typedef Iterator iterator;
+    typedef iterator ConstIterator;
+    typedef ConstIterator const_iterator;
+    typedef std::reverse_iterator<iterator> reverse_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+    typedef reverse_iterator ReverseIterator;
+    typedef const_reverse_iterator ConstReverseIterator;
+
+    // constructors
+    inline CartesianProduct(IterableTypes... iterables)
+        : m_begins(std::begin(iterables)...), m_ends(std::end(iterables)...)
+    {
+        // Nothing here
+    }
+
+    inline CartesianProduct(const CartesianProduct& other)
+        : m_begins(other.m_begins), m_ends(other.m_ends)
+    {
+        // Nothing here
+    }
+
+    inline CartesianProduct(CartesianProduct&& other)
+        m_begins(std::move(other.m_begins)),
+        m_ends(std::move(other.m_ends))
+    {
+        // Nothing here
+    }
+
+    inline CartesianProduct& operator = (const CartesianProduct& other)
+    {
+        if (&other == this) {
+            return *this;
+        }
+
+        m_begins = other.m_begins;
+        m_ends = other.m_ends;
+        return *this;
+    }
+
+    inline CartesianProduct& operator = (CartesianProduct&& other)
+    {
+        if (&other == this) {
+            return *this;
+        }
+        m_begins = std::move(other.m_begins);
+        m_ends = std::move(other.m_ends);
+        return *this;
+    }
+
+    inline ~CartesianProduct()
+    {
+        // Nothing here
+    }
+
+    inline const_iterator begin() const
+    {
+        return Iterator(m_begins, this);
+    }
+
+    inline const_iterator end() const
+    {
+        return Iterator(m_ends, this);
+    }
+
+    inline const_iterator cbegin() const
+    {
+        return begin();
+    }
+
+    inline const_iterator cend() const
+    {
+        return end();
+    }
+
+    inline const_reverse_iterator rbegin() const
+    {
+        return const_reverse_iterator(end());
+    }
+
+    inline const_reverse_iterator rend() const
+    {
+        return const_reverse_iterator(begin());
+    }
+
+    inline const_reverse_iterator crbegin() const
+    {
+        return rbegin();
+    }
+
+    inline const_reverse_iterator crend() const
+    {
+        return rend();
+    }
 };
+
+template <typename... IterableTypes>
+inline auto make_cartesian_product(IterableTypes&&... iterables,
+                                   bool little_endian = true)
+{
+    return CartesianProduct(std::forward<IterableTypes>(iterables));
+}
 
 } /* end namespace ranges */
 } /* end namespace aurum */
