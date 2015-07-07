@@ -40,12 +40,362 @@
 #if !defined AURUM_RANGES_CARTESIAN_PRODUCT_HPP_
 #define AURUM_RANGES_CARTESIAN_PRODUCT_HPP_
 
+#include <tuple>
+
 #include "../basetypes/AurumTypes.hpp"
 
 namespace aurum {
 namespace ranges {
 
+namespace detail_ {
 
+template <u64 INDEX, typename IteratorTupleType>
+inline typename
+std::enable_if<INDEX == std::tuple_size<typename std::decay<IteratorTupleType>::type>::value,
+               bool>::type
+try_increment_little_endian_at_index_(IteratorTupleType& the_tuple,
+                                      const IteratorTupleType& begins,
+                                      const IteratorTupleType& ends)
+{
+    return false;
+}
+
+template <u64 INDEX, typename IteratorTupleType>
+inline typename
+std::enable_if<INDEX != std::tuple_size<typename std::decay<IteratorTupleType>::type>::value,
+               bool>::type
+try_increment_little_endian_at_index_(IteratorTupleType& the_tuple,
+                                      const IteratorTupleType& begins,
+                                      const IteratorTupleType& ends)
+{
+    auto& cur_iterator = std::get<INDEX>(the_tuple);
+    auto const& cur_end = std::get<INDEX>(ends);
+    if (++cur_iterator == cur_end) {
+        auto const& cur_begin = std::get<INDEX>(begins);
+        cur_iterator = cur_begin;
+        return try_increment_little_endian_at_index_<INDEX+1>(the_tuple, begins, ends);
+    } else {
+        return true;
+    }
+}
+
+template <typename IteratorTupleType>
+inline void increment_little_endian_iterator_(IteratorTupleType& the_tuple,
+                                              const IteratorTupleType& begins,
+                                              const IteratorTupleType& ends)
+{
+    auto const success =
+        try_increment_little_endian_at_index_<0, IteratorTupleType>(the_tuple, begins, ends);
+    if (!success) {
+        the_tuple = ends;
+    }
+}
+
+template <u64 INDEX, typename IteratorTupleType>
+inline typename std::enable_if<INDEX == 0, bool>::type
+try_increment_big_endian_at_index_(IteratorTupleType& the_tuple,
+                                   const IteratorTupleType& begins,
+                                   const IteratorTupleType& ends)
+{
+    auto& cur_iterator = std::get<0>(the_tuple);
+    auto const& cur_end = std::get<0>(ends);
+
+    if (++cur_iterator == cur_end) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+template <u64 INDEX, typename IteratorTupleType>
+inline typename std::enable_if<INDEX != 0, bool>::type
+try_increment_big_endian_at_index_(IteratorTupleType& the_tuple,
+                                   const IteratorTupleType& begins,
+                                   const IteratorTupleType& ends)
+{
+    auto& cur_iterator = std::get<INDEX>(the_tuple);
+    auto const& cur_end = std::get<INDEX>(ends);
+
+    if (++cur_iterator == cur_end) {
+        auto const& cur_begin = std::get<INDEX>(begins);
+        cur_iterator = cur_begin;
+        return try_increment_big_endian_at_index_<INDEX-1>(the_tuple, begins, ends);
+    } else {
+        return true;
+    }
+}
+
+template <typename IteratorTupleType>
+inline void increment_big_endian_iterator_(IteratorTupleType& the_tuple,
+                                           const IteratorTupleType& begins,
+                                           const IteratorTupleType& ends)
+{
+    constexpr auto TUPLE_SIZE =
+        std::tuple_size<typename std::decay<IteratorTupleType>::type>::value;
+
+    auto const success =
+        try_increment_big_endian_at_index_<TUPLE_SIZE-1, IteratorTupleType>(the_tuple,
+                                                                            begins,
+                                                                            ends);
+    if (!success) {
+        the_tuple = ends;
+    }
+}
+
+template <u64 INDEX, typename IteratorTupleType>
+inline typename
+std::enable_if<INDEX == std::tuple_size<typename std::decay<IteratorTupleType>::type>::value,
+               bool>::type
+try_decrement_little_endian_at_index_(IteratorTupleType& the_tuple,
+                                      const IteratorTupleType& begins,
+                                      const IteratorTupleType& ends)
+{
+    return false;
+}
+
+template <u64 INDEX, typename IteratorTupleType>
+inline typename
+std::enable_if<INDEX != std::tuple_size<typename std::decay<IteratorTupleType>::type>::value,
+               bool>::type
+try_decrement_little_endian_at_index_(IteratorTupleType& the_tuple,
+                                      const IteratorTupleType& begins,
+                                      const IteratorTupleType& ends)
+{
+    auto& cur_iterator = std::get<INDEX>(the_tuple);
+    auto const& cur_begin = std::get<INDEX>(begins);
+
+    if (cur_iterator == cur_begin) {
+        auto const& cur_end = std::get<INDEX>(ends);
+        cur_iterator = cur_end;
+        --cur_iterator;
+        return try_decrement_little_endian_at_index_<INDEX+1, IteratorTupleType>(the_tuple,
+                                                                                 begins, ends);
+    } else {
+        --cur_iterator;
+        return true;
+    }
+}
+
+template <typename IteratorTupleType>
+inline void decrement_little_endian_iterator(IteratorTupleType& the_tuple,
+                                             const IteratorTupleType& begins,
+                                             const IteratorTupleType& ends)
+{
+    auto const success =
+        try_decrement_little_endian_at_index_<0, IteratorTupleType>(the_tuple, begins, ends);
+    if (!success) {
+        the_tuple = begins;
+    }
+}
+
+template <u64 INDEX, typename IteratorTupleType>
+inline typename std::enable_if<INDEX == 0, bool>::type
+try_decrement_big_endian_at_index_(IteratorTupleType& the_tuple,
+                                   const IteratorTupleType& begins,
+                                   const IteratorTupleType& ends)
+{
+    auto& cur_iterator = std::get<0>(the_tuple);
+    auto const& cur_begin = std::get<0>(begins);
+
+    if (cur_iterator == cur_begin) {
+        return false;
+    } else {
+        --cur_iterator;
+        return true;
+    }
+}
+
+template <u64 INDEX, typename IteratorTupleType>
+inline typename std::enable_if<INDEX != 0, bool>::type
+try_decrement_big_endian_at_index_(IteratorTupleType& the_tuple,
+                                   const IteratorTupleType& begins,
+                                   const IteratorTupleType& ends)
+{
+    auto& cur_iterator = std::get<INDEX>(the_tuple);
+    auto const& cur_begin = std::get<INDEX>(begins);
+
+    if (cur_iterator == cur_begin) {
+        auto const& cur_end = std::get<INDEX>(ends);
+        cur_iterator = cur_end;
+        --cur_iterator;
+        return try_decrement_big_endian_at_index_<INDEX-1, IteratorTupleType>(the_tuple,
+                                                                              begins, ends);
+    } else {
+        --cur_iterator;
+        return true;
+    }
+}
+
+template <typename IteratorTupleType>
+inline void decrement_big_endian_iterator_(IteratorTupleType& the_tuple,
+                                           const IteratorTupleType& begins,
+                                           const IteratorTupleType& ends)
+{
+     constexpr auto TUPLE_SIZE =
+        std::tuple_size<typename std::decay<IteratorTupleType>::type>::value;
+
+    auto const success =
+        try_decrement_big_endian_at_index_<TUPLE_SIZE-1, IteratorTupleType>(the_tuple,
+                                                                            begins,
+                                                                            ends);
+    if (!success) {
+        the_tuple = begins;
+    }
+}
+
+} /* end namespace detail_ */
+
+template <bool LITTLE_ENDIAN_ITERATORS, typename... IterableTypes>
+class CartesianProduct
+{
+    friend class Iterator;
+
+private:
+    typedef std::tuple<typename IterableTypes::const_iterator...> IteratorTupleType;
+    typedef std::tuple<typename IterableTypes::const_iterator::value_type...> ValueTupleType;
+
+    IteratorTupleType m_begins;
+    IteratorTupleType m_ends;
+
+
+public:
+    class Iterator : std::iterator<std::bidirectional_iterator_tag,
+                                   ValueTupleType, u64,
+                                   const ValueTupleType*,
+                                   const ValueTupleType&>
+    {
+    private:
+        IteratorTupleType m_current;
+        const CartesianProduct* m_product_object;
+        ValueTupleType m_cached_value;
+
+        inline void update_cached_value()
+        {
+            // TODO: Implement me
+        }
+
+    public:
+        Iterator(const IteratorTupleType& current,
+                 const CartesianProduct* m_product_object)
+            : m_current(current), m_product_object(m_product_object)
+        {
+            // Nothing here
+        }
+
+        Iterator()
+            : m_current(), m_product_object(nullptr)
+        {
+            // Nothing here
+        }
+
+        Iterator(const Iterator& other)
+            : m_current(other.m_current), m_product_object(other.m_product_object),
+              m_cached_value(other.m_cached_value)
+        {
+            // Nothing here
+        }
+
+        Iterator(Iterator&& other)
+            : m_current(std::move(other.m_current)),
+              m_product_object(std::move(other.m_product_object)),
+              m_cached_value(std::move(other.m_cached_value))
+        {
+            // Nothing here
+        }
+
+        ~Iterator()
+        {
+            // Nothing here
+        }
+
+        inline Iterator& operator = (const Iterator& other)
+        {
+            if (&other == this) {
+                return *this;
+            }
+            m_current = other.m_current;
+            m_product_object = other.m_product_object;
+            m_cached_value = other.m_cached_value;
+            return *this;
+        }
+
+        inline Iterator& operator = (Iterator&& other)
+        {
+            if (&other == this) {
+                return *this;
+            }
+            m_current = std::move(other.m_current);
+            m_product_object = std::move(other.m_product_object);
+            m_cached_value = std::move(other.m_cached_value);
+            return *this;
+        }
+
+        inline bool operator == (const Iterator&& other) const
+        {
+            return (m_product_object == other.m_product_object &&
+                    m_current == other.m_current);
+        }
+
+        inline bool operator != (const Iterator& other) const
+        {
+            return (!((*this) == other));
+        }
+
+        inline const ValueTupleType& operator * () const
+        {
+            return m_cached_value;
+        }
+
+        inline const ValueTupleType* operator -> () const
+        {
+            return &m_cached_value;
+        }
+
+        inline Iterator& operator ++ ()
+        {
+            auto const& begins = m_product_object->m_begins;
+            auto const& ends = m_product_object->m_ends;
+
+            if (LITTLE_ENDIAN_ITERATORS) {
+                detail_::increment_little_endian_iterator_(m_current, begins, ends);
+            } else {
+                detail_::increment_big_endian_iterator_(m_current, begins, ends);
+            }
+
+            update_cached_value();
+            return *this;
+        }
+
+        inline Iterator operator ++ (int unused)
+        {
+            auto retval = *this;
+            ++(*this);
+            return retval;
+        }
+
+        inline Iterator& operator -- ()
+        {
+            auto const& begins = m_product_object->m_begins;
+            auto const& ends = m_product_object->m_ends;
+
+            if (LITTLE_ENDIAN_ITERATORS) {
+                detail_::decrement_little_endian_iterator(m_current, begins, ends);
+            } else {
+                detail_::decrement_big_endian_iterator_(m_current, m_begins, ends);
+            }
+
+            update_cached_value();
+            return *this;
+        }
+
+        inline Iterator operator -- (int unused)
+        {
+            auto retval = *this;
+            --(*this);
+            return retval;
+        }
+    };
+};
 
 } /* end namespace ranges */
 } /* end namespace aurum */

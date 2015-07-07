@@ -84,8 +84,8 @@ template <typename TupleType, typename FuncType>
 void tuple_foreach(TupleType&& the_tuple, FuncType&& fun_object)
 {
     constexpr auto TUPLE_SIZE = std::tuple_size<typename std::decay<TupleType>::type>::value;
-    detail_::apply_on_index_<TUPLE_SIZE>(std::forward<TupleType>(the_tuple),
-                                         std::forward<FuncType>(fun_object));
+    detail_::apply_on_index_<TUPLE_SIZE-1>(std::forward<TupleType>(the_tuple),
+                                           std::forward<FuncType>(fun_object));
 }
 
 template <typename TupleType, typename FuncType>
