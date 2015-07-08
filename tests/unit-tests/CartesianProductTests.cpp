@@ -39,7 +39,6 @@
 
 #include <string>
 #include <sstream>
-#include <iostream>
 
 #include "../../src/containers/Vector.hpp"
 #include "../../src/containers/DList.hpp"
@@ -62,11 +61,32 @@ TEST(CartesianProductTest, Functional)
     ac::Vector<std::string> iterable2 = {"one", "two", "three", "four"};
     ac::DList<float> iterable3 = {1.1f, 2.2f, 3.3f, 4.4f, 5.5f, 6.6f};
 
-    auto&& cp_object = ar::make_le_cartesian_product(iterable1, iterable2, iterable3);
-    for (auto const& cp_tuple : cp_object) {
+    std::ostringstream sstr;
+
+    auto&& cp_object_le = ar::make_le_cartesian_product(iterable1, iterable2, iterable3);
+    for (auto const& cp_tuple : cp_object_le) {
         as::Stringifier<typename std::decay<decltype(cp_tuple)>::type> stringifier;
-        std::cout << stringifier(cp_tuple) << std::endl;
+        sstr << stringifier(cp_tuple) << std::endl;
     }
+
+    EXPECT_EQ("<1, one, 1.100000>\n<2, one, 1.100000>\n<3, one, 1.100000>\n<4, one, 1.100000>\n<5, one, 1.100000>\n<1, two, 1.100000>\n<2, two, 1.100000>\n<3, two, 1.100000>\n<4, two, 1.100000>\n<5, two, 1.100000>\n<1, three, 1.100000>\n<2, three, 1.100000>\n<3, three, 1.100000>\n<4, three, 1.100000>\n<5, three, 1.100000>\n<1, four, 1.100000>\n<2, four, 1.100000>\n<3, four, 1.100000>\n<4, four, 1.100000>\n<5, four, 1.100000>\n<1, one, 2.200000>\n<2, one, 2.200000>\n<3, one, 2.200000>\n<4, one, 2.200000>\n<5, one, 2.200000>\n<1, two, 2.200000>\n<2, two, 2.200000>\n<3, two, 2.200000>\n<4, two, 2.200000>\n<5, two, 2.200000>\n<1, three, 2.200000>\n<2, three, 2.200000>\n<3, three, 2.200000>\n<4, three, 2.200000>\n<5, three, 2.200000>\n<1, four, 2.200000>\n<2, four, 2.200000>\n<3, four, 2.200000>\n<4, four, 2.200000>\n<5, four, 2.200000>\n<1, one, 3.300000>\n<2, one, 3.300000>\n<3, one, 3.300000>\n<4, one, 3.300000>\n<5, one, 3.300000>\n<1, two, 3.300000>\n<2, two, 3.300000>\n<3, two, 3.300000>\n<4, two, 3.300000>\n<5, two, 3.300000>\n<1, three, 3.300000>\n<2, three, 3.300000>\n<3, three, 3.300000>\n<4, three, 3.300000>\n<5, three, 3.300000>\n<1, four, 3.300000>\n<2, four, 3.300000>\n<3, four, 3.300000>\n<4, four, 3.300000>\n<5, four, 3.300000>\n<1, one, 4.400000>\n<2, one, 4.400000>\n<3, one, 4.400000>\n<4, one, 4.400000>\n<5, one, 4.400000>\n<1, two, 4.400000>\n<2, two, 4.400000>\n<3, two, 4.400000>\n<4, two, 4.400000>\n<5, two, 4.400000>\n<1, three, 4.400000>\n<2, three, 4.400000>\n<3, three, 4.400000>\n<4, three, 4.400000>\n<5, three, 4.400000>\n<1, four, 4.400000>\n<2, four, 4.400000>\n<3, four, 4.400000>\n<4, four, 4.400000>\n<5, four, 4.400000>\n<1, one, 5.500000>\n<2, one, 5.500000>\n<3, one, 5.500000>\n<4, one, 5.500000>\n<5, one, 5.500000>\n<1, two, 5.500000>\n<2, two, 5.500000>\n<3, two, 5.500000>\n<4, two, 5.500000>\n<5, two, 5.500000>\n<1, three, 5.500000>\n<2, three, 5.500000>\n<3, three, 5.500000>\n<4, three, 5.500000>\n<5, three, 5.500000>\n<1, four, 5.500000>\n<2, four, 5.500000>\n<3, four, 5.500000>\n<4, four, 5.500000>\n<5, four, 5.500000>\n<1, one, 6.600000>\n<2, one, 6.600000>\n<3, one, 6.600000>\n<4, one, 6.600000>\n<5, one, 6.600000>\n<1, two, 6.600000>\n<2, two, 6.600000>\n<3, two, 6.600000>\n<4, two, 6.600000>\n<5, two, 6.600000>\n<1, three, 6.600000>\n<2, three, 6.600000>\n<3, three, 6.600000>\n<4, three, 6.600000>\n<5, three, 6.600000>\n<1, four, 6.600000>\n<2, four, 6.600000>\n<3, four, 6.600000>\n<4, four, 6.600000>\n<5, four, 6.600000>\n", sstr.str());
+
+    sstr.str("");
+
+    auto cp_object_be = ar::make_be_cartesian_product(iterable1, iterable2, iterable3);
+    for (auto const& cp_tuple : cp_object_be) {
+        as::Stringifier<typename std::decay<decltype(cp_tuple)>::type> stringifier;
+        sstr << stringifier(cp_tuple) << std::endl;
+    }
+
+    EXPECT_EQ("<1, one, 1.100000>\n<1, one, 2.200000>\n<1, one, 3.300000>\n<1, one, 4.400000>\n<1, one, 5.500000>\n<1, one, 6.600000>\n<1, two, 1.100000>\n<1, two, 2.200000>\n<1, two, 3.300000>\n<1, two, 4.400000>\n<1, two, 5.500000>\n<1, two, 6.600000>\n<1, three, 1.100000>\n<1, three, 2.200000>\n<1, three, 3.300000>\n<1, three, 4.400000>\n<1, three, 5.500000>\n<1, three, 6.600000>\n<1, four, 1.100000>\n<1, four, 2.200000>\n<1, four, 3.300000>\n<1, four, 4.400000>\n<1, four, 5.500000>\n<1, four, 6.600000>\n<2, one, 1.100000>\n<2, one, 2.200000>\n<2, one, 3.300000>\n<2, one, 4.400000>\n<2, one, 5.500000>\n<2, one, 6.600000>\n<2, two, 1.100000>\n<2, two, 2.200000>\n<2, two, 3.300000>\n<2, two, 4.400000>\n<2, two, 5.500000>\n<2, two, 6.600000>\n<2, three, 1.100000>\n<2, three, 2.200000>\n<2, three, 3.300000>\n<2, three, 4.400000>\n<2, three, 5.500000>\n<2, three, 6.600000>\n<2, four, 1.100000>\n<2, four, 2.200000>\n<2, four, 3.300000>\n<2, four, 4.400000>\n<2, four, 5.500000>\n<2, four, 6.600000>\n<3, one, 1.100000>\n<3, one, 2.200000>\n<3, one, 3.300000>\n<3, one, 4.400000>\n<3, one, 5.500000>\n<3, one, 6.600000>\n<3, two, 1.100000>\n<3, two, 2.200000>\n<3, two, 3.300000>\n<3, two, 4.400000>\n<3, two, 5.500000>\n<3, two, 6.600000>\n<3, three, 1.100000>\n<3, three, 2.200000>\n<3, three, 3.300000>\n<3, three, 4.400000>\n<3, three, 5.500000>\n<3, three, 6.600000>\n<3, four, 1.100000>\n<3, four, 2.200000>\n<3, four, 3.300000>\n<3, four, 4.400000>\n<3, four, 5.500000>\n<3, four, 6.600000>\n<4, one, 1.100000>\n<4, one, 2.200000>\n<4, one, 3.300000>\n<4, one, 4.400000>\n<4, one, 5.500000>\n<4, one, 6.600000>\n<4, two, 1.100000>\n<4, two, 2.200000>\n<4, two, 3.300000>\n<4, two, 4.400000>\n<4, two, 5.500000>\n<4, two, 6.600000>\n<4, three, 1.100000>\n<4, three, 2.200000>\n<4, three, 3.300000>\n<4, three, 4.400000>\n<4, three, 5.500000>\n<4, three, 6.600000>\n<4, four, 1.100000>\n<4, four, 2.200000>\n<4, four, 3.300000>\n<4, four, 4.400000>\n<4, four, 5.500000>\n<4, four, 6.600000>\n<5, one, 1.100000>\n<5, one, 2.200000>\n<5, one, 3.300000>\n<5, one, 4.400000>\n<5, one, 5.500000>\n<5, one, 6.600000>\n<5, two, 1.100000>\n<5, two, 2.200000>\n<5, two, 3.300000>\n<5, two, 4.400000>\n<5, two, 5.500000>\n<5, two, 6.600000>\n<5, three, 1.100000>\n<5, three, 2.200000>\n<5, three, 3.300000>\n<5, three, 4.400000>\n<5, three, 5.500000>\n<5, three, 6.600000>\n<5, four, 1.100000>\n<5, four, 2.200000>\n<5, four, 3.300000>\n<5, four, 4.400000>\n<5, four, 5.500000>\n<5, four, 6.600000>\n", sstr.str());
+
+    sstr.str("");
+
+    ac::Vector<double> iterable4;
+
+    auto&& cp_object_empty = ar::make_le_cartesian_product(iterable1, iterable2, iterable3, iterable4);
+    EXPECT_EQ(cp_object_empty.end(), cp_object_empty.begin());
 }
 
 //

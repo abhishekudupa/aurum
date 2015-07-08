@@ -64,17 +64,49 @@ namespace as = aurum::stringification;
 
 namespace detail_ {
 
-template <typename T>
+// An adapter to turn a pointer into an iterator
+template <typename T, bool ISCONST>
 class Ptr2Iterator : public std::iterator<std::random_access_iterator_tag, T, u64, T*, T&>
 {
+    friend class detail_::Ptr2Iterator<T, !ISCONST>;
+
 private:
-    T* m_ptr;
+    typedef typename std::conditional<ISCONST, const T*, T*>::type PtrType;
+    typedef const T* ConstPtrType;
+    typedef typename std::conditional<ISCONST, const T&, T&>::type RefType;
+    PtrType m_ptr;
 
 public:
-    Ptr2Iterator(T* ptr) : m_ptr(ptr) {}
-    ~Ptr2Iterator() {}
+    Ptr2Iterator()
+        : m_ptr(nullptr)
+    {
+        // Nothing here
+    }
 
-    Ptr2Iterator(const Ptr2Iterator& other) {}
+    Ptr2Iterator(PtrType ptr)
+        : m_ptr(ptr)
+    {
+        // Nothing here
+    }
+
+    ~Ptr2Iterator()
+    {
+        // Nothing here
+    }
+
+    Ptr2Iterator(const Ptr2Iterator& other)
+        : m_ptr(other.m_ptr)
+    {
+        // Nothing here
+    }
+
+    template <bool OISCONST>
+    Ptr2Iterator(const detail_::Ptr2Iterator<T, OISCONST>& other)
+        : m_ptr(other.m_ptr)
+    {
+        static_assert(((!OISCONST) || ISCONST),
+                      "Cannot construct const iterator from non-const iterator");
+    }
 
     inline Ptr2Iterator& operator = (const Ptr2Iterator& other)
     {
@@ -85,26 +117,159 @@ public:
         return *this;
     }
 
-    inline T& operator * ()
+    template <bool OISCONST>
+    inline Ptr2Iterator& operator = (const detail_::Ptr2Iterator<T, OISCONST>& other)
+    {
+        static_assert(((!OISCONST) || ISCONST),
+                      "Cannot assign const iterator to non-const iterator");
+
+        if (&other == this) {
+            return *this;
+        }
+
+        m_ptr = other.m_ptr;
+        return *this;
+    }
+
+    inline RefType operator * () const
     {
         return *m_ptr;
     }
 
-    inline const T& operator * () const
-    {
-        return *m_ptr;
-    }
-
-    inline T* operator -> ()
+    inline const PtrType operator -> () const
     {
         return m_ptr;
     }
 
-    inline const T* operator -> () const
+    inline RefType operator [] (u64 index) const
+    {
+        return m_ptr[index];
+    }
+
+    inline bool operator == (const Ptr2Iterator& other) const
+    {
+        return (m_ptr == other.m_ptr);
+    }
+
+    template <bool OISCONST>
+    inline bool operator == (const detail_::Ptr2Iterator<T, OISCONST>& other) const
+    {
+        return (m_ptr == other.m_ptr);
+    }
+
+    inline bool operator != (const Ptr2Iterator& other) const
+    {
+        return (m_ptr != other.m_ptr);
+    }
+
+    template <bool OISCONST>
+    inline bool operator != (const detail_::Ptr2Iterator<T, OISCONST>& other) const
+    {
+        return (m_ptr != other.m_ptr);
+    }
+
+    inline Ptr2Iterator& operator ++ ()
+    {
+        ++m_ptr;
+        return *this;
+    }
+
+    inline Ptr2Iterator operator ++ (int unused)
+    {
+        auto retval = *this;
+        ++(*this);
+        return retval;
+    }
+
+    inline Ptr2Iterator& operator -- ()
+    {
+        --m_ptr;
+        return *this;
+    }
+
+    inline Ptr2Iterator operator -- (int unused)
+    {
+        auto retval = *this;
+        --(*this);
+        return retval;
+    }
+
+    inline Ptr2Iterator operator + (i64 n)
+    {
+        return Ptr2Iterator(m_ptr + n);
+    }
+
+    inline Ptr2Iterator operator - (i64 n)
+    {
+        return Ptr2Iterator(m_ptr - n);
+    }
+
+    inline i64 operator - (const Ptr2Iterator& other) const
+    {
+        return (const_cast<ConstPtrType>(m_ptr) - const_cast<ConstPtrType>(other.m_ptr));
+    }
+
+    template <bool OISCONST>
+    inline i64 operator - (const detail_::Ptr2Iterator<T, OISCONST>& other) const
+    {
+        return (const_cast<ConstPtrType>(m_ptr) - const_cast<ConstPtrType>(other.m_ptr));
+    }
+
+    template <bool OISCONST>
+    inline bool operator < (const detail_::Ptr2Iterator<T, OISCONST>& other) const
+    {
+        auto less_func = std::less<ConstPtrType>();
+        return less_func(const_cast<ConstPtrType>(m_ptr), const_cast<ConstPtrType>(other.m_ptr));
+    }
+
+    template <bool OISCONST>
+    inline bool operator <= (const detail_::Ptr2Iterator<T, OISCONST>& other) const
+    {
+        auto less_func = std::less<ConstPtrType>();
+        return (!less_func(const_cast<ConstPtrType>(other.m_ptr), const_cast<ConstPtrType>(m_ptr)));
+    }
+
+    template <bool OISCONST>
+    inline bool operator > (const detail_::Ptr2Iterator<T, OISCONST>& other) const
+    {
+        auto less_func = std::less<ConstPtrType>();
+        return less_func(const_cast<ConstPtrType>(other.m_ptr),
+                         const_cast<ConstPtrType>(m_ptr));
+    }
+
+    template <bool OISCONST>
+    inline bool operator >= (const detail_::Ptr2Iterator<T, OISCONST>& other) const
+    {
+        auto less_func = std::less<ConstPtrType>();
+        return less_func(!less_func(const_cast<ConstPtrType>(m_ptr),
+                                    const_cast<ConstPtrType>(other.m_ptr)));
+    }
+
+    inline Ptr2Iterator& operator += (i64 n)
+    {
+        m_ptr += n;
+        return *this;
+    }
+
+    inline Ptr2Iterator& operator -= (i64 n)
+    {
+        m_ptr -= n;
+        return *this;
+    }
+
+    // cast operators to pointer
+    inline operator PtrType () const
     {
         return m_ptr;
     }
 };
+
+template <typename T, bool ISCONST>
+static inline Ptr2Iterator<T, ISCONST>
+operator + (i64 n, const Ptr2Iterator<T, ISCONST>& iter)
+{
+    return (iter + n);
+}
 
 } /* end namespace detail_ */
 
@@ -119,10 +284,10 @@ public:
     typedef T& RefType;
     typedef const T& ConstRefType;
 
-    typedef T* Iterator;
-    typedef T* iterator;
-    typedef const T* ConstIterator;
-    typedef const T* const_iterator;
+    typedef detail_::Ptr2Iterator<T, false> Iterator;
+    typedef Iterator iterator;
+    typedef detail_::Ptr2Iterator<T, true> ConstIterator;
+    typedef ConstIterator const_iterator;
     typedef std::reverse_iterator<iterator> ReverseIterator;
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> ConstReverseIterator;
@@ -368,7 +533,8 @@ private:
                              std::forward_iterator_tag unused)
     {
         auto num_elements = std::distance(first, last);
-        auto actual_pos = expand_with_hole(num_elements, const_cast<T*>(position));
+        auto actual_pos = expand_with_hole(num_elements,
+                                           const_cast<T*>((const T*)position));
         std::copy(first, last, actual_pos);
         set_size(get_size() + num_elements);
         return;
@@ -797,7 +963,7 @@ public:
     Iterator erase(const ConstIterator& position)
     {
         if (position == cend()) {
-            return const_cast<T*>(position);
+            return const_cast<T*>((const T*)position);
         }
         return erase(position, position + 1);
     }
@@ -805,7 +971,7 @@ public:
     Iterator erase(const ConstIterator& first, const ConstIterator& last)
     {
         if (first == last) {
-            return const_cast<T*>(first);
+            return const_cast<T*>((const T*)first);
         }
         auto num_to_delete = std::distance(first, last);
         auto orig_size = get_size();
@@ -814,7 +980,7 @@ public:
         auto offset_from_begin = first - begin();
 
         if (orig_capacity <= std::max((4 * orig_size) / 3, 8ul)) {
-            std::move(const_cast<T*>(last),
+            std::move(const_cast<T*>((const T*)last),
                       m_data + orig_size,
                       m_data + offset_from_begin);
 
@@ -822,7 +988,7 @@ public:
         } else {
             auto new_data = allocate_data(new_size);
             std::move(m_data, m_data + offset_from_begin, new_data);
-            std::move(const_cast<T*>(last),
+            std::move(const_cast<T*>((const T*)last),
                       m_data + orig_size,
                       new_data + offset_from_begin);
 

@@ -130,6 +130,21 @@ public:
 };
 
 template <>
+class Stringifier<std::string>
+{
+public:
+    inline std::string operator () (const std::string& object, i64 verbosity) const
+    {
+        return object;
+    }
+
+    inline std::string operator () (const std::string& object) const
+    {
+        return object;
+    }
+};
+
+template <>
 class Stringifier<char>
 {
 public:
@@ -301,8 +316,9 @@ public:
     inline std::string operator () (const std::tuple<TupleTypes...>& object, i64 verbosity) const
     {
         std::ostringstream sstr;
-        sstr << "<" << detail::stringify_tuple<0, TupleTypes...>(object, sstr, verbosity)
-             << ">";
+        sstr << "<";
+        detail::stringify_tuple<0, TupleTypes...>(object, sstr, verbosity);
+        sstr << ">";
         return sstr.str();
     }
 

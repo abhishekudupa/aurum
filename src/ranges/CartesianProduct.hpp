@@ -271,6 +271,43 @@ inline void update_value_tuple_with_iterator_tuple_(const IteratorTupleType& ite
     update_value_at_index_<0>(iterator_tuple, value_tuple);
 }
 
+template <u64 INDEX, typename IteratorTupleType>
+inline typename
+std::enable_if<INDEX ==
+               std::tuple_size<typename std::decay<IteratorTupleType>::type>::value, bool>::type
+make_begin_at_index_(const IteratorTupleType& begins,
+                     const IteratorTupleType& ends,
+                     IteratorTupleType& begin_tuple)
+{
+    return true;
+}
+
+template <u64 INDEX, typename IteratorTupleType>
+inline typename
+std::enable_if<INDEX !=
+               std::tuple_size<typename std::decay<IteratorTupleType>::type>::value, bool>::type
+make_begin_at_index_(const IteratorTupleType& begins,
+                     const IteratorTupleType& ends,
+                     IteratorTupleType& begin_tuple)
+{
+    if (std::get<INDEX>(begins) == std::get<INDEX>(ends)) {
+        return false;
+    }
+    std::get<INDEX>(begin_tuple) = std::get<INDEX>(begins);
+    return make_begin_at_index_<INDEX+1>(begins, ends, begin_tuple);
+}
+
+template <typename IteratorTupleType>
+inline void make_begin_(const IteratorTupleType& begins,
+                        const IteratorTupleType& ends,
+                        IteratorTupleType& begin_tuple)
+{
+    auto status = make_begin_at_index_<0>(begins, ends, begin_tuple);
+    if (!status) {
+        begin_tuple = ends;
+    }
+}
+
 } /* end namespace detail_ */
 
 template <bool LITTLE_ENDIAN_ITERATORS, typename... IterableTypes>
@@ -307,7 +344,9 @@ public:
                  const CartesianProduct* m_product_object)
             : m_current(current), m_product_object(m_product_object)
         {
-            // Nothing here
+            if (m_current != m_product_object->m_ends) {
+                update_cached_value();
+            }
         }
 
         Iterator()
@@ -358,7 +397,7 @@ public:
             return *this;
         }
 
-        inline bool operator == (const Iterator&& other) const
+        inline bool operator == (const Iterator& other) const
         {
             return (m_product_object == other.m_product_object &&
                     m_current == other.m_current);
@@ -480,7 +519,9 @@ public:
 
     inline const_iterator begin() const
     {
-        return Iterator(m_begins, this);
+        IteratorTupleType retval;
+        detail_::make_begin_(m_begins, m_ends, retval);
+        return Iterator(retval, this);
     }
 
     inline const_iterator end() const
