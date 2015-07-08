@@ -41,19 +41,32 @@
 #include <sstream>
 #include <iostream>
 
+#include "../../src/containers/Vector.hpp"
+#include "../../src/containers/DList.hpp"
 #include "../../src/ranges/CartesianProduct.hpp"
+#include "../../src/stringification/Stringifiers.hpp"
 
 #include <gtest/gtest.h>
 
 using aurum::u32;
 using aurum::u64;
-using aurum::ranges::make_cartesian_product;
+namespace ar = aurum::ranges;
+namespace ac = aurum::containers;
+namespace as = aurum::stringification;
 
 using testing::Types;
 
-TEST(CartesianProductTest, Basic)
+TEST(CartesianProductTest, Functional)
 {
+    ac::Vector<u64> iterable1 = {1, 2, 3, 4, 5};
+    ac::Vector<std::string> iterable2 = {"one", "two", "three", "four"};
+    ac::DList<float> iterable3 = {1.1f, 2.2f, 3.3f, 4.4f, 5.5f, 6.6f};
 
+    auto&& cp_object = ar::make_le_cartesian_product(iterable1, iterable2, iterable3);
+    for (auto const& cp_tuple : cp_object) {
+        as::Stringifier<typename std::decay<decltype(cp_tuple)>::type> stringifier;
+        std::cout << stringifier(cp_tuple) << std::endl;
+    }
 }
 
 //

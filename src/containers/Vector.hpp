@@ -62,6 +62,52 @@ namespace containers {
 namespace aa = aurum::allocators;
 namespace as = aurum::stringification;
 
+namespace detail_ {
+
+template <typename T>
+class Ptr2Iterator : public std::iterator<std::random_access_iterator_tag, T, u64, T*, T&>
+{
+private:
+    T* m_ptr;
+
+public:
+    Ptr2Iterator(T* ptr) : m_ptr(ptr) {}
+    ~Ptr2Iterator() {}
+
+    Ptr2Iterator(const Ptr2Iterator& other) {}
+
+    inline Ptr2Iterator& operator = (const Ptr2Iterator& other)
+    {
+        if (&other == this) {
+            return *this;
+        }
+        m_ptr = other.m_ptr;
+        return *this;
+    }
+
+    inline T& operator * ()
+    {
+        return *m_ptr;
+    }
+
+    inline const T& operator * () const
+    {
+        return *m_ptr;
+    }
+
+    inline T* operator -> ()
+    {
+        return m_ptr;
+    }
+
+    inline const T* operator -> () const
+    {
+        return m_ptr;
+    }
+};
+
+} /* end namespace detail_ */
+
 template <typename T>
 class VectorBase final : public AurumObject, public Stringifiable<VectorBase<T> >
 {

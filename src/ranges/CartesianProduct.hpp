@@ -245,18 +245,20 @@ inline void decrement_big_endian_iterator_(IteratorTupleType& the_tuple,
 
 template <u64 INDEX, typename IteratorTupleType, typename ValueTupleType>
 inline typename
-std::enable_if<INDEX == std::tuple_size<std::decay<IteratorTupleType>::type>::value, void>::type
-inline void update_value_at_index_(const IteratorTupleType& iterator_tuple,
-                                   ValueTupleType& value_tuple)
+std::enable_if<INDEX ==
+               std::tuple_size<typename std::decay<IteratorTupleType>::type>::value, void>::type
+update_value_at_index_(const IteratorTupleType& iterator_tuple,
+                       ValueTupleType& value_tuple)
 {
     return;
 }
 
 template <u64 INDEX, typename IteratorTupleType, typename ValueTupleType>
 inline typename
-std::enable_if<INDEX != std::tuple_size<std::decay<IteratorTupleType>::type>::value, void>::type
-inline void update_value_at_index_(const IteratorTupleType& iterator_tuple,
-                                   ValueTupleType& value_tuple)
+std::enable_if<INDEX !=
+               std::tuple_size<typename std::decay<IteratorTupleType>::type>::value, void>::type
+update_value_at_index_(const IteratorTupleType& iterator_tuple,
+                       ValueTupleType& value_tuple)
 {
     std::get<INDEX>(value_tuple) = *(std::get<INDEX>(iterator_tuple));
     update_value_at_index_<INDEX+1>(iterator_tuple, value_tuple);
@@ -277,8 +279,8 @@ class CartesianProduct
     friend class Iterator;
 
 private:
-    typedef std::tuple<typename IterableTypes::const_iterator...> IteratorTupleType;
-    typedef std::tuple<typename IterableTypes::const_iterator::value_type...> ValueTupleType;
+    typedef std::tuple<typename std::decay<IterableTypes>::type::const_iterator...> IteratorTupleType;
+    typedef std::tuple<typename std::decay<IterableTypes>::type::const_iterator::value_type...> ValueTupleType;
 
     IteratorTupleType m_begins;
     IteratorTupleType m_ends;
@@ -444,8 +446,8 @@ public:
     }
 
     inline CartesianProduct(CartesianProduct&& other)
-        m_begins(std::move(other.m_begins)),
-        m_ends(std::move(other.m_ends))
+        : m_begins(std::move(other.m_begins)),
+          m_ends(std::move(other.m_ends))
     {
         // Nothing here
     }
@@ -518,10 +520,15 @@ public:
 };
 
 template <typename... IterableTypes>
-inline auto make_cartesian_product(IterableTypes&&... iterables,
-                                   bool little_endian = true)
+inline auto make_le_cartesian_product(IterableTypes&&... iterables)
 {
-    return CartesianProduct(std::forward<IterableTypes>(iterables));
+    return CartesianProduct<true, IterableTypes...>(std::forward<IterableTypes>(iterables)...);
+}
+
+template <typename... IterableTypes>
+inline auto make_be_cartesian_product(IterableTypes&&... iterables)
+{
+    return CartesianProduct<false, IterableTypes...>(std::forward<IterableTypes>(iterables)...);
 }
 
 } /* end namespace ranges */
