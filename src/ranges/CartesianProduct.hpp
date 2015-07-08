@@ -429,7 +429,11 @@ public:
                 detail_::increment_big_endian_iterator_(m_current, begins, ends);
             }
 
-            update_cached_value();
+            if (m_current != m_product_object->m_ends) {
+                update_cached_value();
+            } else {
+                m_cached_value = ValueTupleType();
+            }
             return *this;
         }
 
