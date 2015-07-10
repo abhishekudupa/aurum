@@ -45,6 +45,8 @@
 #include "../basetypes/AurumTypes.hpp"
 #include "../allocators/MemoryManager.hpp"
 #include "../primeutils/PrimeGenerator.hpp"
+#include "../hashing/Hashers.hpp"
+#include "../basetypes/Comparators.hpp"
 
 #include "BitSet.hpp"
 
@@ -1706,6 +1708,25 @@ public:
 };
 
 } /* end namespace hash_table_detail_ */
+
+// some convenience typedefs
+template <typename T,
+          typename HashFunction = hashing::Hasher<T>,
+          typename EqualsFunction = utils::Equal<T> >
+using UnifiedHashTable = hash_table_detail_::UnifiedHashTable<T, HashFunction, EqualsFunction>;
+
+template <typename T,
+          typename HashFunction = hashing::Hasher<T>,
+          typename EqualsFunction = utils::Equal<T> >
+using SegregatedHashTable =
+    hash_table_detail_::SegregatedHashTable<T, HashFunction, EqualsFunction>;
+
+template <typename T,
+          typename HashFunction = hashing::Hasher<T>,
+          typename EqualsFunction = utils::Equal<T> >
+using RestrictedHashTable =
+    hash_table_detail_::RestrictedHashTable<T, HashFunction, EqualsFunction>;
+
 } /* end namespace containers */
 } /* end namespace aurum */
 
