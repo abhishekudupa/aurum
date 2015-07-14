@@ -49,267 +49,165 @@
 
 #include "../memory/RefCountable.hpp"
 #include "../memory/ManagedPointer.hpp"
+#include "../allocators/MemoryManager.hpp"
+
+#include "AurumBase.hpp"
 
 namespace aurum {
 
+namespace aa = aurum::allocators;
+
+namespace detail_ {
+
+class AurumObjectBaseEBC
+{
+    // Nothing here
+};
+
+} /* end namespace detail_ */
+
 // A base class for objects
-class AurumObject
-{
-public:
-    static void* operator new(std::size_t sz);
-    static void* operator new[](std::size_t count);
-    static void* operator new(std::size_t sz, void* ptr);
-    static void* operator new[](std::size_t count, void* ptr);
-    static void operator delete(void* ptr, std::size_t sz);
-    static void operator delete[](void* ptr, std::size_t sz);
-    AurumObject();
-    virtual ~AurumObject();
-};
-
+// can be allocated on heap or auto
 template <typename DerivedClass>
-class Downcastable
+class AurumObject : public detail_::AurumObjectBaseEBC
 {
 public:
-    template <typename T>
-    T* as()
+    inline void* operator new(std::size_t sz)
     {
-        return dynamic_cast<T*>(static_cast<DerivedClass*>(this));
+        return aa::allocate_raw(sz);
     }
 
-    template <typename T>
-    const T* as() const
+    inline void* operator new[](std::size_t sz)
     {
-        return dynamic_cast<const T*>(static_cast<const DerivedClass*>(this));
+        return aa::allocate_raw(sz);
     }
 
-    template <typename T>
-    T* sas()
+    inline void* operator new(std::size_t sz, void* ptr)
     {
-        return static_cast<T*>(static_cast<DerivedClass*>(this));
+        return ptr;
     }
 
-    template <typename T>
-    const T* sas() const
+    inline void* operator new[](std::size_t count, void* ptr)
     {
-        return static_cast<const T*>(static_cast<const DerivedClass*>(this));
+        return ptr;
     }
 
-    template <typename T>
-    T& as_ref()
+    inline void operator delete(void* ptr, std::size_t sz)
     {
-        return dynamic_cast<T&>(static_cast<DerivedClass&>(*this));
+        aa::deallocate_raw(ptr, sz);
     }
 
-    template <typename T>
-    const T& as_ref() const
+    inline void operator delete[](void* ptr, std::size_t sz)
     {
-        return dynamic_cast<const T&>(static_cast<const DerivedClass&>(*this));
+        aa::deallocate_raw(ptr, sz);
     }
 
-    template <typename T>
-    T& sas_ref()
-    {
-        return static_cast<T&>(static_cast<DerivedClass&>(*this));
-    }
-
-    template <typename T>
-    const T& sas_ref() const
-    {
-        return static_cast<const T&>(static_cast<const DerivedClass&>(*this));
-    }
-
-    template <typename T>
-    bool is() const
-    {
-        return (dynamic_cast<const T*>(static_cast<const DerivedClass*>(this)) != nullptr);
-    }
-};
-
-class StringifiableEBC
-{
-    // Nothing here
-};
-
-// a base class for stringifiable objects
-template <typename DerivedClass>
-class Stringifiable : public StringifiableEBC
-{
-public:
-    inline std::string to_string(i64 verbosity) const
-    {
-        return static_cast<const DerivedClass*>(this)->as_string(verbosity);
-    }
-
-    inline std::string to_string() const
-    {
-        return static_cast<const DerivedClass*>(this)->as_string(0);
-    }
-};
-
-class HashableEBC
-{
-    // Nothing here
-};
-
-// A base class for Hashable objects
-template <typename DerivedClass>
-class Hashable : public HashableEBC
-{
-private:
-    class HashValue
-    {
-    private:
-        mutable bool m_hash_valid : 1;
-        mutable u64 m_hash_value : 63;
-
-    public:
-        inline HashValue()
-            : m_hash_valid(false), m_hash_value(0)
-        {
-            // Nothing here
-        }
-
-        inline HashValue(const HashValue& other)
-            : m_hash_valid(other.m_hash_valid),
-              m_hash_value(other.m_hash_value)
-        {
-            // Nothing here
-        }
-
-        inline HashValue& operator = (const HashValue& other)
-        {
-            if (&other == this) {
-                return *this;
-            }
-            m_hash_valid = other.m_hash_valid;
-            m_hash_value = other.m_hash_value;
-            return *this;
-        }
-
-        inline HashValue(u64 hash_value)
-            : m_hash_valid(true), m_hash_value(hash_value)
-        {
-            // Nothing here
-        }
-
-        inline bool is_hash_valid() const
-        {
-            return m_hash_valid;
-        }
-
-        inline u64 get_hash_value() const
-        {
-            return m_hash_value;
-        }
-
-        inline void set_hash_value(u64 hash_value) const
-        {
-            m_hash_valid = true;
-            m_hash_value = false;
-        }
-
-        inline void clear_hash_value() const
-        {
-            m_hash_valid = false;
-            m_hash_value = (u64)0;
-        }
-    };
-
-    HashValue m_hash_value;
-
-public:
-    inline Hashable()
-        : m_hash_value()
+    inline AurumObject()
     {
         // Nothing here
     }
 
-    inline Hashable(const Hashable& other)
-        : m_hash_value(other.m_hash_value)
+    inline ~AurumObject()
+    {
+        // Nothing here
+    }
+};
+
+namespace detail_ {
+
+template <typename Derived>
+class AurumHeapOnlyHelper : public Derived
+{
+public:
+    AurumHeapOnlyHelper() = delete;
+
+    template <typename... ArgTypes>
+    inline AurumHeapOnlyHelper(ArgTypes&&... args)
+        : Derived(std::forward<ArgTypes>(args)...)
     {
         // Nothing here
     }
 
-    inline Hashable& operator = (const Hashable& other)
+    inline ~AurumHeapOnlyHelper()
     {
-        if (&other == this) {
-            return *this;
-        }
-        m_hash_value = other.m_hash_value;
-        return *this;
-    }
-
-    inline u64 hash() const
-    {
-        if (m_hash_value.is_valid()) {
-            return m_hash_value.get_hash_value();
-        } else {
-            auto this_as_derived = static_cast<const DerivedClass*>(this);
-            m_hash_value.set_hash_value(this_as_derived->compute_hash_value());
-            return m_hash_value.get_hash_value();
-        }
-    }
-
-    inline void invalidate_hash_value() const
-    {
-        m_hash_value.clear_hash_value();
+        // Nothing here
     }
 };
 
-class ComparableEBC
+class AurumHeapOnlyEBC
 {
     // Nothing here
 };
 
-// Base class for comparable objects
-template <typename DerivedClass>
-class Comparable : public ComparableEBC
+} /* end namespace detail_ */
+
+// Base class for objects that can only be allocated
+// on the heap
+// Usage: derive publicly from this class and
+// then make all constructors protected in the derived
+// class
+template <typename Derived>
+class AurumHeapOnly : public detail_::AurumHeapOnlyEBC
 {
+protected:
+    inline AurumHeapOnly()
+    {
+        // Nothing here
+    }
+
+    inline ~AurumHeapOnly()
+    {
+        // Nothing here
+    }
+
 public:
-    i64 compare(const Comparable& other) const
+    template <typename... ArgTypes>
+    static Derived* create(ArgTypes&&... args)
     {
-        return static_cast<const DerivedClass*>(this)->compare_with(other);
-    }
-
-    bool equals(const Comparable& other)
-    {
-        auto other_as_derived = dynamic_cast<const DerivedClass*>(&other);
-        if (other_as_derived == nullptr) {
-            return false;
-        }
-        return static_cast<const DerivedClass*>(this)->equal_to(*other_as_derived);
-    }
-
-    inline bool operator == (const Comparable& other) const
-    {
-        return (equals(other));
-    }
-
-    inline bool operator != (const Comparable& other) const
-    {
-        return (!equals(other));
-    }
-
-    inline bool operator < (const Comparable& other) const
-    {
-        return (compare(other) < 0);
-    }
-
-    inline bool operator <= (const Comparable& other) const
-    {
-        return (compare(other) <= 0);
-    }
-
-    inline bool operator > (const Comparable& other) const
-    {
-        return (compare(other) > 0);
-    }
-
-    inline bool operator >= (const Comparable& other) const
-    {
-        return (compare(other) >= 0);
+        return new detail_::AurumHeapOnlyHelper<Derived>(std::forward<ArgTypes>(args)...);
     }
 };
+
+// Base class for objects that can only be auto allocated
+class AurumAutoOnly
+{
+public:
+    void* operator new(std::size_t sz) = delete;
+    void* operator new[](std::size_t sz) = delete;
+    void operator delete(void* ptr) = delete;
+    void operator delete[](void* ptr) = delete;
+    void operator delete(void* ptr, std::size_t sz) = delete;
+    void operator delete[](void* ptr, std::size_t sz) = delete;
+};
+
+
+// Base class for noncopyable objects
+class AurumNonCopyable
+{
+public:
+    AurumNonCopyable(const AurumNonCopyable& other) = delete;
+    AurumNonCopyable(AurumNonCopyable&& other) = delete;
+    AurumNonCopyable& operator = (const AurumNonCopyable& other) = delete;
+    AurumNonCopyable& operator = (AurumNonCopyable&& other) = delete;
+};
+
+// forward declarations of other classes
+namespace detail_ {
+
+class StringifiableEBC;
+class HashableEBC;
+class EComparableEBC;
+class ComparableEBC;
+class CloneableEBC;
+
+} /* end namespace detail_ */
+
+template <typename Derived> class Downcastable;
+template <typename Derived> class Stringifiable;
+template <typename Derived> class Hashable;
+template <typename Derived> class EComparable;
+template <typename Derived> class Comparable;
+template <typename Derived> class Clonable;
 
 class Interruptible
 {
