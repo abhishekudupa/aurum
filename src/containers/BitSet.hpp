@@ -39,11 +39,12 @@
 #define AURUM_CONTAINERS_BIT_SET_HPP_
 
 #include "../basetypes/AurumTypes.hpp"
+#include "../basetypes/Stringifiable.hpp"
 
 namespace aurum {
 namespace containers {
 
-class BitSet final : public AurumObject, public Stringifiable<BitSet>
+class BitSet final : public AurumObject<BitSet>, public Stringifiable<BitSet>
 {
 private:
     u64 m_num_bits;

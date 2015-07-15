@@ -100,7 +100,6 @@ set(AURUM_CXX_SOURCE_FILES
   src/allocators/SmallBlockAllocator.cpp
 
   src/basetypes/AurumErrors.cpp
-  src/basetypes/AurumTypes.cpp
 
   src/containers/BitSet.cpp
 

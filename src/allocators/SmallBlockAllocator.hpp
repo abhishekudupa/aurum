@@ -47,7 +47,7 @@
 namespace aurum {
 namespace allocators {
 
-class SmallBlockAllocator : public AurumObject
+class SmallBlockAllocator : public AurumObject<SmallBlockAllocator>
 {
 private:
     // preconfigured constants

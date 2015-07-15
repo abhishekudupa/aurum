@@ -47,8 +47,6 @@
 #include <cxxabi.h>
 #endif /* __GLIBCXX__ */
 
-#include "../memory/RefCountable.hpp"
-#include "../memory/ManagedPointer.hpp"
 #include "../allocators/MemoryManager.hpp"
 
 #include "AurumBase.hpp"
@@ -208,6 +206,7 @@ template <typename Derived> class Hashable;
 template <typename Derived> class EComparable;
 template <typename Derived> class Comparable;
 template <typename Derived> class Clonable;
+class RefCountable;
 
 class Interruptible
 {

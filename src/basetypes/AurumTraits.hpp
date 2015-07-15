@@ -41,6 +41,7 @@
 #define AURUM_BASETYPES_AURUM_TRAITS_HPP_
 
 #include "AurumTypes.hpp"
+#include "../memory/ManagedPointer.hpp"
 
 namespace aurum {
 
@@ -61,7 +62,7 @@ struct FalseStruct
 template <template <class> class Tester, typename CurType, typename... RestTypes>
 struct AllStruct
     : std::conditional<sizeof...(RestTypes) == 0,
-                       Tester<CurType>,
+                       typename Tester<CurType>::type,
                        typename std::conditional<Tester<CurType>::value &&
                                                  AllStruct<Tester, RestTypes...>::value,
                                                  TrueStruct,
@@ -217,6 +218,45 @@ struct IsComparable<std::pair<T1, T2> >
 template <typename... ArgTypes>
 struct IsComparable<std::tuple<ArgTypes...> >
     : detail_::AllStruct<IsComparable, ArgTypes...>
+{};
+
+// undefine these macros, they're not intended to be
+// used anywhere else!
+#undef MARK_PRIMITIVE_TYPE_AS_STRUCT_
+#undef MARK_TEMPLATE_TYPE_AS_STRUCT_
+
+template <typename T>
+struct IsAnyManagedPointer : detail_::FalseStruct
+{};
+
+template <typename T>
+struct IsConstManagedPointer : detail_::FalseStruct
+{};
+
+template <typename T>
+struct IsNonConstManagedPointer : detail_::FalseStruct
+{};
+
+template <typename T>
+struct IsAnyManagedPointer<memory::ManagedPointer<T> > : detail_::TrueStruct
+{};
+
+template <typename T>
+struct IsAnyManagedPointer<memory::ManagedConstPointer<T> > : detail_::TrueStruct
+{};
+
+template <typename T>
+struct IsConstManagedPointer<memory::ManagedConstPointer<T> > : detail_::TrueStruct
+{};
+
+template <typename T>
+struct IsNonConstManagedPointer<memory::ManagedPointer<T> > : detail_::TrueStruct
+{};
+
+template <typename T>
+struct IsRefCountable
+    : std::conditional<std::is_base_of<RefCountable, T>::value,
+                       detail_::TrueStruct, detail_::FalseStruct>::type
 {};
 
 } /* end namespace aurum */

@@ -50,7 +50,7 @@ namespace allocators {
 
 // Like a small block allocator, but only one fixed size
 // which is rounded up to the alignment factor
-class PoolAllocator : public AurumObject
+class PoolAllocator : public AurumObject<PoolAllocator>
 {
 private:
     static constexpr u32 sc_default_num_objects = 32;

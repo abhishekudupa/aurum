@@ -43,9 +43,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "../basetypes/AurumBase.hpp"
-
-#include "RefCountable.hpp"
+#include "../basetypes/RefCountable.hpp"
 
 namespace aurum {
 namespace memory {

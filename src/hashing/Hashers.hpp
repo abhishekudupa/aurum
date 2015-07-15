@@ -45,8 +45,8 @@
 #include <functional>
 #include <type_traits>
 
-#include "../basetypes/AurumBase.hpp"
 #include "../basetypes/AurumTypes.hpp"
+#include "../basetypes/AurumTraits.hpp"
 
 #include "../memory/ManagedPointer.hpp"
 
@@ -77,7 +77,7 @@ private:
 public:
     inline u64 operator () (const T& object) const
     {
-        typename std::is_base_of<HashableEBC, T>::type is_hashable_object;
+        typename IsHashable<T>::type is_hashable_object;
         return compute_hash(object, is_hashable_object);
     }
 };
@@ -114,7 +114,7 @@ private:
 public:
     inline u64 operator () (const T* ptr) const
     {
-        typename std::is_base_of<HashableEBC, T>::type is_hashable_object;
+        typename IsHashable<T>::type is_hashable_object;
         return compute_hash(ptr, is_hashable_object);
     }
 };
@@ -139,7 +139,7 @@ private:
 public:
     inline u64 operator () (const T* ptr) const
     {
-        typename std::is_base_of<HashableEBC, T>::type is_hashable_object;
+        typename IsHashable<T>::type is_hashable_object;
         return compute_hash(ptr, is_hashable_object);
     }
 };
@@ -164,7 +164,7 @@ private:
 public:
     inline u64 operator () (const am::ManagedPointer<T>& managed_ptr) const
     {
-        typename std::is_base_of<HashableEBC, T>::type is_hashable_object;
+        typename IsHashable<T>::type is_hashable_object;
         return compute_hash((const T*)managed_ptr, is_hashable_object);
     }
 };
@@ -189,7 +189,7 @@ private:
 public:
     inline u64 operator () (const am::ManagedConstPointer<T>& managed_ptr) const
     {
-        typename std::is_base_of<HashableEBC, T>::type is_hashable_object;
+        typename IsHashable<T>::type is_hashable_object;
         return compute_hash((const T*)managed_ptr, is_hashable_object);
     }
 };

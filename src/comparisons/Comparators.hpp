@@ -37,13 +37,86 @@
 
 // Code:
 
-#if !defined AURUM_BASETYPES_COMPARATORS_HPP_
-#define AURUM_BASETYPES_COMPARATORS_HPP_
+#if !defined AURUM_COMPARISONS_COMPARATORS_HPP_
+#define AURUM_COMPARISONS_COMPARATORS_HPP_
+
+#include <functional>
 
 #include "AurumTypes.hpp"
+#include "AurumTraits.hpp"
 
 namespace aurum {
-namespace utils {
+namespace comparisons {
+
+template <typename T, typename BinaryPredicate>
+class Negate
+{
+public:
+    inline bool operator () (const T& obj1, const T& obj2) const
+    {
+        BinaryPredicate fun;
+        return (!fun(obj1, obj2));
+    }
+};
+
+template <typename T, typename BinaryPredicate>
+class Reverse
+{
+public:
+    inline bool operator () (const T& obj1, const T& obj2) const
+    {
+        BinaryPredicate fun;
+        return fun(obj2, obj1);
+    }
+};
+
+template <typename T>
+class Less
+{
+public:
+    inline bool operator () (const T& obj1, const T& obj2) const
+    {
+        std::less<T> less_fun;
+        return less_fun(obj1, obj2);
+    }
+};
+
+template <typename T>
+class PtrLess
+{
+private:
+    inline bool apply(const T& obj1, const T& obj2,
+                      const std::true_type& is_pointer,
+                      const std::false_type& is_managed_pointer) const
+    {
+        Less<typename std::remove_pointer<T>::type> less_fun;
+        return less_fun(*obj1, *obj2);
+    }
+
+    inline bool apply(const T& obj1, const T& obj2, const std::false_type& is_pointer) const
+    {
+        Less<T> less_fun;
+        return less_fun(obj1, obj2);
+    }
+
+public:
+    inline bool operator () (const T& obj1, const T& obj2) const
+    {
+        typename std::is_pointer<T>::type is_pointer;
+        typename aurum::IsAnyManagedPointer<T>::type is_managed_pointer;
+
+        return apply(obj1, obj2, is_pointer);
+    }
+};
+
+template <typename T>
+using LessEqual = Negate<T, Reverse<T, Less<T> > >;
+
+template <typename T>
+using GreaterEqual = Negate<T, Less<T> >;
+
+template <typename T>
+using Greater = Negate<T, LessEqual<T> >;
 
 template <typename T, template <typename> class CompareFunction>
 class Comparer
@@ -66,7 +139,7 @@ private:
 public:
     inline bool operator () (const T& object1, const T& object2) const
     {
-        typename std::is_base_of<ComparableEBC, T>::type is_comparable;
+        typename IsComparable<T>::type is_comparable;
         return compare(object1, object2, is_comparable);
     }
 };
@@ -92,7 +165,7 @@ private:
 public:
     inline bool operator () (const T* object1, const T* object2) const
     {
-        typename std::is_base_of<ComparableEBC, T>::type is_comparable;
+        typename IsComparable<T>::type is_comparable;
         return compare(object1, object2, is_comparable);
     }
 };
@@ -118,7 +191,7 @@ private:
 public:
     inline bool operator () (const T* object1, const T* object2) const
     {
-        typename std::is_base_of<ComparableEBC, T>::type is_comparable;
+        typename IsComparable<T>::type is_comparable;
         return compare(object1, object2, is_comparable);
     }
 };
@@ -145,7 +218,7 @@ public:
     inline bool operator () (const memory::ManagedPointer<T>& object1,
                              const memory::ManagedPointer<T>& object2) const
     {
-        typename std::is_base_of<ComparableEBC, T>::type is_comparable;
+        typename IsComparable<T>::type is_comparable;
         return compare(object1, object2, is_comparable);
     }
 };
@@ -172,7 +245,7 @@ public:
     inline bool operator () (const memory::ManagedConstPointer<T>& object1,
                              const memory::ManagedConstPointer<T>& object2) const
     {
-        typename std::is_base_of<ComparableEBC, T>::type is_comparable;
+        typename IsComparable<T>::type is_comparable;
         return compare(object1, object2, is_comparable);
     }
 };
@@ -196,7 +269,7 @@ private:
 public:
     inline bool operator () (const T& object1, const T& object2) const
     {
-        typename std::is_base_of<ComparableEBC, T>::type is_comparable;
+        typename IsComparable<T>::type is_comparable;
         return compare(object1, object2, is_comparable);
     }
 };
@@ -220,7 +293,7 @@ private:
 public:
     inline bool operator () (const T* object1, const T* object2) const
     {
-        typename std::is_base_of<ComparableEBC, T>::type is_comparable;
+        typename IsComparable<T>::type is_comparable;
         return compare(object1, object2, is_comparable);
     }
 };
@@ -244,7 +317,7 @@ private:
 public:
     inline bool operator () (const T* object1, const T* object2) const
     {
-        typename std::is_base_of<ComparableEBC, T>::type is_comparable;
+        typename IsComparable<T>::type is_comparable;
         return compare(object1, object2, is_comparable);
     }
 };
@@ -269,7 +342,7 @@ public:
     inline bool operator () (const memory::ManagedPointer<T>& object1,
                              const memory::ManagedPointer<T>& object2) const
     {
-        typename std::is_base_of<ComparableEBC, T>::type is_comparable;
+        typename IsComparable<T>::type is_comparable;
         return compare(object1, object2, is_comparable);
     }
 };
@@ -294,7 +367,7 @@ public:
     inline bool operator () (const memory::ManagedConstPointer<T>& object1,
                              const memory::ManagedConstPointer<T>& object2) const
     {
-        typename std::is_base_of<ComparableEBC, T>::type is_comparable;
+        typename IsComparable<T>::type is_comparable;
         return compare(object1, object2, is_comparable);
     }
 };
@@ -328,10 +401,10 @@ using Equal = Equality<T>;
 template <typename T>
 using NEqual = NotEquality<T>;
 
-} /* end namespace utils */
+} /* end namespace comparisons */
 } /* end namespace aurum */
 
-#endif /* AURUM_BASETYPES_COMPARATORS_HPP_ */
+#endif /* AURUM_COMPARISONS_COMPARATORS_HPP_ */
 
 //
 // Comparators.hpp ends here
