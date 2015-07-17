@@ -82,31 +82,6 @@ public:
 };
 
 template <typename T>
-class PtrLesser
-{
-private:
-    inline bool apply(const T& obj1, const T& obj2,
-                      const std::true_type& is_pointer) const
-    {
-        Lesser<typename RemovePointer<T>::type> less_fun;
-        return less_fun(*obj1, *obj2);
-    }
-
-    inline bool apply(const T& obj1, const T& obj2, const std::false_type& is_pointer) const
-    {
-        Lesser<T> less_fun;
-        return less_fun(obj1, obj2);
-    }
-
-public:
-    inline bool operator () (const T& obj1, const T& obj2) const
-    {
-        typename IsPtrLike<typename std::decay<T>::type>::type is_pointer;
-        return apply(obj1, obj2, is_pointer);
-    }
-};
-
-template <typename T>
 using LesserEqual = Negate<T, Reverse<T, Lesser<T> > >;
 
 template <typename T>
@@ -115,14 +90,112 @@ using GreaterEqual = Negate<T, Lesser<T> >;
 template <typename T>
 using Greater = Negate<T, LesserEqual<T> >;
 
-template <typename T>
-using PtrLesserEqual = Negate<T, Reverse<T, PtrLesser<T> > >;
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepLesser : public Lesser<T>
+{};
 
 template <typename T>
-using PtrGreaterEqual = Negate<T, PtrLesser<T> >;
+class DeepLesser<T*, 0> : public Lesser<T*>
+{};
 
 template <typename T>
-using PtrGreater = Negate<T, PtrLesserEqual<T> >;
+class DeepLesser<const T*, 0> : public Lesser<const T*>
+{};
+
+template <typename T>
+class DeepLesser<memory::ManagedPointer<T>, 0> : public Lesser<memory::ManagedPointer<T> >
+{};
+
+template <typename T>
+class DeepLesser<memory::ManagedConstPointer<T>, 0>
+    : public Lesser<memory::ManagedConstPointer<T> >
+{};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepLesser<T*, NUM_DEREFS_ALLOWED>
+{
+public:
+    inline bool operator () (const T* const& obj1,
+                             const T* const& obj2) const
+    {
+        DeepLesser<T, NUM_DEREFS_ALLOWED-1> sub_comparator;
+        return sub_comparator(*obj1, *obj2);
+    }
+};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepLesser<const T*, NUM_DEREFS_ALLOWED> : public DeepLesser<T*, NUM_DEREFS_ALLOWED>
+{};
+
+template <typename T1, typename T2, u64 NUM_DEREFS_ALLOWED>
+class DeepLesser<std::pair<T1, T2>, NUM_DEREFS_ALLOWED>
+{
+private:
+    typedef std::pair<T1, T2> PairType;
+
+public:
+    inline bool operator () (const PairType& obj1, const PairType& obj2) const
+    {
+        DeepLesser<T1, NUM_DEREFS_ALLOWED> sub_comparator1;
+        DeepLesser<T2, NUM_DEREFS_ALLOWED> sub_comparator2;
+
+        if (sub_comparator1(obj1.first, obj2.first)) {
+            return true;
+        } else if (sub_comparator1(obj2.first, obj1.first)) {
+            return false;
+        } else {
+            return sub_comparator2(obj1.second, obj2.second);
+        }
+    }
+};
+
+template <typename... TupleTypes, u64 NUM_DEREFS_ALLOWED>
+class DeepLesser<std::tuple<TupleTypes...>, NUM_DEREFS_ALLOWED>
+{
+private:
+    typedef std::tuple<TupleTypes...> TheTupleType;
+
+    template <u64 INDEX>
+    inline typename std::enable_if<INDEX == sizeof...(TupleTypes), bool>::type
+    compare_element(const TheTupleType& obj1, const TheTupleType& obj2) const
+    {
+        return false;
+    }
+
+    template <u64 INDEX>
+    inline typename std::enable_if<INDEX != sizeof...(TupleTypes), bool>::type
+    compare_element(const TheTupleType& obj1, const TheTupleType& obj2) const
+    {
+        typedef typename std::tuple_element<INDEX, TheTupleType>::type ElementType;
+
+        DeepLesser<ElementType, NUM_DEREFS_ALLOWED> sub_comparator;
+        auto const& elem1 = std::get<INDEX>(obj1);
+        auto const& elem2 = std::get<INDEX>(obj2);
+
+        if (sub_comparator(elem1, elem2)) {
+            return true;
+        } else if (sub_comparator(elem2, elem1)) {
+            return false;
+        } else {
+            return compare_element<INDEX+1>(obj1, obj2);
+        }
+    }
+
+public:
+    inline bool operator () (const TheTupleType& obj1, const TheTupleType& obj2) const
+    {
+        return compare_element<0>(obj1, obj2);
+    }
+};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+using DeepLesserEqual = Negate<T, Reverse<T, DeepLesser<T, NUM_DEREFS_ALLOWED> > >;
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+using DeepGreaterEqual = Negate<T, DeepLesser<T, NUM_DEREFS_ALLOWED> >;
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+using DeepGreater = Negate<T, DeepLesserEqual<T, NUM_DEREFS_ALLOWED> >;
 
 template <typename T>
 class EqualTo
@@ -136,36 +209,106 @@ public:
 };
 
 template <typename T>
-class PtrEqualTo
+using NotEqualTo = Negate<T, EqualTo<T> >;
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepEqualTo : public EqualTo<T>
+{};
+
+template <typename T>
+class DeepEqualTo<T*, 0> : public EqualTo<T>
+{};
+
+template <typename T>
+class DeepEqualTo<const T*, 0> : public EqualTo<T>
+{};
+
+template <typename T>
+class DeepEqualTo<memory::ManagedPointer<T>, 0> : public EqualTo<memory::ManagedPointer<T> >
+{};
+
+template <typename T>
+class DeepEqualTo<memory::ManagedConstPointer<T>, 0>
+    : public EqualTo<memory::ManagedConstPointer<T> >
+{};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepEqualTo<T*, NUM_DEREFS_ALLOWED>
 {
-private:
-    inline bool apply(const T& object1, const T& object2,
-                      const std::true_type& is_pointer) const
+    inline bool operator () (const T* const& obj1, const T* const& obj2) const
     {
-        EqualTo<typename RemovePointer<T>::type> equal_fun;
-        return equal_fun(*object1, *object2);
-    }
-
-    inline bool apply(const T& object1, const T& object2,
-                      const std::false_type& is_pointer) const
-    {
-        EqualTo<T> equal_fun;
-        return equal_fun(object1, object2);
-    }
-
-public:
-    inline bool operator () (const T& object1, const T& object2) const
-    {
-        typename IsPtrLike<typename std::decay<T>::type>::type is_pointer;
-        return apply(object1, object2, is_pointer);
+        DeepEqualTo<T, NUM_DEREFS_ALLOWED-1> sub_comparator;
+        return sub_comparator(*obj1, *obj2);
     }
 };
 
-template <typename T>
-using NotEqualTo = Negate<T, EqualTo<T> >;
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepEqualTo<const T*, NUM_DEREFS_ALLOWED> : public DeepEqualTo<T*, NUM_DEREFS_ALLOWED>
+{};
 
-template <typename T>
-using PtrNotEqualTo = Negate<T, PtrEqualTo<T> >;
+template <typename T1, typename T2, u64 NUM_DEREFS_ALLOWED>
+class DeepEqualTo<std::pair<T1, T2>, NUM_DEREFS_ALLOWED>
+{
+private:
+    typedef std::pair<T1, T2> PairType;
+
+public:
+    inline bool operator () (const PairType& obj1, const PairType& obj2) const
+    {
+        DeepEqualTo<T1, NUM_DEREFS_ALLOWED> sub_comparator1;
+        DeepEqualTo<T2, NUM_DEREFS_ALLOWED> sub_comparator2;
+
+        if (sub_comparator1(obj1.first, obj2.first)) {
+            return true;
+        } else if (sub_comparator1(obj2.first, obj1.first)) {
+            return false;
+        } else {
+            return sub_comparator2(obj1.second, obj2.second);
+        }
+    }
+};
+
+template <typename... TupleTypes, u64 NUM_DEREFS_ALLOWED>
+class DeepEqualTo<std::tuple<TupleTypes...>, NUM_DEREFS_ALLOWED>
+{
+private:
+    typedef std::tuple<TupleTypes...> TheTupleType;
+
+    template <u64 INDEX>
+    inline typename std::enable_if<INDEX == sizeof...(TupleTypes), bool>::type
+    compare_element(const TheTupleType& obj1, const TheTupleType& obj2) const
+    {
+        return false;
+    }
+
+    template <u64 INDEX>
+    inline typename std::enable_if<INDEX != sizeof...(TupleTypes), bool>::type
+    compare_element(const TheTupleType& obj1, const TheTupleType& obj2) const
+    {
+        typedef typename std::tuple_element<INDEX, TheTupleType>::type ElementType;
+
+        DeepEqualTo<ElementType, NUM_DEREFS_ALLOWED> sub_comparator;
+        auto const& elem1 = std::get<INDEX>(obj1);
+        auto const& elem2 = std::get<INDEX>(obj2);
+
+        if (sub_comparator(elem1, elem2)) {
+            return true;
+        } else if (sub_comparator(elem2, elem1)) {
+            return false;
+        } else {
+            return compare_element<INDEX+1>(obj1, obj2);
+        }
+    }
+
+public:
+    inline bool operator () (const TheTupleType& obj1, const TheTupleType& obj2) const
+    {
+        return compare_element<0>(obj1, obj2);
+    }
+};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+using DeepNotEqualTo = Negate<T, DeepEqualTo<T, NUM_DEREFS_ALLOWED> >;
 
 } /* end namespace comparisons */
 } /* end namespace aurum */
