@@ -41,7 +41,8 @@
 #define AURUM_STRINGIFICATION_STRINGIFIERS_HPP_
 
 #include "../basetypes/AurumTypes.hpp"
-#include <type_traits>
+#include "../basetypes/AurumTraits.hpp"
+
 #include <sstream>
 #include <typeinfo>
 
@@ -67,7 +68,7 @@ private:
 public:
     inline std::string operator () (const T& object, i64 verbosity) const
     {
-        typename std::is_base_of<StringifiableEBC, T>::type is_stringifiable;
+        typename std::is_base_of<detail_::StringifiableEBC, T>::type is_stringifiable;
         return to_string_(object, verbosity, is_stringifiable);
     }
 
@@ -280,9 +281,47 @@ public:
     }
 };
 
-namespace detail {
+template <typename T>
+class PtrStringifier
+{
+private:
+    inline std::string apply(const T& object, const std::true_type& is_pointer) const
+    {
+        Stringifier<typename RemovePointer<T>::type> stringifier;
+        return stringifier(*object);
+    }
 
-template <u64 INDEX, typename... TupleTypes>
+    inline std::string apply(const T& object, const std::false_type& is_pointer) const
+    {
+        Stringifier<typename std::decay<T>::type> stringifier;
+        return stringifier(object);
+    }
+};
+
+template <typename T1, typename T2>
+class PtrStringifier<std::pair<T1, T2> >
+{
+public:
+    inline std::string operator () (const std::pair<T1, T2>& object, i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        PtrStringifier<T1> stringifier1;
+        PtrStringifier<T2> stringifier2;
+
+        sstr << "<" << stringifier1(object, verbosity) << ", "
+             << stringifier2(object, verbosity) << ">";
+        return sstr.str();
+    }
+
+    inline std::string operator () (const std::pair<T1, T2>& object) const
+    {
+        return (*this)(object, 0);
+    }
+};
+
+namespace detail_ {
+
+template <u64 INDEX, template <class> class StringifierType, typename... TupleTypes>
 inline typename std::enable_if<INDEX == sizeof...(TupleTypes), void>::type
 stringify_tuple(const std::tuple<TupleTypes...>& the_tuple,
                 std::ostringstream& sstr, i64 verbosity)
@@ -290,24 +329,24 @@ stringify_tuple(const std::tuple<TupleTypes...>& the_tuple,
     return;
 }
 
-template <u64 INDEX, typename... TupleTypes>
+template <u64 INDEX, template <class> class StringifierType, typename... TupleTypes>
 inline typename std::enable_if<INDEX != sizeof...(TupleTypes), void>::type
 stringify_tuple(const std::tuple<TupleTypes...>& the_tuple,
                 std::ostringstream& sstr, i64 verbosity)
 {
     typedef std::tuple<TupleTypes...> TheTupleType;
     typedef typename std::tuple_element<INDEX, TheTupleType>::type ElementType;
-    Stringifier<ElementType> stringifier;
+    StringifierType<ElementType> stringifier;
 
     if (INDEX > 0) {
         sstr << ", ";
     }
 
     sstr << stringifier(std::get<INDEX>(the_tuple), verbosity);
-    stringify_tuple<INDEX+1, TupleTypes...>(the_tuple, sstr, verbosity);
+    stringify_tuple<INDEX+1, StringifierType, TupleTypes...>(the_tuple, sstr, verbosity);
 }
 
-} /* end namespace detail */
+} /* end namespace detail_ */
 
 template <typename... TupleTypes>
 class Stringifier<std::tuple<TupleTypes...> >
@@ -317,7 +356,9 @@ public:
     {
         std::ostringstream sstr;
         sstr << "<";
-        detail::stringify_tuple<0, TupleTypes...>(object, sstr, verbosity);
+        detail_::stringify_tuple<0, aurum::stringification::Stringifier, TupleTypes...>(object,
+                                                                                        sstr,
+                                                                                        verbosity);
         sstr << ">";
         return sstr.str();
     }
@@ -328,6 +369,30 @@ public:
     }
 };
 
+template <typename... TupleTypes>
+class PtrStringifier<std::tuple<TupleTypes...> >
+{
+public:
+    inline std::string operator () (const std::tuple<TupleTypes...>& object, i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        sstr << "<";
+        detail_::stringify_tuple<0,
+                                 aurum::stringification::PtrStringifier,
+                                 TupleTypes...>(object,
+                                                sstr,
+                                                verbosity);
+        sstr << ">";
+        return sstr.str();
+    }
+
+    inline std::string operator () (const std::tuple<TupleTypes...>& object) const
+    {
+        return (*this)(object, 0);
+    }
+};
+
+
 template <typename ContainerType, typename ElementType>
 class IterableStringifier
 {
@@ -336,6 +401,26 @@ public:
     {
         std::ostringstream sstr;
         Stringifier<ElementType> stringifier;
+        auto first = std::begin(container);
+        auto last = std::end(container);
+        for (auto it = first; it != last; ++it) {
+            if (it != first) {
+                sstr << ", ";
+            }
+            sstr << stringifier(*it);
+        }
+        return sstr.str();
+    }
+};
+
+template <typename ContainerType, typename ElementType>
+class IterablePtrStringifier
+{
+public:
+    inline std::string operator () (const ContainerType& container, i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        PtrStringifier<ElementType> stringifier;
         auto first = std::begin(container);
         auto last = std::end(container);
         for (auto it = first; it != last; ++it) {

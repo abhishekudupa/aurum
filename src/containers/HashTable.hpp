@@ -46,7 +46,7 @@
 #include "../allocators/MemoryManager.hpp"
 #include "../primeutils/PrimeGenerator.hpp"
 #include "../hashing/Hashers.hpp"
-#include "../basetypes/Comparators.hpp"
+#include "../comparisons/Comparators.hpp"
 
 #include "BitSet.hpp"
 

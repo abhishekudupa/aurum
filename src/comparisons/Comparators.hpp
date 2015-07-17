@@ -42,8 +42,8 @@
 
 #include <functional>
 
-#include "AurumTypes.hpp"
-#include "AurumTraits.hpp"
+#include "../basetypes/AurumTypes.hpp"
+#include "../basetypes/AurumTraits.hpp"
 
 namespace aurum {
 namespace comparisons {
@@ -71,7 +71,7 @@ public:
 };
 
 template <typename T>
-class Less
+class Lesser
 {
 public:
     inline bool operator () (const T& obj1, const T& obj2) const
@@ -82,324 +82,90 @@ public:
 };
 
 template <typename T>
-class PtrLess
+class PtrLesser
 {
 private:
     inline bool apply(const T& obj1, const T& obj2,
-                      const std::true_type& is_pointer,
-                      const std::false_type& is_managed_pointer) const
+                      const std::true_type& is_pointer) const
     {
-        Less<typename std::remove_pointer<T>::type> less_fun;
+        Lesser<typename RemovePointer<T>::type> less_fun;
         return less_fun(*obj1, *obj2);
     }
 
     inline bool apply(const T& obj1, const T& obj2, const std::false_type& is_pointer) const
     {
-        Less<T> less_fun;
+        Lesser<T> less_fun;
         return less_fun(obj1, obj2);
     }
 
 public:
     inline bool operator () (const T& obj1, const T& obj2) const
     {
-        typename std::is_pointer<T>::type is_pointer;
-        typename aurum::IsAnyManagedPointer<T>::type is_managed_pointer;
-
+        typename IsPtrLike<typename std::decay<T>::type>::type is_pointer;
         return apply(obj1, obj2, is_pointer);
     }
 };
 
 template <typename T>
-using LessEqual = Negate<T, Reverse<T, Less<T> > >;
+using LesserEqual = Negate<T, Reverse<T, Lesser<T> > >;
 
 template <typename T>
-using GreaterEqual = Negate<T, Less<T> >;
+using GreaterEqual = Negate<T, Lesser<T> >;
 
 template <typename T>
-using Greater = Negate<T, LessEqual<T> >;
+using Greater = Negate<T, LesserEqual<T> >;
 
-template <typename T, template <typename> class CompareFunction>
-class Comparer
+template <typename T>
+using PtrLesserEqual = Negate<T, Reverse<T, PtrLesser<T> > >;
+
+template <typename T>
+using PtrGreaterEqual = Negate<T, PtrLesser<T> >;
+
+template <typename T>
+using PtrGreater = Negate<T, PtrLesserEqual<T> >;
+
+template <typename T>
+class EqualTo
+{
+public:
+    inline bool operator () (const T& object1, const T& object2) const
+    {
+        std::equal_to<T> equal_fun;
+        return equal_fun(object1, object2);
+    }
+};
+
+template <typename T>
+class PtrEqualTo
 {
 private:
-    inline bool compare(const T& object1, const T& object2,
-                        const std::true_type is_comparable) const
+    inline bool apply(const T& object1, const T& object2,
+                      const std::true_type& is_pointer) const
     {
-        CompareFunction<i64> cmp_fun;
-        return (cmp_fun(object1.compare(object2), 0));
+        EqualTo<typename RemovePointer<T>::type> equal_fun;
+        return equal_fun(*object1, *object2);
     }
 
-    inline bool compare(const T& object1, const T& object2,
-                        const std::false_type is_comparable) const
+    inline bool apply(const T& object1, const T& object2,
+                      const std::false_type& is_pointer) const
     {
-        CompareFunction<T> cmp_fun;
-        return cmp_fun(object1, object2);
+        EqualTo<T> equal_fun;
+        return equal_fun(object1, object2);
     }
 
 public:
     inline bool operator () (const T& object1, const T& object2) const
     {
-        typename IsComparable<T>::type is_comparable;
-        return compare(object1, object2, is_comparable);
-    }
-};
-
-template <typename T, template <typename> class CompareFunction>
-class Comparer<T*, CompareFunction>
-{
-private:
-    inline bool compare(const T* object1, const T* object2,
-                        const std::true_type is_comparable) const
-    {
-        CompareFunction<i64> cmp_fun;
-        return (cmp_fun(object1->compare(*object2), 0));
-    }
-
-    inline bool compare(const T* object1, const T* object2,
-                        const std::false_type is_comparable) const
-    {
-        CompareFunction<const T*> cmp_fun;
-        return cmp_fun(object1, object2);
-    }
-
-public:
-    inline bool operator () (const T* object1, const T* object2) const
-    {
-        typename IsComparable<T>::type is_comparable;
-        return compare(object1, object2, is_comparable);
-    }
-};
-
-template <typename T, template <typename> class CompareFunction>
-class Comparer<const T*, CompareFunction>
-{
-private:
-    inline bool compare(const T* object1, const T* object2,
-                        const std::true_type is_comparable) const
-    {
-        CompareFunction<i64> cmp_fun;
-        return (cmp_fun(object1->compare(*object2), 0));
-    }
-
-    inline bool compare(const T* object1, const T* object2,
-                        const std::false_type is_comparable) const
-    {
-        CompareFunction<T*> cmp_fun;
-        return cmp_fun(object1, object2);
-    }
-
-public:
-    inline bool operator () (const T* object1, const T* object2) const
-    {
-        typename IsComparable<T>::type is_comparable;
-        return compare(object1, object2, is_comparable);
-    }
-};
-
-template <typename T, template <typename> class CompareFunction>
-class Comparer<memory::ManagedPointer<T>, CompareFunction>
-{
-private:
-    inline bool compare(const T* object1, const T* object2,
-                        std::true_type is_comparable) const
-    {
-        CompareFunction<i64> cmp_fun;
-        return (cmp_fun(object1->compare(*object2)));
-    }
-
-    inline bool compare(const T* object1, const T* object2,
-                        std::false_type is_comparable) const
-    {
-        CompareFunction<T*> cmp_fun;
-        return (cmp_fun(object1->compare(&(*object2))));
-    }
-
-public:
-    inline bool operator () (const memory::ManagedPointer<T>& object1,
-                             const memory::ManagedPointer<T>& object2) const
-    {
-        typename IsComparable<T>::type is_comparable;
-        return compare(object1, object2, is_comparable);
-    }
-};
-
-template <typename T, template <typename> class CompareFunction>
-class Comparer<memory::ManagedConstPointer<T>, CompareFunction>
-{
-private:
-    inline bool compare(const T* object1, const T* object2,
-                        std::true_type is_comparable) const
-    {
-        CompareFunction<i64> cmp_fun;
-        return (cmp_fun(object1->compare(*object2)));
-    }
-
-    inline bool compare(const T* object1, const T* object2,
-                        std::false_type is_comparable) const
-    {
-        CompareFunction<T*> cmp_fun;
-        return (cmp_fun(object1->compare(&(*object2))));
-    }
-
-public:
-    inline bool operator () (const memory::ManagedConstPointer<T>& object1,
-                             const memory::ManagedConstPointer<T>& object2) const
-    {
-        typename IsComparable<T>::type is_comparable;
-        return compare(object1, object2, is_comparable);
+        typename IsPtrLike<typename std::decay<T>::type>::type is_pointer;
+        return apply(object1, object2, is_pointer);
     }
 };
 
 template <typename T>
-class Equality
-{
-private:
-    inline bool compare(const T& object1, const T& object2,
-                        const std::true_type is_comparable) const
-    {
-        return object1.equals(object2);
-    }
-
-    inline bool compare(const T& object1, const T& object2,
-                        const std::false_type is_comparable) const
-    {
-        return (object1 == object2);
-    }
-
-public:
-    inline bool operator () (const T& object1, const T& object2) const
-    {
-        typename IsComparable<T>::type is_comparable;
-        return compare(object1, object2, is_comparable);
-    }
-};
+using NotEqualTo = Negate<T, EqualTo<T> >;
 
 template <typename T>
-class Equality<T*>
-{
-private:
-    inline bool compare(const T* object1, const T* object2,
-                        const std::true_type is_comparable) const
-    {
-        return object1->equals(*object2);
-    }
-
-    inline bool compare(const T* object1, const T* object2,
-                        const std::false_type is_comparable) const
-    {
-        return (object1 == object2);
-    }
-
-public:
-    inline bool operator () (const T* object1, const T* object2) const
-    {
-        typename IsComparable<T>::type is_comparable;
-        return compare(object1, object2, is_comparable);
-    }
-};
-
-template <typename T>
-class Equality<const T*>
-{
-private:
-    inline bool compare(const T* object1, const T* object2,
-                        const std::true_type is_comparable) const
-    {
-        return object1->equals(*object2);
-    }
-
-    inline bool compare(const T* object1, const T* object2,
-                        const std::false_type is_comparable) const
-    {
-        return (object1 == object2);
-    }
-
-public:
-    inline bool operator () (const T* object1, const T* object2) const
-    {
-        typename IsComparable<T>::type is_comparable;
-        return compare(object1, object2, is_comparable);
-    }
-};
-
-template <typename T>
-class Equality<memory::ManagedPointer<T>>
-{
-private:
-    inline bool compare(const T* object1, const T* object2,
-                        const std::true_type is_comparable) const
-    {
-        return object1->equals(*object2);
-    }
-
-    inline bool compare(const T* object1, const T* object2,
-                        const std::false_type is_comparable) const
-    {
-        return (object1 == object2);
-    }
-
-public:
-    inline bool operator () (const memory::ManagedPointer<T>& object1,
-                             const memory::ManagedPointer<T>& object2) const
-    {
-        typename IsComparable<T>::type is_comparable;
-        return compare(object1, object2, is_comparable);
-    }
-};
-
-template <typename T>
-class Equality<memory::ManagedConstPointer<T>>
-{
-private:
-    inline bool compare(const T* object1, const T* object2,
-                        const std::true_type is_comparable) const
-    {
-        return object1->equals(*object2);
-    }
-
-    inline bool compare(const T* object1, const T* object2,
-                        const std::false_type is_comparable) const
-    {
-        return (object1 == object2);
-    }
-
-public:
-    inline bool operator () (const memory::ManagedConstPointer<T>& object1,
-                             const memory::ManagedConstPointer<T>& object2) const
-    {
-        typename IsComparable<T>::type is_comparable;
-        return compare(object1, object2, is_comparable);
-    }
-};
-
-template <typename T>
-class NotEquality
-{
-public:
-    inline bool operator () (const T& object1, const T& object2) const
-    {
-        Equality<T> equals_func;
-        return (!(equals_func(object1, object2)));
-    }
-};
-
-template <typename T>
-using Less = Comparer<T, std::less>;
-
-template <typename T>
-using LessEqual = Comparer<T, std::less_equal>;
-
-template <typename T>
-using Greater = Comparer<T, std::greater>;
-
-template <typename T>
-using GreaterEqual = Comparer<T, std::greater_equal>;
-
-template <typename T>
-using Equal = Equality<T>;
-
-template <typename T>
-using NEqual = NotEquality<T>;
+using PtrNotEqualTo = Negate<T, PtrEqualTo<T> >;
 
 } /* end namespace comparisons */
 } /* end namespace aurum */

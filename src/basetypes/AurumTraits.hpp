@@ -254,6 +254,56 @@ struct IsNonConstManagedPointer<memory::ManagedPointer<T> > : detail_::TrueStruc
 {};
 
 template <typename T>
+struct IsPtrLike : detail_::FalseStruct
+{};
+
+template <typename T>
+struct IsPtrLike<T*> : detail_::TrueStruct
+{};
+
+template <typename T>
+struct IsPtrLike<const T*> : detail_::TrueStruct
+{};
+
+template <typename T>
+struct IsPtrLike<memory::ManagedPointer<T> > : detail_::TrueStruct
+{};
+
+template <typename T>
+struct IsPtrLike<memory::ManagedConstPointer<T> >: detail_::TrueStruct
+{};
+
+template <typename T>
+struct RemovePointer
+{
+    typedef T type;
+};
+
+template <typename T>
+struct RemovePointer<T*>
+{
+    typedef T type;
+};
+
+template <typename T>
+struct RemovePointer<const T*>
+{
+    typedef T type;
+};
+
+template <typename T>
+struct RemovePointer<memory::ManagedPointer<T> >
+{
+    typedef T type;
+};
+
+template <typename T>
+struct RemovePointer<memory::ManagedConstPointer<T> >
+{
+    typedef T type;
+};
+
+template <typename T>
 struct IsRefCountable
     : std::conditional<std::is_base_of<RefCountable, T>::value,
                        detail_::TrueStruct, detail_::FalseStruct>::type

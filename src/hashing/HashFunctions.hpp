@@ -129,6 +129,40 @@ static inline u64 hash_combine(ArgTypes&&... args)
     return default_hash_function(the_array.data(), sizeof(u64) * num_args);
 }
 
+static inline u64 integer_hash(u64 key)
+{
+    key = (~key) + (key << 21);
+    key = key ^ (key >> 24);
+    key = (key + (key << 3)) + (key << 8);
+    key = key ^ (key >> 14);
+    key = (key + (key << 2)) + (key << 4);
+    key = key ^ (key >> 28);
+    key = key + (key << 31);
+    return key;
+}
+
+static inline u64 integer_fast_hash(u64 key)
+{
+        key ^= key >> 23;
+        key *= 0x2127599bf4325c37ULL;
+        key ^= key >> 47;
+        return key;
+}
+
+static inline u32 hash_64_to_32(u64 hash_64)
+{
+    return ((hash_64 - (hash_64 >> 32)) & (0xFFFFFFFFULL));
+}
+
+static inline u32 integer_hash_32(u64 key)
+{
+    return hash_64_to_32(integer_hash(key));
+}
+
+static inline u32 integer_fast_hash_32(u64 key)
+{
+    return hash_64_to_32(integer_fast_hash(key));
+}
 
 } /* end namespace hashing */
 } /* end namespace aurum */

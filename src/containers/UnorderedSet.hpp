@@ -40,8 +40,6 @@
 
 #include <sstream>
 
-#include "../hashing/Hashers.hpp"
-#include "../basetypes/Comparators.hpp"
 #include "../stringification/Stringifiers.hpp"
 
 #include "HashTable.hpp"
