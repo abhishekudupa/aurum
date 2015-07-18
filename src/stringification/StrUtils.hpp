@@ -308,51 +308,48 @@ public:
     }
 };
 
-namespace detail {
-
-template <u64 INDEX, typename... TupleTypes>
-inline typename std::enable_if<INDEX == sizeof...(TupleTypes), void>::type
-populate_tuple(std::tuple<TupleTypes...>& the_tuple,
-               const ac::Vector<std::string>& split_components)
-{
-    return;
-}
-
-template <u64 INDEX, typename... TupleTypes>
-inline typename std::enable_if<INDEX != sizeof...(TupleTypes), void>::type
-populate_tuple(std::tuple<TupleTypes...>& the_tuple,
-               const ac::Vector<std::string>& split_components)
-{
-    typedef std::tuple<TupleTypes...> TheTupleType;
-    typedef typename std::tuple_element<INDEX, TheTupleType>::type ElemType;
-    strutils::StringCaster<ElemType> caster;
-
-    try {
-        std::get<INDEX>(the_tuple) = caster(split_components[INDEX]);
-    } catch (const StringConversionException& e) {
-        throw StringConversionException(e.get_exception_info() +
-                                        "\nWhen parsing tuple type: " +
-                                        type_name<TheTupleType>() + ", and while parsing " +
-                                        "value of type: " + type_name<ElemType>() + " at " +
-                                        "tuple index: " + std::to_string(INDEX) + ". Value " +
-                                        " string: \"" + split_components[INDEX] + "\".");
-
-    }
-
-    populate_tuple<(u64)(INDEX+1), TupleTypes...>(the_tuple, split_components);
-}
-
-} /* end namespace detail */
-
 template <typename... TupleTypes>
 class StringCaster<std::tuple<TupleTypes...> >
 {
+private:
+    typedef std::tuple<TupleTypes...> TheTupleType;
+
+    template <u64 INDEX>
+    inline typename std::enable_if<INDEX == sizeof...(TupleTypes), void>::type
+    populate_tuple(TheTupleType& the_tuple,
+                   const ac::Vector<std::string>& split_components) const
+    {
+        return;
+    }
+
+    template <u64 INDEX>
+    inline typename std::enable_if<INDEX != sizeof...(TupleTypes), void>::type
+    populate_tuple(TheTupleType& the_tuple,
+                   const ac::Vector<std::string>& split_components) const
+    {
+        typedef std::tuple<TupleTypes...> TheTupleType;
+        typedef typename std::tuple_element<INDEX, TheTupleType>::type ElemType;
+        strutils::StringCaster<ElemType> caster;
+
+        try {
+            std::get<INDEX>(the_tuple) = caster(split_components[INDEX]);
+        } catch (const StringConversionException& e) {
+            throw StringConversionException(e.get_exception_info() +
+                                            "\nWhen parsing tuple type: " +
+                                            type_name<TheTupleType>() + ", and while parsing " +
+                                            "value of type: " + type_name<ElemType>() + " at " +
+                                            "tuple index: " + std::to_string(INDEX) + ". Value " +
+                                            " string: \"" + split_components[INDEX] + "\".");
+
+        }
+        populate_tuple<(u64)(INDEX+1)>(the_tuple, split_components);
+    }
+
 public:
     inline std::tuple<TupleTypes...> operator () (const std::string& the_string,
                                                   char separator = ',') const
     {
         ac::Vector<std::string> split_components;
-        std::tuple<TupleTypes...> the_tuple;
 
         split_components = strutils::split_on_unescaped(the_string, separator);
 
@@ -365,8 +362,8 @@ public:
                                             " components.");
         }
 
-        std::tuple<TupleTypes...> retval;
-        detail::populate_tuple<(u64)0, TupleTypes...>(the_tuple, split_components);
+        TheTupleType retval;
+        populate_tuple<0>(retval, split_components);
         return retval;
     }
 };
