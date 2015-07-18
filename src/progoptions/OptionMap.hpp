@@ -50,7 +50,7 @@ namespace program_options {
 
 namespace ac = aurum::containers;
 
-class OptionMap : public AurumObject
+class OptionMap : public AurumObject<OptionMap>
 {
 public:
     typedef ac::UnifiedUnorderedMap<std::string, OptionValueRef> OptionMapType;

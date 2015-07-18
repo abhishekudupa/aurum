@@ -80,32 +80,73 @@ public:
 
 // Specializations
 
-// An ugly macro for creating classes for which predefined to_string methods exist
-#define MAKE_PREDEF_STRINGIFIER_(TYPENAME_)                                           \
-    template <>                                                                       \
-    class Stringifier<TYPENAME_>                                                      \
-    {                                                                                 \
-    public:                                                                           \
-        inline std::string operator () (const TYPENAME_& object, i64 verbosity) const \
-        {                                                                             \
-            return std::to_string(object);                                            \
-        }                                                                             \
-        inline std::string operator () (const TYPENAME_& object) const                \
-        {                                                                             \
-            return std::to_string(object);                                            \
-        }                                                                             \
+namespace detail_ {
+
+template <typename T>
+class ToStringStringifier
+{
+public:
+    inline std::string operator () (const T& object, i64 verbosity) const
+    {
+        return std::to_string(object);
     }
 
-MAKE_PREDEF_STRINGIFIER_(u16);
-MAKE_PREDEF_STRINGIFIER_(u32);
-MAKE_PREDEF_STRINGIFIER_(u64);
-MAKE_PREDEF_STRINGIFIER_(i16);
-MAKE_PREDEF_STRINGIFIER_(i32);
-MAKE_PREDEF_STRINGIFIER_(i64);
-MAKE_PREDEF_STRINGIFIER_(float);
-MAKE_PREDEF_STRINGIFIER_(double);
+    inline std::string operator () (const T& object) const
+    {
+        return (*this)(object, 0);
+    }
+};
 
-#undef MAKE_PREDEF_STRINGIFIER_
+template <typename T>
+class StreamingStringifier
+{
+public:
+    inline std::string operator () const T& object, i64 verbosity) const
+    {
+        std::ostringstream sstr;
+        sstr << object;
+        return sstr.str();
+    }
+
+    inline std::string operator () (const T& object) const
+    {
+        return (*this)(object, 0);
+    }
+};
+
+} /* end namespace detail_ */
+
+template <>
+class Stringifier<u16> : public detail_::ToStringStringifier<u16>
+{};
+
+template <>
+class Stringifier<u32> : public detail_::ToStringStringifier<u32>
+{};
+
+template <>
+class Stringifier<u64> : public detail_::ToStringStringifier<u64>
+{};
+
+template <>
+class Stringifier<i16> : public detail_::ToStringStringifier<i16>
+{};
+
+template <>
+class Stringifier<i32> : public detail_::ToStringStringifier<i32>
+{};
+
+template <>
+class Stringifier<i64> : public detail_::ToStringStringifier<i64>
+{};
+
+template <>
+class Stringifier<float> : public detail_::ToStringStringifier<float>
+{};
+
+template <>
+class Stringifier<double> : public detail_::ToStringStringifier<double>
+{};
 
 template <>
 class Stringifier<bool>
@@ -146,119 +187,30 @@ public:
 };
 
 template <>
-class Stringifier<char>
-{
-public:
-    inline std::string operator () (char object, i64 verbosity) const
-    {
-        std::ostringstream sstr;
-        sstr << object;
-        return sstr.str();
-    }
-
-    inline std::string operator () (char object) const
-    {
-        std::ostringstream sstr;
-        sstr << object;
-        return sstr.str();
-    }
-};
+class Stringifier<char> : public detail_::StreamingStringifier<char>
+{};
 
 template <>
-class Stringifier<unsigned char>
-{
-public:
-    inline std::string operator () (unsigned char object, i64 verbosity) const
-    {
-        std::ostringstream sstr;
-        sstr << object;
-        return sstr.str();
-    }
-
-    inline std::string operator () (char object) const
-    {
-        std::ostringstream sstr;
-        sstr << object;
-        return sstr.str();
-    }
-};
+class Stringifier<unsigned char> : public detail_::StreamingStringifier<unsigned char>
+{};
 
 template <typename T>
-class Stringifier<T*>
-{
-public:
-    inline std::string operator () (const T* object, i64 verbosity) const
-    {
-        std::ostringstream sstr;
-        sstr << object;
-        return sstr.str();
-    }
-
-    inline std::string operator () (const T* object) const
-    {
-        std::ostringstream sstr;
-        sstr << object;
-        return sstr.str();
-    }
-};
+class Stringifier<T*> : public detail_::StreamingStringifier<T*>
+{};
 
 template <typename T>
-class Stringifier<const T*>
-{
-public:
-    inline std::string operator () (const T* object, i64 verbosity) const
-    {
-        std::ostringstream sstr;
-        sstr << object;
-        return sstr.str();
-    }
-
-    inline std::string operator () (const T* object) const
-    {
-        std::ostringstream sstr;
-        sstr << object;
-        return sstr.str();
-    }
-};
+class Stringifier<const T*> : public detail_::StreamingStringifier<const T*>
+{};
 
 template <typename T>
 class Stringifier<memory::ManagedPointer<T> >
-{
-public:
-    inline std::string operator () (const memory::ManagedPointer<T>& object, i64 verbosity) const
-    {
-        std::ostringstream sstr;
-        sstr << object;
-        return sstr.str();
-    }
-
-    inline std::string operator () (const memory::ManagedPointer<T>& object) const
-    {
-        std::ostringstream sstr;
-        sstr << object;
-        return sstr.str();
-    }
-};
+    : public detail_::StreamingStringifier<memory::ManagedPointer<T> >
+{};
 
 template <typename T>
 class Stringifier<memory::ManagedConstPointer<T> >
-{
-public:
-    inline std::string operator () (const memory::ManagedConstPointer<T>& object,
-                                    i64 verbosity) const
-    {
-        std::ostringstream sstr;
-        sstr << object;
-        return sstr.str();
-    }
-
-    inline std::string operator () (const memory::ManagedConstPointer<T>& object) const
-    {
-        std::ostringstream sstr;
-        sstr << object;
-        return sstr.str();
-    }
-};
+    : public detail_::StreamingStringifier<memory::ManagedConstPointer<T> >
+{};
 
 template <typename T1, typename T2>
 class Stringifier<std::pair<T1, T2> >
@@ -281,43 +233,10 @@ public:
     }
 };
 
-template <typename T>
-class PtrStringifier
-{
-private:
-    inline std::string apply(const T& object, const std::true_type& is_pointer) const
-    {
-        Stringifier<typename RemovePointer<T>::type> stringifier;
-        return stringifier(*object);
-    }
-
-    inline std::string apply(const T& object, const std::false_type& is_pointer) const
-    {
-        Stringifier<typename std::decay<T>::type> stringifier;
-        return stringifier(object);
-    }
-};
-
-template <typename T1, typename T2>
-class PtrStringifier<std::pair<T1, T2> >
-{
-public:
-    inline std::string operator () (const std::pair<T1, T2>& object, i64 verbosity) const
-    {
-        std::ostringstream sstr;
-        PtrStringifier<T1> stringifier1;
-        PtrStringifier<T2> stringifier2;
-
-        sstr << "<" << stringifier1(object, verbosity) << ", "
-             << stringifier2(object, verbosity) << ">";
-        return sstr.str();
-    }
-
-    inline std::string operator () (const std::pair<T1, T2>& object) const
-    {
-        return (*this)(object, 0);
-    }
-};
+// TODO:
+// Fix up all deep stringifiers
+// Fix the normal tuple stringifiers to use class methods rather
+// than the hiiden methods in the detail_ namespace
 
 namespace detail_ {
 

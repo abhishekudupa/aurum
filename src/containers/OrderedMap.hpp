@@ -48,7 +48,7 @@ namespace ordered_map_detail_ {
 
 namespace ac = aurum::containers;
 namespace aa = aurum::allocators;
-namespace au = aurum::utils;
+namespace acmp = aurum::comparisons;
 namespace ah = aurum::hashing;
 namespace as = aurum::stringification;
 namespace acd = aurum::containers::ordered_map_detail_;
@@ -191,7 +191,11 @@ public:
 
 template <typename KeyType, typename MappedType, typename KeyHash,
           typename KeyEquals, typename KeyLess>
-class OrderedMapBase : public AurumObject,
+class OrderedMapBase : public AurumObject<acd::OrderedMapBase<KeyType,
+                                                              MappedType,
+                                                              KeyHash,
+                                                              KeyEquals,
+                                                              KeyLess> >,
                        public Stringifiable<acd::OrderedMapBase<KeyType,
                                                                 MappedType,
                                                                 KeyHash,
@@ -756,8 +760,8 @@ public:
 // some useful typedefs
 template <typename KeyType, typename MappedType,
           typename KeyHash = ah::Hasher<KeyType>,
-          typename KeyEquals = au::Equal<KeyType>,
-          typename KeyLess = au::Less<KeyType> >
+          typename KeyEquals = acmp::EqualTo<KeyType>,
+          typename KeyLess = acmp::Lesser<KeyType> >
 using OrderedMap = ordered_map_detail_::OrderedMapBase<KeyType, MappedType,
                                                        KeyHash, KeyEquals, KeyLess>;
 

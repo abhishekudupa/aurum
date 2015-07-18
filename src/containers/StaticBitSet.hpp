@@ -51,7 +51,7 @@ namespace aurum {
 namespace containers {
 
 template <u64 SIZE>
-class StaticBitSet final : public AurumObject,
+class StaticBitSet final : public AurumObject<aurum::containers::StaticBitSet<SIZE> >,
                            public Stringifiable<aurum::containers::StaticBitSet<SIZE> >
 {
 private:

@@ -143,10 +143,15 @@ static inline u64 integer_hash(u64 key)
 
 static inline u64 integer_fast_hash(u64 key)
 {
-        key ^= key >> 23;
-        key *= 0x2127599bf4325c37ULL;
-        key ^= key >> 47;
-        return key;
+    key ^= key >> 23;
+    key *= 0x2127599bf4325c37ULL;
+    key ^= key >> 47;
+    return key;
+}
+
+static inline u64 integer_identity_hash(u64 key)
+{
+    return key;
 }
 
 static inline u32 hash_64_to_32(u64 hash_64)

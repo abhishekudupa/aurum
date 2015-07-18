@@ -139,13 +139,9 @@ public:
         DeepLesser<T1, NUM_DEREFS_ALLOWED> sub_comparator1;
         DeepLesser<T2, NUM_DEREFS_ALLOWED> sub_comparator2;
 
-        if (sub_comparator1(obj1.first, obj2.first)) {
-            return true;
-        } else if (sub_comparator1(obj2.first, obj1.first)) {
-            return false;
-        } else {
-            return sub_comparator2(obj1.second, obj2.second);
-        }
+        return (sub_comparator1(obj1.first, obj2.first) ||
+                (!(sub_comparator1(obj2.first, obj1.first)) &&
+                 sub_comparator2(obj1.second, obj2.second)));
     }
 };
 
@@ -172,13 +168,9 @@ private:
         auto const& elem1 = std::get<INDEX>(obj1);
         auto const& elem2 = std::get<INDEX>(obj2);
 
-        if (sub_comparator(elem1, elem2)) {
-            return true;
-        } else if (sub_comparator(elem2, elem1)) {
-            return false;
-        } else {
-            return compare_element<INDEX+1>(obj1, obj2);
-        }
+        return (sub_comparator(elem1, elem2) ||
+                (!(sub_comparator(elem2, elem1)) &&
+                 compare_element<INDEX+1>(obj1, obj2)));
     }
 
 public:
@@ -258,13 +250,8 @@ public:
         DeepEqualTo<T1, NUM_DEREFS_ALLOWED> sub_comparator1;
         DeepEqualTo<T2, NUM_DEREFS_ALLOWED> sub_comparator2;
 
-        if (sub_comparator1(obj1.first, obj2.first)) {
-            return true;
-        } else if (sub_comparator1(obj2.first, obj1.first)) {
-            return false;
-        } else {
-            return sub_comparator2(obj1.second, obj2.second);
-        }
+        return (sub_comparator1(obj1.first, obj2.first) &&
+                sub_comparator2(obj1.second, obj2.second));
     }
 };
 
@@ -291,13 +278,7 @@ private:
         auto const& elem1 = std::get<INDEX>(obj1);
         auto const& elem2 = std::get<INDEX>(obj2);
 
-        if (sub_comparator(elem1, elem2)) {
-            return true;
-        } else if (sub_comparator(elem2, elem1)) {
-            return false;
-        } else {
-            return compare_element<INDEX+1>(obj1, obj2);
-        }
+        return (sub_comparator(elem1, elem2) && compare_element<INDEX+1>(obj1, obj2));
     }
 
 public:

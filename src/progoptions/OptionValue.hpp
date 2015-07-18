@@ -45,7 +45,8 @@
 #include <functional>
 
 #include "../basetypes/AurumTypes.hpp"
-#include "../memory/RefCountable.hpp"
+#include "../basetypes/RefCountable.hpp"
+#include "../basetypes/Downcastable.hpp"
 #include "../memory/ManagedPointer.hpp"
 #include "../stringification/StrUtils.hpp"
 #include "../containers/Vector.hpp"
@@ -59,8 +60,8 @@ namespace am = aurum::memory;
 
 class OptionMap;
 
-class OptionValueBase : public AurumObject,
-                        public am::RefCountable,
+class OptionValueBase : public AurumObject<OptionValueBase>,
+                        public RefCountable,
                         public Downcastable<OptionValueBase>
 {
 protected:

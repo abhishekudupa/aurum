@@ -129,7 +129,7 @@ TYPED_TEST_P(UnorderedSetTest, Constructor)
 
     auto it3 = set3.begin();
     for (u64 i = 0; i < 5; ++i) {
-        EXPECT_EQ(i+1, *it3);
+        EXPECT_GE(5ull, *it3);
         ++it3;
     }
     EXPECT_EQ(set3.end(), it3);
@@ -140,7 +140,7 @@ TYPED_TEST_P(UnorderedSetTest, Constructor)
 
     auto it4 = set4.begin();
     for (u64 i = 0; i < 5; ++i) {
-        EXPECT_EQ(i+1, *it4);
+        EXPECT_GE(5ul, *it4);
         ++it4;
     }
     EXPECT_EQ(set4.end(), it4);
@@ -159,7 +159,7 @@ TYPED_TEST_P(UnorderedSetTest, Assignment)
     EXPECT_EQ(10ull, set1.size());
     auto it1 = set1.begin();
     for (u64 i = 0; i < 10; ++i) {
-        EXPECT_EQ(i+1, *it1);
+        EXPECT_GE(10ull, *it1);
         ++it1;
     }
     EXPECT_TRUE(it1 == set1.end());
@@ -170,8 +170,8 @@ TYPED_TEST_P(UnorderedSetTest, Assignment)
     it1 = set1.begin();
     auto it2 = set2.begin();
     for (u64 i = 0; i < 10; ++i) {
-        EXPECT_EQ(i+1, *it1);
-        EXPECT_EQ(i+1, *it2);
+        EXPECT_GE(10ull, *it1);
+        EXPECT_GE(10ull, *it2);
         ++it1;
         ++it2;
     }
@@ -184,7 +184,7 @@ TYPED_TEST_P(UnorderedSetTest, Assignment)
 
     auto it3 = set3.begin();
     for (u64 i = 0; i < 10; ++i) {
-        EXPECT_EQ(i+1, *it3);
+        EXPECT_GE(10ull, *it3);
         ++it3;
     }
     EXPECT_TRUE(it3 == set3.end());
@@ -317,7 +317,9 @@ TYPED_TEST_P(UnorderedSetTest, Stringification)
 
 TEST(StdUnorderedSetTest, Performance)
 {
-    std::unordered_set<u64> std_set;
+    std::unordered_set<u64,
+                       aurum::hashing::Hasher<u64>,
+                       aurum::comparisons::EqualTo<u64> > std_set;
 
     std::default_random_engine generator;
     std::uniform_int_distribution<u64> distribution(0, 1);

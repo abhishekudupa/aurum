@@ -43,6 +43,7 @@
 // to combine/mix hash values in a nice fashion
 
 #include <functional>
+#include <string.h>
 
 #include "../basetypes/AurumTypes.hpp"
 #include "../basetypes/AurumTraits.hpp"
@@ -55,6 +56,9 @@ namespace hashing {
 namespace am = aurum::memory;
 
 namespace detail_ {
+
+static constexpr u64 sc_hash_initializer = 0xcbf29ce484222325UL;
+static constexpr u64 sc_hash_multiplier = 0x100000001b3UL;
 
 template <typename T>
 inline u64 compute_aurum_hash_(const T& object)
@@ -76,7 +80,7 @@ inline u64 aurum_hash(const T& object)
     template <>                                                               \
     inline u64 aurum_hash<TYPENAME__>(const TYPENAME__& object)               \
     {                                                                         \
-        return hashing::integer_fast_hash((u64)object);                       \
+        return hashing::integer_identity_hash((u64)object);                       \
     }
 
 
@@ -95,17 +99,19 @@ MAKE_PRIMITIVE_INTEGER_HASH_(bool)
 template <>
 inline u64 aurum_hash<float>(const float& object)
 {
-    auto actual_object = object;
-    u32 as_int = *(reinterpret_cast<u32*>(&actual_object));
-    return aurum_hash(as_int);
+    float as_float = object;
+    u32 as_int;
+    memcpy(&as_int, &as_float, sizeof(float));
+    return (aurum_hash(as_int));
 }
 
 template <>
 inline u64 aurum_hash<double>(const double& object)
 {
-    auto actual_object = object;
-    u64 as_int = *(static_cast<u64*>(static_cast<void*>(&actual_object)));
-    return aurum_hash(as_int);
+    auto as_double = object;
+    u64 as_int;
+    memcpy(&as_int, &as_double, sizeof(double));
+    return (aurum_hash(as_int));
 }
 
 template <>
@@ -179,31 +185,6 @@ class Hasher<am::ManagedConstPointer<T> >
     }
 };
 
-// deep hashes on pointers
-template <typename T>
-class PtrHasher
-{
-private:
-    inline u64 apply(const T& object, const std::true_type& is_pointer) const
-    {
-        Hasher<typename RemovePointer<T>::type> hasher;
-        return hasher(*object);
-    }
-
-    inline u64 apply(const T& object, const std::false_type& is_pointer) const
-    {
-        Hasher<T> hasher;
-        return hasher(object);
-    }
-
-public:
-    inline u64 operator () (const T& object) const
-    {
-        typename IsPtrLike<typename std::decay<T>::type>::type is_pointer;
-        return apply(object, is_pointer);
-    }
-};
-
 // Specialization for pairs
 template <typename T1, typename T2>
 class Hasher<std::pair<T1, T2> >
@@ -216,22 +197,7 @@ public:
         auto h1 = t1_hasher(the_pair.first);
         auto h2 = t2_hasher(the_pair.second);
 
-        return ((h1 * 0x100000001b3UL) ^ h2);
-    }
-};
-
-template <typename T1, typename T2>
-class PtrHasher<std::pair<T1, T2> >
-{
-public:
-    inline u64 operator () (const std::pair<T1, T2>& the_pair) const
-    {
-        PtrHasher<T1> t1_hasher;
-        PtrHasher<T2> t2_hasher;
-        auto h1 = t1_hasher(the_pair.first);
-        auto h2 = t2_hasher(the_pair.second);
-
-        return ((h1 * 0x100000001b3UL) ^ h2);
+        return ((h1 * detail_::sc_hash_multiplier) ^ h2);
     }
 };
 
@@ -255,48 +221,14 @@ private:
     {
         Hasher<typename std::tuple_element<INDEX, typename std::tuple<TupleTypes...> >::type> hasher;
         auto h1 = hasher(std::get<INDEX>(the_tuple));
-        accumulated_hash = (accumulated_hash * 0x100000001b3UL) ^ h1;
+        accumulated_hash = (accumulated_hash * detail_::sc_hash_multiplier) ^ h1;
         compute_hash<INDEX+1>(the_tuple, accumulated_hash);
     }
 
 public:
     inline u64 operator () (const std::tuple<ArgTypes...>& the_tuple) const
     {
-        u64 retval = 0xcbf29ce484222325UL;
-        compute_hash<0>(the_tuple, retval);
-        return retval;
-    }
-};
-
-template <typename... ArgTypes>
-class PtrHasher<std::tuple<ArgTypes...> >
-{
-private:
-    template <u64 INDEX, typename... TupleTypes>
-    inline typename std::enable_if<INDEX == sizeof...(TupleTypes), void>::type
-    compute_hash(const std::tuple<TupleTypes...>& the_tuple,
-                 u64& accumulated_hash) const
-    {
-        return;
-    }
-
-    template <u64 INDEX, typename... TupleTypes>
-    inline typename std::enable_if<INDEX != sizeof...(TupleTypes), void>::type
-    compute_hash(const std::tuple<TupleTypes...>& the_tuple,
-                 u64& accumulated_hash) const
-    {
-        PtrHasher<typename std::tuple_element<INDEX, typename std::tuple<TupleTypes...> >::type>
-            hasher;
-
-        auto h1 = hasher(std::get<INDEX>(the_tuple));
-        accumulated_hash = (accumulated_hash * 0x100000001b3UL) ^ h1;
-        compute_hash<INDEX+1>(the_tuple, accumulated_hash);
-    }
-
-public:
-    inline u64 operator () (const std::tuple<ArgTypes...>& the_tuple) const
-    {
-        u64 retval = 0xcbf29ce484222325UL;
+        u64 retval = detail_::sc_hash_initializer;
         compute_hash<0>(the_tuple, retval);
         return retval;
     }
@@ -310,26 +242,118 @@ public:
     inline u64 operator () (const T& iterable) const
     {
         ElemHasher elem_hasher;
-        u64 retval = 0xcbf29ce484222325UL;
+        u64 retval = detail_::sc_hash_initializer;
         for (auto it = iterable.begin(), last = iterable.end(); it != last; ++it) {
             auto cur_hash = elem_hasher(*it);
-            retval = (retval * 0x100000001b3UL) ^ cur_hash;
+            retval = (retval * detail_::sc_hash_multiplier) ^ cur_hash;
         }
         return retval;
     }
 };
 
-template <typename T, typename ElemHasher = PtrHasher<typename T::value_type> >
-class IterablePtrHasher
+// Deep hashes for pointers
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepHasher : public Hasher<T>
+{};
+
+template <typename T>
+class DeepHasher<T*, 0> : public Hasher<T*>
+{};
+
+template <typename T>
+class DeepHasher<const T*, 0> : public Hasher<const T*>
+{};
+
+template <typename T>
+class DeepHasher<memory::ManagedPointer<T>, 0> : public Hasher<memory::ManagedPointer<T> >
+{};
+
+template <typename T>
+class DeepHasher<memory::ManagedConstPointer<T>, 0>
+    : public Hasher<memory::ManagedConstPointer<T> >
+{};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepHasher<T*, NUM_DEREFS_ALLOWED>
+{
+public:
+    inline u64 operator () (const T* const& object) const
+    {
+        DeepHasher<T, NUM_DEREFS_ALLOWED-1> sub_hasher;
+        return sub_hasher(*object);
+    }
+};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepHasher<const T*, NUM_DEREFS_ALLOWED>
+    : public DeepHasher<T*, NUM_DEREFS_ALLOWED>
+{};
+
+template <typename T1, typename T2, u64 NUM_DEREFS_ALLOWED>
+class DeepHasher<std::pair<T1, T2>, NUM_DEREFS_ALLOWED>
+{
+private:
+    typedef std::pair<T1, T2> PairType;
+
+public:
+    inline bool operator () (const PairType& object) const
+    {
+        DeepHasher<T1, NUM_DEREFS_ALLOWED> hasher1;
+        DeepHasher<T2, NUM_DEREFS_ALLOWED> hasher2;
+
+        u64 retval = detail_::sc_hash_initializer;
+        retval = (retval * detail_::sc_hash_multiplier) ^ hasher1(object.first);
+        retval = (retval * detail_::sc_hash_multiplier) ^ hasher2(object.second);
+        return retval;
+    }
+};
+
+template <typename... TupleTypes, u64 NUM_DEREFS_ALLOWED>
+class DeepHasher<std::tuple<TupleTypes...>, NUM_DEREFS_ALLOWED>
+{
+private:
+    typedef std::tuple<TupleTypes...> TheTupleType;
+
+    template <u64 INDEX>
+    inline typename std::enable_if<INDEX == sizeof...(TupleTypes), void>::type
+    compute_hash(const TheTupleType& the_tuple, u64& accumulator) const
+    {
+        return;
+    }
+
+    template <u64 INDEX>
+    inline typename std::enable_if<INDEX != sizeof...(TupleTypes), void>::type
+    compute_hash(const TheTupleType& the_tuple, u64& accumulator) const
+    {
+        typedef typename std::tuple_element<INDEX, TheTupleType>::type ElemType;
+
+        DeepHasher<ElemType, NUM_DEREFS_ALLOWED> sub_hasher;
+        auto const& elem = std::get<INDEX>(the_tuple);
+
+        accumulator = (accumulator * detail_::sc_hash_multiplier) ^ sub_hasher(elem);
+        return;
+    }
+
+public:
+    inline u64 operator () (const TheTupleType& the_tuple) const
+    {
+        u64 retval = detail_::sc_hash_initializer;
+        compute_hash<0>(the_tuple, retval);
+        return retval;
+    }
+};
+
+template <typename T, typename ElemHasher = DeepHasher<typename T::value_type, 8> >
+class DeepIterableHasher
 {
 public:
     inline u64 operator () (const T& iterable) const
     {
         ElemHasher elem_hasher;
-        u64 retval = 0xcbf29ce484222325UL;
+        u64 retval = detail_::sc_hash_initializer;
         for (auto it = iterable.begin(), last = iterable.end(); it != last; ++it) {
             auto cur_hash = elem_hasher(*it);
-            retval = (retval * 0x100000001b3UL) ^ cur_hash;
+            retval = (retval * detail_::sc_hash_multiplier) ^ cur_hash;
         }
         return retval;
     }

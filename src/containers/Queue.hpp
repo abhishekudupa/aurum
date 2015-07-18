@@ -45,8 +45,8 @@
 namespace aurum {
 namespace containers {
 
-template <typename T, typename ContainerType_ = Deque<T>>
-class Queue final : public AurumObject
+template <typename T, typename ContainerType_ = Deque<T> >
+class Queue final : public AurumObject<aurum::containers::Queue<T, ContainerType_> >
 {
 public:
     typedef T ValueType;

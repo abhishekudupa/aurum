@@ -41,6 +41,7 @@
 #include <initializer_list>
 
 #include "../basetypes/AurumTypes.hpp"
+#include "../basetypes/Stringifiable.hpp"
 #include "../allocators/MemoryManager.hpp"
 #include "../allocators/PoolAllocator.hpp"
 #include "../stringification/Stringifiers.hpp"
@@ -65,7 +66,8 @@ namespace as = aurum::stringification;
 */
 
 template <typename T, bool USEPOOLS>
-class SListBase final : public AurumObject, public Stringifiable<SListBase<T, USEPOOLS> >
+class SListBase final : public AurumObject<ac::SListBase<T, USEPOOLS> >,
+                        public Stringifiable<ac::SListBase<T, USEPOOLS> >
 {
 public:
     typedef T ValueType;
@@ -1495,7 +1497,7 @@ using PoolPtrSList = SListBase<T*, true>;
 
 template <typename T>
 using PoolMPtrSList =
-    SListBase<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
+    SListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
                                         memory::ManagedPointer<T>, T*>::type, true>;
 
 template <typename T>
@@ -1503,7 +1505,7 @@ using PoolConstPtrSList = SListBase<const T*, true>;
 
 template <typename T>
 using PoolConstMPtrSList =
-    SListBase<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
+    SListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
                                         memory::ManagedConstPointer<T>,
                                         const T*>::type, true>;
 
@@ -1515,12 +1517,12 @@ using ConstPtrSList = SListBase<const T*, false>;
 
 template <typename T>
 using MPtrSList =
-    SListBase<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
+    SListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
                                         memory::ManagedPointer<T>, T*>::type, false>;
 
 template <typename T>
 using ConstMPtrSList =
-    SListBase<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
+    SListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
                                         memory::ManagedConstPointer<T>,
                                         const T*>::type, false>;
 

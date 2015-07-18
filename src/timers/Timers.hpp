@@ -43,7 +43,6 @@
 #include <functional>
 
 #include "../basetypes/AurumBase.hpp"
-#include "../basetypes/AurumTypesFwd.hpp"
 
 namespace aurum {
 namespace utils {

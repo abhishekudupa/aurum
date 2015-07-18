@@ -43,6 +43,7 @@
 #include <sstream>
 
 #include "../basetypes/AurumTypes.hpp"
+#include "../basetypes/Stringifiable.hpp"
 #include "../allocators/MemoryManager.hpp"
 #include "../allocators/PoolAllocator.hpp"
 #include "../stringification/Stringifiers.hpp"
@@ -57,7 +58,8 @@ namespace ac = aurum::containers;
 namespace as = aurum::stringification;
 
 template <typename T, bool USEPOOLS>
-class DListBase final : public AurumObject, public Stringifiable<DListBase<T, USEPOOLS> >
+class DListBase final : public AurumObject<ac::DListBase<T, USEPOOLS> >,
+                        public Stringifiable<DListBase<T, USEPOOLS> >
 {
 public:
     typedef T ValueType;
@@ -1214,23 +1216,23 @@ using PoolConstPtrDList = DListBase<const T*, true>;
 
 template <typename T>
 using MPtrDList =
-    DListBase<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
+    DListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
                                         memory::ManagedPointer<T>, T*>::type, false>;
 
 template <typename T>
 using PoolMPtrDList =
-    DListBase<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
+    DListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
                                         memory::ManagedPointer<T>, T*>::type, true>;
 
 template <typename T>
 using ConstMPtrDList =
-    DListBase<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
+    DListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
                                         memory::ManagedConstPointer<T>,
                                         const T*>::type, false>;
 
 template <typename T>
 using PoolConstMPtrDList =
-    DListBase<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
+    DListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
                                         memory::ManagedConstPointer<T>,
                                         const T*>::type, true>;
 

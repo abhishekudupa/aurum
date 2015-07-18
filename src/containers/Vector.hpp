@@ -49,6 +49,7 @@
 
 #include "../basetypes/AurumBase.hpp"
 #include "../basetypes/AurumTypes.hpp"
+#include "../basetypes/Stringifiable.hpp"
 #include "../allocators/MemoryManager.hpp"
 #include "../stringification/Stringifiers.hpp"
 

@@ -64,7 +64,7 @@ extern const std::string gc_positional_option_prefix_;
 
 namespace detail {
 
-class OptionDescription : public AurumObject,
+class OptionDescription : public AurumObject<OptionDescription>,
                           public Stringifiable<OptionDescription>
 {
 public:

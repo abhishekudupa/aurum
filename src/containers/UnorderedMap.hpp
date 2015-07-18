@@ -52,7 +52,7 @@ namespace containers {
 
 namespace ac = aurum::containers;
 namespace ah = aurum::hashing;
-namespace au = aurum::utils;
+namespace acmp = aurum::comparisons;
 namespace as = aurum::stringification;
 
 namespace unordered_map_detail_ {
@@ -173,7 +173,11 @@ template <typename MappedKeyType, typename MappedValueType,
           typename HashFunction, typename EqualsFunction,
           template <typename, typename, typename> class HashTableTemplateType>
 class UnorderedMapBase :
-        public AurumObject,
+        public AurumObject<acd::UnorderedMapBase<MappedKeyType,
+                                                 MappedValueType,
+                                                 HashFunction,
+                                                 EqualsFunction,
+                                                 HashTableTemplateType> >,
         public Stringifiable<acd::UnorderedMapBase<MappedKeyType,
                                                    MappedValueType,
                                                    HashFunction,
@@ -591,7 +595,7 @@ public:
 
 template <typename MappedKeyType, typename MappedValueType,
           typename HashFunction = ah::Hasher<MappedKeyType>,
-          typename EqualsFunction = au::Equal<MappedKeyType> >
+          typename EqualsFunction = acmp::EqualTo<MappedKeyType> >
 using UnifiedUnorderedMap =
     unordered_map_detail_::UnorderedMapBase<MappedKeyType, MappedValueType,
                                             HashFunction, EqualsFunction,
@@ -599,7 +603,7 @@ using UnifiedUnorderedMap =
 
 template <typename MappedKeyType, typename MappedValueType,
           typename HashFunction = ah::Hasher<MappedKeyType>,
-          typename EqualsFunction = au::Equal<MappedKeyType> >
+          typename EqualsFunction = acmp::EqualTo<MappedKeyType> >
 using SegregatedUnorderedMap =
     unordered_map_detail_::UnorderedMapBase<MappedKeyType, MappedValueType,
                                             HashFunction, EqualsFunction,
@@ -607,65 +611,11 @@ using SegregatedUnorderedMap =
 
 template <typename MappedKeyType, typename MappedValueType,
           typename HashFunction = ah::Hasher<MappedKeyType>,
-          typename EqualsFunction = au::Equal<MappedKeyType> >
+          typename EqualsFunction = acmp::EqualTo<MappedKeyType> >
 using RestrictedUnorderedMap =
     unordered_map_detail_::UnorderedMapBase<MappedKeyType, MappedValueType,
                                             HashFunction, EqualsFunction,
                                             hash_table_detail_::RestrictedHashTable>;
-
-template <typename MappedKeyType, typename MappedValueType>
-using PtrUnifiedUnorderedMap = UnifiedUnorderedMap<MappedKeyType*, MappedValueType>;
-
-template <typename MappedKeyType, typename MappedValueType>
-using CPtrUnifiedUnorderedMap = UnifiedUnorderedMap<const MappedKeyType*, MappedValueType>;
-
-template <typename MappedKeyType, typename MappedValueType>
-using PtrSegregatedUnorderedMap = SegregatedUnorderedMap<MappedKeyType*, MappedValueType>;
-
-template <typename MappedKeyType, typename MappedValueType>
-using CPtrSegregatedUnorderedMap = SegregatedUnorderedMap<const MappedKeyType*, MappedValueType>;
-
-template <typename MappedKeyType, typename MappedValueType>
-using PtrRestrictedUnorderedMap = RestrictedUnorderedMap<MappedKeyType*, MappedValueType>;
-
-template <typename MappedKeyType, typename MappedValueType>
-using CPtrRestrictedUnorderedMap = RestrictedUnorderedMap<const MappedKeyType*, MappedValueType>;
-
-template <typename T, typename MappedValueType>
-using MPtrUnifiedUnorderedMap =
-    UnifiedUnorderedMap<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                                  memory::ManagedPointer<T>, T*>::type,
-                        MappedValueType>;
-
-template <typename T, typename MappedValueType>
-using CMPtrUnifiedUnorderedMap =
-    UnifiedUnorderedMap<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                                  memory::ManagedConstPointer<T>, const T*>::type,
-                        MappedValueType>;
-
-template <typename T, typename MappedValueType>
-using MPtrSegregatedUnorderedMap =
-    SegregatedUnorderedMap<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                                     memory::ManagedPointer<T>, T*>::type,
-                           MappedValueType>;
-
-template <typename T, typename MappedValueType>
-using CMPtrSegregatedUnorderedMap =
-    SegregatedUnorderedMap<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                                     memory::ManagedConstPointer<T>, const T*>::type,
-                           MappedValueType>;
-
-template <typename T, typename MappedValueType>
-using MPtrRestrictedUnorderedMap =
-    RestrictedUnorderedMap<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                                     memory::ManagedPointer<T>, T*>::type,
-                           MappedValueType>;
-
-template <typename T, typename MappedValueType>
-using CMPtrRestrictedUnorderedMap =
-    RestrictedUnorderedMap<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                                     memory::ManagedConstPointer<T>, const T*>::type,
-                           MappedValueType>;
 
 } /* end namespace containers */
 } /* end namespace aurum */

@@ -48,13 +48,15 @@ namespace containers {
 namespace ordered_set_detail_ {
 
 namespace aa = aurum::allocators;
-namespace au = aurum::utils;
+namespace acmp = aurum::comparisons;
 namespace ah = aurum::hashing;
 namespace as = aurum::stringification;
 namespace acd = aurum::containers::ordered_set_detail_;
 
 template <typename T, typename HashFunction, typename EqualsFunction, typename LessFunction>
-class OrderedSetBase : public AurumObject,
+class OrderedSetBase : public AurumObject<acd::OrderedSetBase<T, HashFunction,
+                                                              EqualsFunction,
+                                                              LessFunction> >,
                        public Stringifiable<acd::OrderedSetBase<T, HashFunction,
                                                                 EqualsFunction,
                                                                 LessFunction> >
@@ -553,7 +555,7 @@ public:
 
 // Some useful typedefs
 template <typename T, typename HashFunction = ah::Hasher<T>,
-          typename EqualsFunction = au::Equal<T>, typename LessFunction = au::Less<T> >
+          typename EqualsFunction = acmp::EqualTo<T>, typename LessFunction = acmp::Lesser<T> >
 using OrderedSet = ordered_set_detail_::OrderedSetBase<T, HashFunction,
                                                        EqualsFunction, LessFunction>;
 

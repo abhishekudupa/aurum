@@ -131,8 +131,8 @@ TYPED_TEST_P(UnorderedMapTest, Constructor)
 
     auto it3 = map3.begin();
     for (u64 i = 0; i < 5; ++i) {
-        EXPECT_EQ(i+1, it3->first);
-        EXPECT_EQ(i+1+42, it3->second);
+        EXPECT_GE(5ul, it3->first);
+        EXPECT_GE(47ul, it3->second);
         ++it3;
     }
     EXPECT_EQ(map3.end(), it3);
@@ -143,8 +143,8 @@ TYPED_TEST_P(UnorderedMapTest, Constructor)
 
     auto it4 = map4.begin();
     for (u64 i = 0; i < 5; ++i) {
-        EXPECT_EQ(i+1, it4->first);
-        EXPECT_EQ(i+1+42, it4->second);
+        EXPECT_GE(5ul, it4->first);
+        EXPECT_GE(47ul, it4->second);
         ++it4;
     }
     EXPECT_EQ(map4.end(), it4);
@@ -165,8 +165,8 @@ TYPED_TEST_P(UnorderedMapTest, Assignment)
     EXPECT_EQ(10ull, map1.size());
     auto it1 = map1.begin();
     for (u64 i = 0; i < 10; ++i) {
-        EXPECT_EQ(i+1, it1->first);
-        EXPECT_EQ(i+1+42, it1->second);
+        EXPECT_GE(10ul, it1->first);
+        EXPECT_GE(52ul, it1->second);
         ++it1;
     }
 
@@ -178,10 +178,10 @@ TYPED_TEST_P(UnorderedMapTest, Assignment)
     it1 = map1.begin();
     auto it2 = map2.begin();
     for (u64 i = 0; i < 10; ++i) {
-        EXPECT_EQ(i+1, it1->first);
-        EXPECT_EQ(i+1+42, it1->second);
-        EXPECT_EQ(i+1, it2->first);
-        EXPECT_EQ(i+1+42, it2->second);
+        EXPECT_GE(10ul, it1->first);
+        EXPECT_GE(52ul, it1->second);
+        EXPECT_GE(10ul, it2->first);
+        EXPECT_GE(52ul, it2->second);
         ++it1;
         ++it2;
     }
@@ -194,8 +194,8 @@ TYPED_TEST_P(UnorderedMapTest, Assignment)
 
     auto it3 = map3.begin();
     for (u64 i = 0; i < 10; ++i) {
-        EXPECT_EQ(i+1, it3->first);
-        EXPECT_EQ(i+1+42, it3->second);
+        EXPECT_GE(10ul, it3->first);
+        EXPECT_GE(52ul, it3->second);
         ++it3;
     }
     EXPECT_TRUE(it3 == map3.end());
@@ -298,7 +298,8 @@ TYPED_TEST_P(UnorderedMapTest, Performance)
 
 TEST(StdUnorderedMapTest, Performance)
 {
-    std::unordered_map<u64, u64> std_map;
+    std::unordered_map<u64, u64, aurum::hashing::Hasher<u64>,
+                       aurum::comparisons::EqualTo<u64> > std_map;
 
     std::default_random_engine generator;
     std::uniform_int_distribution<u64> distribution(0, 1);

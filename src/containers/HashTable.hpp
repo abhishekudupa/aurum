@@ -1712,18 +1712,18 @@ public:
 // some convenience typedefs
 template <typename T,
           typename HashFunction = hashing::Hasher<T>,
-          typename EqualsFunction = utils::Equal<T> >
+          typename EqualsFunction = comparisons::EqualTo<T> >
 using UnifiedHashTable = hash_table_detail_::UnifiedHashTable<T, HashFunction, EqualsFunction>;
 
 template <typename T,
           typename HashFunction = hashing::Hasher<T>,
-          typename EqualsFunction = utils::Equal<T> >
+          typename EqualsFunction = comparisons::EqualTo<T> >
 using SegregatedHashTable =
     hash_table_detail_::SegregatedHashTable<T, HashFunction, EqualsFunction>;
 
 template <typename T,
           typename HashFunction = hashing::Hasher<T>,
-          typename EqualsFunction = utils::Equal<T> >
+          typename EqualsFunction = comparisons::EqualTo<T> >
 using RestrictedHashTable =
     hash_table_detail_::RestrictedHashTable<T, HashFunction, EqualsFunction>;
 

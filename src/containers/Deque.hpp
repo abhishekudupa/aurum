@@ -44,6 +44,7 @@
 #include <iomanip>
 
 #include "../basetypes/AurumTypes.hpp"
+#include "../basetypes/Stringifiable.hpp"
 #include "../stringification/Stringifiers.hpp"
 
 #include "DequeTypes.hpp"
@@ -52,11 +53,12 @@ namespace aurum {
 namespace containers {
 
 namespace as = aurum::stringification;
+namespace ac = aurum::containers;
 
 template <typename T>
 class DequeBase final :
-        public AurumObject,
-        public Stringifiable<DequeBase<T> >,
+        public AurumObject<ac::DequeBase<T> >,
+        public Stringifiable<ac::DequeBase<T> >,
         protected deque_detail_::DequeInternal<T>
 {
 public:
@@ -681,12 +683,12 @@ using ConstPtrDeque = DequeBase<const T*>;
 
 template <typename T>
 using MPtrDeque =
-    DequeBase<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
+    DequeBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
                                         memory::ManagedPointer<T>, T*>::type>;
 
 template <typename T>
 using ConstMPtrDeque =
-    DequeBase<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
+    DequeBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
                                         memory::ManagedConstPointer<T>,
                                         const T*>::type>;
 

@@ -46,8 +46,10 @@ namespace aurum {
 namespace containers {
 namespace multiway_heap_detail_ {
 
+namespace acd = aurum::containers::multiway_heap_detail_;
+
 template <typename T, typename Comparator, u32 ARITY>
-class MultiWayHeap : public AurumObject
+class MultiWayHeap : public AurumObject<acd::MultiWayHeap<T, Comparator, ARITY> >
 {
     static_assert(ARITY >= 2, "ARITY of multiway heap must be at least 2");
 

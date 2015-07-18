@@ -38,9 +38,9 @@
 #if !defined AURUM_TESTS_UNIT_TESTS_RC_CLASS_HPP_
 #define AURUM_TESTS_UNIT_TESTS_RC_CLASS_HPP_
 
-#include "../../src/memory/RefCountable.hpp"
+#include "../../src/basetypes/RefCountable.hpp"
 
-using aurum::memory::RefCountable;
+using aurum::RefCountable;
 
 class RCClass : public RefCountable
 {

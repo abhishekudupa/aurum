@@ -39,11 +39,12 @@
 #define AURUM_PLUGINS_PLUGIN_LOADER_HPP_
 
 #include "../basetypes/AurumTypes.hpp"
+#include "../basetypes/Downcastable.hpp"
 
 namespace aurum {
 namespace plugins {
 
-class PluginBase : public AurumObject, public Downcastable<PluginBase>
+class PluginBase : public AurumObject<PluginBase>, public Downcastable<PluginBase>
 {
 private:
     void* m_plugin_handle;

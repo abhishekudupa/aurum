@@ -43,15 +43,18 @@
 #include <utility>
 
 #include "MultiWayHeap.hpp"
+#include "../comparisons/Comparators.hpp"
 
 namespace aurum {
 namespace containers {
 
 namespace aa = aurum::allocators;
+namespace ac = aurum::containers;
+namespace acmp = aurum::comparisons;
 
-template <typename T, typename Comparator = std::less<T>,
+template <typename T, typename Comparator = acmp::Lesser<T>,
           typename HeapType = BinaryHeap<T, Comparator> >
-class PriorityQueue final : public AurumObject
+class PriorityQueue final : public AurumObject<ac::PriorityQueue<T, Comparator, HeapType> >
 {
 private:
     HeapType m_heap;
