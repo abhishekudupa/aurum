@@ -44,6 +44,7 @@
 #include "../basetypes/AurumTraits.hpp"
 
 #include <sstream>
+#include <string>
 #include <typeinfo>
 
 namespace aurum {
@@ -101,7 +102,7 @@ template <typename T>
 class StreamingStringifier
 {
 public:
-    inline std::string operator () const T& object, i64 verbosity) const
+    inline std::string operator () (const T& object, i64 verbosity) const
     {
         std::ostringstream sstr;
         sstr << object;
@@ -233,51 +234,40 @@ public:
     }
 };
 
-// TODO:
-// Fix up all deep stringifiers
-// Fix the normal tuple stringifiers to use class methods rather
-// than the hiiden methods in the detail_ namespace
-
-namespace detail_ {
-
-template <u64 INDEX, template <class> class StringifierType, typename... TupleTypes>
-inline typename std::enable_if<INDEX == sizeof...(TupleTypes), void>::type
-stringify_tuple(const std::tuple<TupleTypes...>& the_tuple,
-                std::ostringstream& sstr, i64 verbosity)
-{
-    return;
-}
-
-template <u64 INDEX, template <class> class StringifierType, typename... TupleTypes>
-inline typename std::enable_if<INDEX != sizeof...(TupleTypes), void>::type
-stringify_tuple(const std::tuple<TupleTypes...>& the_tuple,
-                std::ostringstream& sstr, i64 verbosity)
-{
-    typedef std::tuple<TupleTypes...> TheTupleType;
-    typedef typename std::tuple_element<INDEX, TheTupleType>::type ElementType;
-    StringifierType<ElementType> stringifier;
-
-    if (INDEX > 0) {
-        sstr << ", ";
-    }
-
-    sstr << stringifier(std::get<INDEX>(the_tuple), verbosity);
-    stringify_tuple<INDEX+1, StringifierType, TupleTypes...>(the_tuple, sstr, verbosity);
-}
-
-} /* end namespace detail_ */
-
 template <typename... TupleTypes>
 class Stringifier<std::tuple<TupleTypes...> >
 {
+private:
+    typedef std::tuple<TupleTypes...> TheTupleType;
+
+    template <u64 INDEX>
+    inline typename std::enable_if<INDEX == sizeof...(TupleTypes), void>::type
+    stringify_tuple(const TheTupleType& the_tuple, i64 verbosity, std::ostream& out) const
+    {
+        return;
+    }
+
+    template <u64 INDEX>
+    inline typename std::enable_if<INDEX != sizeof...(TupleTypes), void>::type
+    stringify_tuple(const TheTupleType& the_tuple, i64 verbosity, std::ostream& out) const
+    {
+        typedef typename std::tuple_element<INDEX, TheTupleType>::type ElemType;
+        Stringifier<ElemType> sub_stringifier;
+
+        if (INDEX > 0) {
+            out << ", ";
+        }
+
+        out << sub_stringifier(std::get<INDEX>(the_tuple), verbosity);
+        stringify_tuple<INDEX+1>(the_tuple, verbosity, out);
+    }
+
 public:
     inline std::string operator () (const std::tuple<TupleTypes...>& object, i64 verbosity) const
     {
         std::ostringstream sstr;
         sstr << "<";
-        detail_::stringify_tuple<0, aurum::stringification::Stringifier, TupleTypes...>(object,
-                                                                                        sstr,
-                                                                                        verbosity);
+        stringify_tuple<0>(object, verbosity, sstr);
         sstr << ">";
         return sstr.str();
     }
@@ -287,30 +277,6 @@ public:
         return (*this)(object, 0);
     }
 };
-
-template <typename... TupleTypes>
-class PtrStringifier<std::tuple<TupleTypes...> >
-{
-public:
-    inline std::string operator () (const std::tuple<TupleTypes...>& object, i64 verbosity) const
-    {
-        std::ostringstream sstr;
-        sstr << "<";
-        detail_::stringify_tuple<0,
-                                 aurum::stringification::PtrStringifier,
-                                 TupleTypes...>(object,
-                                                sstr,
-                                                verbosity);
-        sstr << ">";
-        return sstr.str();
-    }
-
-    inline std::string operator () (const std::tuple<TupleTypes...>& object) const
-    {
-        return (*this)(object, 0);
-    }
-};
-
 
 template <typename ContainerType, typename ElementType>
 class IterableStringifier
@@ -332,22 +298,119 @@ public:
     }
 };
 
-template <typename ContainerType, typename ElementType>
-class IterablePtrStringifier
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepStringifier : public Stringifier<T>
+{};
+
+template <typename T>
+class DeepStringifier<T*, 0> : public Stringifier<T*>
+{};
+
+template <typename T>
+class DeepStringifier<const T*, 0> : public Stringifier<const T*>
+{};
+
+template <typename T>
+class DeepStringifier<memory::ManagedPointer<T>, 0>
+    : public Stringifier<memory::ManagedPointer<T> >
+{};
+
+template <typename T>
+class DeepStringifier<memory::ManagedConstPointer<T>, 0>
+    : public Stringifier<memory::ManagedConstPointer<T> >
+{};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepStringifier<T*, NUM_DEREFS_ALLOWED>
 {
 public:
-    inline std::string operator () (const ContainerType& container, i64 verbosity) const
+    inline std::string operator () (const T* const& object, i64 verbosity) const
+    {
+        DeepStringifier<T, NUM_DEREFS_ALLOWED-1> sub_stringifier;
+        return sub_stringifier(*object, verbosity);
+    }
+
+    inline std::string operator () (const T* const& object) const
+    {
+        return (*this)(object, 0);
+    }
+};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepStringifier<const T*, NUM_DEREFS_ALLOWED>
+    : public DeepStringifier<T*, NUM_DEREFS_ALLOWED>
+{};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepStringifier<memory::ManagedPointer<T>, NUM_DEREFS_ALLOWED>
+    : public DeepStringifier<T*, NUM_DEREFS_ALLOWED>
+{};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepStringifier<memory::ManagedConstPointer<T>, NUM_DEREFS_ALLOWED>
+    : public DeepStringifier<T*, NUM_DEREFS_ALLOWED>
+{};
+
+template <typename T1, typename T2, u64 NUM_DEREFS_ALLOWED>
+class DeepStringifier<std::pair<T1, T2>, NUM_DEREFS_ALLOWED>
+{
+private:
+    typedef std::pair<T1, T2> PairType;
+
+public:
+    inline std::string operator () (const PairType& the_pair, i64 verbosity) const
+    {
+        DeepStringifier<T1, NUM_DEREFS_ALLOWED> sub_stringifier1;
+        DeepStringifier<T2, NUM_DEREFS_ALLOWED> sub_stringifier2;
+
+        std::ostringstream sstr;
+
+        sstr << "<" << sub_stringifier1(the_pair.first) << ", "
+             << sub_stringifier2(the_pair.second) << ">";
+        return sstr.str();
+    }
+
+    inline std::string operator () (const PairType& the_pair) const
+    {
+        return (*this)(the_pair, 0);
+    }
+};
+
+template <typename... TupleTypes, i64 NUM_DEREFS_ALLOWED>
+class DeepStringifier<std::tuple<TupleTypes...>, NUM_DEREFS_ALLOWED>
+{
+private:
+    typedef std::tuple<TupleTypes...> TheTupleType;
+
+    template <u64 INDEX>
+    inline typename std::enable_if<INDEX == sizeof...(TupleTypes), void>::type
+    stringify_tuple(const TheTupleType& the_tuple, i64 verbosity, std::ostream& out) const
+    {
+        return;
+    }
+
+    template <u64 INDEX>
+    inline typename std::enable_if<INDEX != sizeof...(TupleTypes), void>::type
+    stringify_tuple(const TheTupleType& the_tuple, i64 verbosity, std::ostream& out) const
+    {
+        typedef typename std::tuple_element<INDEX, TheTupleType>::type ElemType;
+        DeepStringifier<ElemType, NUM_DEREFS_ALLOWED> sub_stringifier;
+
+        if (INDEX > 0) {
+            out << ", ";
+        }
+
+        out << sub_stringifier(std::get<INDEX>(the_tuple), verbosity);
+        stringify_tuple<INDEX+1>(the_tuple, verbosity, out);
+    }
+
+public:
+    inline std::string operator () (const TheTupleType& the_tuple, i64 verbosity) const
     {
         std::ostringstream sstr;
-        PtrStringifier<ElementType> stringifier;
-        auto first = std::begin(container);
-        auto last = std::end(container);
-        for (auto it = first; it != last; ++it) {
-            if (it != first) {
-                sstr << ", ";
-            }
-            sstr << stringifier(*it);
-        }
+        sstr << "<";
+        stringify_tuple<0>(the_tuple, verbosity, sstr);
+        sstr << ">";
         return sstr.str();
     }
 };
@@ -357,6 +420,14 @@ template <typename T>
 inline std::string to_string(const T& object)
 {
     Stringifier<T> stringifier;
+    return stringifier(object);
+}
+
+// define deep to_string
+template <u64 NUM_DEREFS_ALLOWED, typename T>
+inline std::string deep_to_string(const T& object)
+{
+    DeepStringifier<T, NUM_DEREFS_ALLOWED> stringifier;
     return stringifier(object);
 }
 

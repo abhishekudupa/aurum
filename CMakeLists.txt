@@ -191,6 +191,7 @@ install(TARGETS aurum-shared
 install(DIRECTORY
   src/allocators
   src/basetypes
+  src/comparisons
   src/containers
   src/hashing
   src/logging
@@ -198,6 +199,7 @@ install(DIRECTORY
   src/plugins
   src/primeutils
   src/progoptions
+  src/ranges
   src/shell
   src/stringification
   src/timers

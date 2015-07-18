@@ -124,7 +124,18 @@ public:
 };
 
 template <typename T, u64 NUM_DEREFS_ALLOWED>
-class DeepLesser<const T*, NUM_DEREFS_ALLOWED> : public DeepLesser<T*, NUM_DEREFS_ALLOWED>
+class DeepLesser<const T*, NUM_DEREFS_ALLOWED>
+    : public DeepLesser<T*, NUM_DEREFS_ALLOWED>
+{};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepLesser<memory::ManagedPointer<T>, NUM_DEREFS_ALLOWED>
+    : public DeepLesser<T*, NUM_DEREFS_ALLOWED>
+{};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepLesser<memory::ManagedConstPointer<T>, NUM_DEREFS_ALLOWED>
+    : public DeepLesser<T*, NUM_DEREFS_ALLOWED>
 {};
 
 template <typename T1, typename T2, u64 NUM_DEREFS_ALLOWED>
@@ -235,7 +246,18 @@ class DeepEqualTo<T*, NUM_DEREFS_ALLOWED>
 };
 
 template <typename T, u64 NUM_DEREFS_ALLOWED>
-class DeepEqualTo<const T*, NUM_DEREFS_ALLOWED> : public DeepEqualTo<T*, NUM_DEREFS_ALLOWED>
+class DeepEqualTo<const T*, NUM_DEREFS_ALLOWED>
+    : public DeepEqualTo<T*, NUM_DEREFS_ALLOWED>
+{};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepEqualTo<memory::ManagedPointer<T>, NUM_DEREFS_ALLOWED>
+    : public DeepEqualTo<T*, NUM_DEREFS_ALLOWED>
+{};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepEqualTo<memory::ManagedConstPointer<T>, NUM_DEREFS_ALLOWED>
+    : public DeepEqualTo<T*, NUM_DEREFS_ALLOWED>
 {};
 
 template <typename T1, typename T2, u64 NUM_DEREFS_ALLOWED>

@@ -289,6 +289,16 @@ class DeepHasher<const T*, NUM_DEREFS_ALLOWED>
     : public DeepHasher<T*, NUM_DEREFS_ALLOWED>
 {};
 
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepHasher<memory::ManagedPointer<T>, NUM_DEREFS_ALLOWED>
+    : public DeepHasher<T*, NUM_DEREFS_ALLOWED>
+{};
+
+template <typename T, u64 NUM_DEREFS_ALLOWED>
+class DeepHasher<memory::ManagedConstPointer<T>, NUM_DEREFS_ALLOWED>
+    : public DeepHasher<T*, NUM_DEREFS_ALLOWED>
+{};
+
 template <typename T1, typename T2, u64 NUM_DEREFS_ALLOWED>
 class DeepHasher<std::pair<T1, T2>, NUM_DEREFS_ALLOWED>
 {
