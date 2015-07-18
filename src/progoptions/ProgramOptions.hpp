@@ -62,7 +62,7 @@ typedef ac::UnifiedUnorderedMap<std::string, ac::Vector<std::string> > ParseMap;
 
 extern const std::string gc_positional_option_prefix_;
 
-namespace detail {
+namespace detail_ {
 
 class OptionDescription : public AurumObject<OptionDescription>,
                           public Stringifiable<OptionDescription>
@@ -94,12 +94,12 @@ public:
 extern std::ostream& operator << (std::ostream& out,
                                   const OptionDescription& option_description);
 
-} /* end namespace detail */
+} /* end namespace detail_ */
 
 class ProgramOptions : private OptionMap
 {
 private:
-    typedef ac::OrderedMap<std::string, detail::OptionDescription> DescriptionMap;
+    typedef ac::OrderedMap<std::string, detail_::OptionDescription> DescriptionMap;
     DescriptionMap m_description_map;
     ac::Vector<u32> m_anon_option_values;
     u64 m_next_positional_option;

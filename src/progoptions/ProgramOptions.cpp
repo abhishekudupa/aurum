@@ -47,7 +47,7 @@ namespace program_options {
 
 const std::string gc_positional_option_prefix_("__@position_");
 
-namespace detail {
+namespace detail_ {
 
 OptionDescription::OptionDescription()
     : m_full_name(), m_short_name(), m_description(), m_positional(false),
@@ -148,7 +148,7 @@ std::ostream& operator << (std::ostream& out, const OptionDescription& option_de
     return out;
 }
 
-} /* end namespace detail */
+} /* end namespace detail_ */
 
 ProgramOptions::ProgramOptions()
     : OptionMap(), m_anon_option_values(), m_next_positional_option((u64)0),
@@ -187,8 +187,8 @@ void ProgramOptions::add_option(const std::string& full_name, const std::string&
         actual_value->implicit_value("true")->default_value("false");
     }
 
-    m_description_map[full_name] = detail::OptionDescription(full_name, short_name,
-                                                             option_description);
+    m_description_map[full_name] = detail_::OptionDescription(full_name, short_name,
+                                                              option_description);
     OptionMap::insert(qualified_full_name, actual_value);
     if (short_name != "") {
         OptionMap::insert(qualified_short_name, actual_value);
@@ -208,8 +208,8 @@ void ProgramOptions::add_positional_option(const std::string& full_name,
     }
     std::string positional_name = gc_positional_option_prefix_ + std::to_string(option_position);
 
-    m_description_map[full_name] = detail::OptionDescription(full_name, option_position,
-                                                             option_description);
+    m_description_map[full_name] = detail_::OptionDescription(full_name, option_position,
+                                                              option_description);
 
     OptionMap::insert((std::string)"--" + full_name, option_value);
     OptionMap::insert(positional_name, option_value);

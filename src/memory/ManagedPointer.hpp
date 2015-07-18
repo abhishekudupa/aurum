@@ -54,9 +54,9 @@ class ManagedPointerEBC
     // Nothing here
 };
 
-namespace detail {
+namespace detail_ {
 
-namespace amd = aurum::memory::detail;
+namespace amd = aurum::memory::detail_;
 
 template <typename T, bool CONSTPOINTER>
 class ManagedPointerBase : private ManagedPointerEBC
@@ -499,33 +499,33 @@ inline ManagedPointerBase<T, CONSTPOINTER>::operator bool () const
     return (m_ptr != nullptr);
 }
 
-} /* end namespace detail */
+} /* end namespace detail_ */
 
 template <typename T, bool CONSTPOINTER>
-static inline detail::ManagedPointerBase<T, false>
-discard_const(const detail::ManagedPointerBase<T, CONSTPOINTER>& managed_pointer)
+static inline detail_::ManagedPointerBase<T, false>
+discard_const(const detail_::ManagedPointerBase<T, CONSTPOINTER>& managed_pointer)
 {
     if (!CONSTPOINTER) {
         return managed_pointer;
     } else {
         auto non_const_raw_ptr = const_cast<T*>(managed_pointer->get_raw_pointer());
-        return detail::ManagedPointerBase<T, false>(non_const_raw_ptr);
+        return detail_::ManagedPointerBase<T, false>(non_const_raw_ptr);
     }
 }
 
 // typedefs for commonly used managed pointer types
 template <typename T>
-using ManagedPointer = detail::ManagedPointerBase<T, false>;
+using ManagedPointer = detail_::ManagedPointerBase<T, false>;
 
 template <typename T>
-using ManagedConstPointer = detail::ManagedPointerBase<T, true>;
+using ManagedConstPointer = detail_::ManagedPointerBase<T, true>;
 
 
 } /* end namespace memory */
 
 template <typename T, bool CONSTPOINTER>
 static inline std::ostream& operator << (std::ostream& out_stream,
-                                         const memory::detail::ManagedPointerBase<T, CONSTPOINTER>&
+                                         const memory::detail_::ManagedPointerBase<T, CONSTPOINTER>&
                                          managed_ptr)
 {
     out_stream << *(managed_ptr);
