@@ -120,6 +120,7 @@ protected:
     u64 m_table_used;
     u64 m_table_deleted;
     u64 m_first_used_index;
+    bool m_in_multi_erase_sequence;
 
     inline void deallocate_table()
     {
@@ -419,7 +420,8 @@ private:
 protected:
     inline HashTableImplBase()
         : m_table(nullptr), m_table_size(0), m_table_used(0),
-          m_table_deleted(0), m_first_used_index(0)
+          m_table_deleted(0), m_first_used_index(0),
+          m_in_multi_erase_sequence(false)
     {
         // Nothing here
     }
@@ -698,8 +700,9 @@ protected:
         --m_table_used;
 
         auto deleted_nonused_ratio = (float)m_table_deleted / (float)(m_table_size - m_table_used);
-        if ((deleted_nonused_ratio >= sc_deleted_nonused_rehash_ratio) ||
-            (((float)m_table_used / (float)m_table_size) < sc_min_load_factor)) {
+        if (((deleted_nonused_ratio >= sc_deleted_nonused_rehash_ratio) ||
+             (((float)m_table_used / (float)m_table_size) < sc_min_load_factor)) &&
+            (!m_in_multi_erase_sequence)) {
             rehash_table();
         } else if ((u64)(position.get_current() - m_table) == m_first_used_index) {
             auto temp = position;
@@ -727,6 +730,8 @@ protected:
     inline void clear()
     {
         auto impl = this_as_impl();
+
+        m_in_multi_erase_sequence = false;
         deallocate_table();
         impl->on_clear();
     }
@@ -747,6 +752,25 @@ protected:
 
         auto new_table = aa::allocate_array_raw<EntryType>(new_size);
         rebuild_table(new_table, new_size);
+    }
+
+    // ensures that no rehashes will occur
+    // at least until end_multi_erase_sequence
+    // is called.
+    inline void begin_multi_erase_sequence()
+    {
+        m_in_multi_erase_sequence = true;
+    }
+
+    inline void end_multi_erase_sequence()
+    {
+        m_in_multi_erase_sequence = false;
+
+        auto deleted_nonused_ratio = (float)m_table_deleted / (float)(m_table_size - m_table_used);
+        if (((deleted_nonused_ratio >= sc_deleted_nonused_rehash_ratio) ||
+             (((float)m_table_used / (float)m_table_size) < sc_min_load_factor))) {
+            rehash_table();
+        }
     }
 };
 
