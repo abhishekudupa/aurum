@@ -1497,7 +1497,7 @@ using PoolPtrSList = SListBase<T*, true>;
 
 template <typename T>
 using PoolMPtrSList =
-    SListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    SListBase<typename std::conditional<IsRefCountable<T>::value,
                                         memory::ManagedPointer<T>, T*>::type, true>;
 
 template <typename T>
@@ -1505,7 +1505,7 @@ using PoolConstPtrSList = SListBase<const T*, true>;
 
 template <typename T>
 using PoolConstMPtrSList =
-    SListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    SListBase<typename std::conditional<IsRefCountable<T>::value,
                                         memory::ManagedConstPointer<T>,
                                         const T*>::type, true>;
 
@@ -1517,12 +1517,12 @@ using ConstPtrSList = SListBase<const T*, false>;
 
 template <typename T>
 using MPtrSList =
-    SListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    SListBase<typename std::conditional<IsRefCountable<T>::value,
                                         memory::ManagedPointer<T>, T*>::type, false>;
 
 template <typename T>
 using ConstMPtrSList =
-    SListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    SListBase<typename std::conditional<IsRefCountable<T>::value,
                                         memory::ManagedConstPointer<T>,
                                         const T*>::type, false>;
 

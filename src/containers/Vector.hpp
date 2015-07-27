@@ -1203,12 +1203,12 @@ using ConstPtrVector = VectorBase<const T*>;
 
 template <typename T>
 using MPtrVector =
-    VectorBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    VectorBase<typename std::conditional<IsRefCountable<T>::value,
                                          memory::ManagedPointer<T>, T*>::type>;
 
 template <typename T>
 using ConstMPtrVector =
-    VectorBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    VectorBase<typename std::conditional<IsRefCountable<T>::value,
                                          memory::ManagedConstPointer<T>,
                                          const T*>::type>;
 

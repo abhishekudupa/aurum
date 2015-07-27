@@ -66,6 +66,7 @@ public:
     static constexpr float sc_resize_factor = 2.414214f;
     static constexpr float sc_max_load_factor = 0.717f;
     static constexpr float sc_min_load_factor = 0.1f;
+    // rehash if half the "unused" entries are deleted entries
     static constexpr float sc_deleted_nonused_rehash_ratio = 0.5f;
     static constexpr u64 sc_initial_table_size = 19;
 };
@@ -260,8 +261,7 @@ protected:
         rebuild_table(new_table, new_table_size);
     }
 
-protected:
-
+public:
     // This iterator is mutable
     // so that classes which actually implement
     // hash tables can give sensible semantics
@@ -417,7 +417,7 @@ private:
         insert_range(first, last, IterCategory());
     }
 
-protected:
+public:
     inline HashTableImplBase()
         : m_table(nullptr), m_table_size(0), m_table_used(0),
           m_table_deleted(0), m_first_used_index(0),
@@ -629,6 +629,10 @@ protected:
 
     inline Iterator insert(T&& value, bool& already_present)
     {
+        if (m_in_multi_erase_sequence) {
+            this->end_multi_erase_sequence();
+        }
+
         auto it = find(value);
         if (it != end()) {
             already_present = true;
@@ -914,9 +918,9 @@ public:
 // A hash table of unified hash entries
 template <typename T, typename HashFunction, typename EqualsFunction>
 class UnifiedHashTable
-    : protected HashTableImplBase<T, HashFunction, EqualsFunction,
-                                  ac::hash_table_detail_::UnifiedHashTable,
-                                  UnifiedHashTableEntry<T> >
+    : public HashTableImplBase<T, HashFunction, EqualsFunction,
+                               ac::hash_table_detail_::UnifiedHashTable,
+                               UnifiedHashTableEntry<T> >
 {
 private:
     typedef HashTableImplBase<T, HashFunction, EqualsFunction,
@@ -1144,8 +1148,8 @@ public:
 
 template <typename T, typename HashFunction, typename EqualsFunction>
 class SegregatedHashTable
-    : protected HashTableImplBase<T, HashFunction, EqualsFunction,
-                                  ac::hash_table_detail_::SegregatedHashTable, T>
+    : public HashTableImplBase<T, HashFunction, EqualsFunction,
+                               ac::hash_table_detail_::SegregatedHashTable, T>
 {
 private:
     typedef HashTableImplBase<T, HashFunction, EqualsFunction,
@@ -1429,8 +1433,8 @@ public:
 
 template <typename T, typename HashFunction, typename EqualsFunction>
 class RestrictedHashTable
-    : protected HashTableImplBase<T, HashFunction, EqualsFunction,
-                                  ac::hash_table_detail_::RestrictedHashTable, T>
+    : public HashTableImplBase<T, HashFunction, EqualsFunction,
+                               ac::hash_table_detail_::RestrictedHashTable, T>
 {
 private:
     typedef T EntryType;

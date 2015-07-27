@@ -1216,23 +1216,23 @@ using PoolConstPtrDList = DListBase<const T*, true>;
 
 template <typename T>
 using MPtrDList =
-    DListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    DListBase<typename std::conditional<IsRefCountable<T>::value,
                                         memory::ManagedPointer<T>, T*>::type, false>;
 
 template <typename T>
 using PoolMPtrDList =
-    DListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    DListBase<typename std::conditional<IsRefCountable<T>::value,
                                         memory::ManagedPointer<T>, T*>::type, true>;
 
 template <typename T>
 using ConstMPtrDList =
-    DListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    DListBase<typename std::conditional<IsRefCountable<T>::value,
                                         memory::ManagedConstPointer<T>,
                                         const T*>::type, false>;
 
 template <typename T>
 using PoolConstMPtrDList =
-    DListBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    DListBase<typename std::conditional<IsRefCountable<T>::value,
                                         memory::ManagedConstPointer<T>,
                                         const T*>::type, true>;
 

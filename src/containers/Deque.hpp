@@ -683,12 +683,12 @@ using ConstPtrDeque = DequeBase<const T*>;
 
 template <typename T>
 using MPtrDeque =
-    DequeBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    DequeBase<typename std::conditional<IsRefCountable<T>::value,
                                         memory::ManagedPointer<T>, T*>::type>;
 
 template <typename T>
 using ConstMPtrDeque =
-    DequeBase<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    DequeBase<typename std::conditional<IsRefCountable<T>::value,
                                         memory::ManagedConstPointer<T>,
                                         const T*>::type>;
 

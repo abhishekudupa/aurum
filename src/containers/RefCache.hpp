@@ -46,6 +46,8 @@
 #include "../basetypes/RefCountable.hpp"
 #include "../memory/ManagedPointer.hpp"
 #include "../allocators/MemoryManager.hpp"
+#include "../hashing/Hashers.hpp"
+#include "../comparisons/Comparators.hpp"
 
 #include "HashTable.hpp"
 
@@ -59,7 +61,7 @@ namespace aa = aurum::allocators;
 
 template <typename T, typename HashFunction, typename EqualsFunction>
 class RefCache
-    : public ac::ref_cache_detail_::AurumObject<RefCache<T, HashFunction, EqualsFunction> >
+    : public AurumObject<ac::ref_cache_detail_::RefCache<T, HashFunction, EqualsFunction> >
 {
     // ensure that the type is ref countable
     static_assert(IsRefCountable<T>::value,
@@ -76,16 +78,20 @@ private:
     {
         m_hash_table.begin_multi_erase_sequence();
 
-        bool deleted_this_iteration = false;
+        bool deleted_this_iteration;
+
         do {
+            deleted_this_iteration = false;
             for (auto it = m_hash_table.begin(), last = m_hash_table.end(); it != last; ++it) {
-                if (it->get_ref_count_() == 1) {
+                if ((*it)->get_ref_count_() == 1) {
                     deleted_this_iteration = true;
                     delete (*it);
                     m_hash_table.erase(it);
                 }
             }
         } while (deleted_this_iteration);
+
+        m_hash_table.end_multi_erase_sequence();
     }
 
     inline void try_gc()
@@ -111,15 +117,22 @@ public:
     }
 
     explicit inline RefCache(float growth_factor)
-        : RefCache(),
-          m_growth_factor(growth_factor)
+        : RefCache()
     {
-        // Nothing here
+        m_growth_factor = growth_factor;
     }
 
     inline ~RefCache()
     {
-        // Nothing here
+        // just decrement the ref counts of
+        // everything. If anyone is still holding
+        // refs, then they ought to be via managed ptrs
+        // and should be deleted eventually
+        for (auto const& ptr : m_hash_table) {
+            ptr->dec_ref_();
+        }
+
+        m_hash_table.clear();
     }
 
     template <typename U, typename... ArgTypes>
@@ -135,7 +148,8 @@ public:
         auto it = m_hash_table.find(new_object);
         if (it == m_hash_table.end()) {
             new_object->inc_ref_();
-            m_hash_table.insert(new_object);
+            bool unused;
+            m_hash_table.insert(new_object, unused);
             return new_object;
         } else {
             delete new_object;
@@ -155,7 +169,8 @@ public:
 
     inline void set_growth_factor(float new_growth_factor)
     {
-        if (new_growth_factor <= 1.01f) {
+        // sanity: ensure that the growth factor is at least 10%
+        if (new_growth_factor <= 1.1f) {
             return;
         }
         m_growth_factor = new_growth_factor;
@@ -168,6 +183,13 @@ public:
 };
 
 } /* end namespace detail_ */
+
+// exported typedefs for convenience
+template <typename T,
+          typename HashFunction = aurum::hashing::DeepHasher<const T*, 1>,
+          typename EqualsFunction = aurum::comparisons::DeepEqualTo<const T*, 1> >
+using RefCache = ref_cache_detail_::RefCache<T, HashFunction, EqualsFunction>;
+
 } /* end namespace containers */
 } /* end namespace aurum */
 

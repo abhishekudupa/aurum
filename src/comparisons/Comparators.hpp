@@ -238,6 +238,7 @@ class DeepEqualTo<memory::ManagedConstPointer<T>, 0>
 template <typename T, u64 NUM_DEREFS_ALLOWED>
 class DeepEqualTo<T*, NUM_DEREFS_ALLOWED>
 {
+public:
     inline bool operator () (const T* const& obj1, const T* const& obj2) const
     {
         DeepEqualTo<T, NUM_DEREFS_ALLOWED-1> sub_comparator;

@@ -61,11 +61,6 @@ namespace amd = aurum::memory::detail_;
 template <typename T, bool CONSTPOINTER>
 class ManagedPointerBase : private ManagedPointerEBC
 {
-    // We can only make managed pointers out of RefCountable objects
-    static_assert(std::is_base_of<RefCountable, T>::value,
-                  "ManagedPointers can only be instantiated with objects "
-                  "of type RefCountable");
-
 public:
     typedef typename std::conditional<CONSTPOINTER, const T*, T*>::type RawPointerType;
     typedef typename std::conditional<CONSTPOINTER, const T&, T&>::type ReferenceType;
@@ -185,15 +180,16 @@ inline i64
 ManagedPointerBase<T, CONSTPOINTER>::compare_
 (const amd::ManagedPointerBase<U, OTHERCONSTPOINTER>& other_managed_ptr) const
 {
-    return (i64)(reinterpret_cast<char*>(m_ptr) -
-                 reinterpret_cast<char*>(other_managed_ptr.m_ptr));
+    return (i64)(reinterpret_cast<const char*>(m_ptr) -
+                 reinterpret_cast<const char*>(other_managed_ptr.m_ptr));
 }
 
 template <typename T, bool CONSTPOINTER>
 template <typename U>
 inline i64 ManagedPointerBase<T, CONSTPOINTER>::compare_(const U* other_raw_ptr) const
 {
-    return (i64)(reinterpret_cast<char*>(m_ptr) - reinterpret_cast<char*>(other_raw_ptr));
+    return (i64)(reinterpret_cast<const char*>(m_ptr) -
+                 reinterpret_cast<const char*>(other_raw_ptr));
 }
 
 template <typename T, bool CONSTPOINTER>
@@ -528,7 +524,7 @@ static inline std::ostream& operator << (std::ostream& out_stream,
                                          const memory::detail_::ManagedPointerBase<T, CONSTPOINTER>&
                                          managed_ptr)
 {
-    out_stream << *(managed_ptr);
+    out_stream << managed_ptr.get_raw_pointer();
     return out_stream;
 }
 

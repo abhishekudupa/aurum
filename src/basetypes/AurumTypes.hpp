@@ -197,6 +197,7 @@ class HashableEBC;
 class EComparableEBC;
 class ComparableEBC;
 class CloneableEBC;
+class RefCountableEBC;
 
 } /* end namespace detail_ */
 
@@ -206,7 +207,7 @@ template <typename Derived> class Hashable;
 template <typename Derived> class EComparable;
 template <typename Derived> class Comparable;
 template <typename Derived> class Clonable;
-class RefCountable;
+template <typename Derived> class RefCountable;
 
 class Interruptible
 {

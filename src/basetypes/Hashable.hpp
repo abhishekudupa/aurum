@@ -44,14 +44,18 @@
 
 namespace aurum {
 
+namespace detail_ {
+
 class HashableEBC
 {
     // Nothing here
 };
 
+} /* end namespace detail_ */
+
 // A base class for Hashable objects
 template <typename DerivedClass>
-class Hashable : public HashableEBC
+class Hashable : public detail_::HashableEBC
 {
 private:
     class HashValue
@@ -139,7 +143,7 @@ public:
 
     inline u64 hash() const
     {
-        if (m_hash_value.is_valid()) {
+        if (m_hash_value.is_hash_valid()) {
             return m_hash_value.get_hash_value();
         } else {
             auto this_as_derived = static_cast<const DerivedClass*>(this);

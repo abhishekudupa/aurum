@@ -398,87 +398,87 @@ using CPtrRestrictedUnorderedSet = RestrictedUnorderedSet<const T*>;
 
 template <typename T,
           typename HashFunction =
-          typename std::conditional<std::is_base_of<RefCountable, T>::value,
+          typename std::conditional<IsRefCountable<T>::value,
                                     ah::DeepHasher<memory::ManagedPointer<T>, 8>,
                                     ah::DeepHasher<T*, 8> >::type,
           typename EqualsFunction =
-          typename std::conditional<std::is_base_of<RefCountable, T>::value,
+          typename std::conditional<IsRefCountable<T>::value,
                                     acmp::DeepEqualTo<memory::ManagedPointer<T>, 8>,
                                     acmp::DeepEqualTo<T*, 8> >::type>
 using MPtrUnifiedUnorderedSet =
-    UnifiedUnorderedSet<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    UnifiedUnorderedSet<typename std::conditional<IsRefCountable<T>::value,
                                                   memory::ManagedPointer<T>, T*>::type,
                         HashFunction, EqualsFunction>;
 
 template <typename T,
           typename HashFunction =
-          typename std::conditional<std::is_base_of<RefCountable, T>::value,
+          typename std::conditional<IsRefCountable<T>::value,
                                     ah::DeepHasher<memory::ManagedConstPointer<T>, 8>,
                                     ah::DeepHasher<const T*, 8> >::type,
           typename EqualsFunction =
-          typename std::conditional<std::is_base_of<RefCountable, T>::value,
+          typename std::conditional<IsRefCountable<T>::value,
                                     acmp::DeepEqualTo<memory::ManagedConstPointer<T>, 8>,
                                     acmp::DeepEqualTo<const T*, 8> >::type>
 using CMPtrUnifiedUnorderedSet =
-    UnifiedUnorderedSet<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    UnifiedUnorderedSet<typename std::conditional<IsRefCountable<T>::value,
                                                   memory::ManagedConstPointer<T>,
                                                   const T*>::type,
                         HashFunction, EqualsFunction>;
 
 template <typename T,
           typename HashFunction =
-          typename std::conditional<std::is_base_of<RefCountable, T>::value,
+          typename std::conditional<IsRefCountable<T>::value,
                                     ah::DeepHasher<memory::ManagedPointer<T>, 8>,
                                     ah::DeepHasher<T*, 8> >::type,
           typename EqualsFunction =
-          typename std::conditional<std::is_base_of<RefCountable, T>::value,
+          typename std::conditional<IsRefCountable<T>::value,
                                     acmp::DeepEqualTo<memory::ManagedPointer<T>, 8>,
                                     acmp::DeepEqualTo<T*, 8> >::type>
 using MPtrSegregatedUnorderedSet =
-    SegregatedUnorderedSet<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    SegregatedUnorderedSet<typename std::conditional<IsRefCountable<T>::value,
                                                      memory::ManagedPointer<T>, T*>::type,
                            HashFunction, EqualsFunction>;
 
 template <typename T,
           typename HashFunction =
-          typename std::conditional<std::is_base_of<RefCountable, T>::value,
+          typename std::conditional<IsRefCountable<T>::value,
                                     ah::DeepHasher<memory::ManagedConstPointer<T>, 8>,
                                     ah::DeepHasher<const T*, 8> >::type,
           typename EqualsFunction =
-          typename std::conditional<std::is_base_of<RefCountable, T>::value,
+          typename std::conditional<IsRefCountable<T>::value,
                                     acmp::DeepEqualTo<memory::ManagedConstPointer<T>, 8>,
                                     acmp::DeepEqualTo<const T*, 8> >::type>
 using CMPtrSegregatedUnorderedSet =
-    SegregatedUnorderedSet<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    SegregatedUnorderedSet<typename std::conditional<IsRefCountable<T>::value,
                                                      memory::ManagedConstPointer<T>,
                                                      const T*>::type,
                            HashFunction, EqualsFunction>;
 
 template <typename T,
           typename HashFunction =
-          typename std::conditional<std::is_base_of<RefCountable, T>::value,
+          typename std::conditional<IsRefCountable<T>::value,
                                     ah::DeepHasher<memory::ManagedPointer<T>, 8>,
                                     ah::DeepHasher<T*, 8> >::type,
           typename EqualsFunction =
-          typename std::conditional<std::is_base_of<RefCountable, T>::value,
+          typename std::conditional<IsRefCountable<T>::value,
                                     acmp::DeepEqualTo<memory::ManagedPointer<T>, 8>,
                                     acmp::DeepEqualTo<T*, 8> >::type>
 using MPtrRestrictedUnorderedSet =
-    RestrictedUnorderedSet<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    RestrictedUnorderedSet<typename std::conditional<IsRefCountable<T>::value,
                                                      memory::ManagedPointer<T>, T*>::type,
                            HashFunction, EqualsFunction>;
 
 template <typename T,
           typename HashFunction =
-          typename std::conditional<std::is_base_of<RefCountable, T>::value,
+          typename std::conditional<IsRefCountable<T>::value,
                                     ah::DeepHasher<memory::ManagedConstPointer<T>, 8>,
                                     ah::DeepHasher<const T*, 8> >::type,
           typename EqualsFunction =
-          typename std::conditional<std::is_base_of<RefCountable, T>::value,
+          typename std::conditional<IsRefCountable<T>::value,
                                     acmp::DeepEqualTo<memory::ManagedConstPointer<T>, 8>,
                                     acmp::DeepEqualTo<const T*, 8> >::type>
 using CMPtrRestrictedUnorderedSet =
-    RestrictedUnorderedSet<typename std::conditional<std::is_base_of<RefCountable, T>::value,
+    RestrictedUnorderedSet<typename std::conditional<IsRefCountable<T>::value,
                                                      memory::ManagedConstPointer<T>,
                                                      const T*>::type,
                            HashFunction, EqualsFunction>;

@@ -61,7 +61,7 @@ namespace am = aurum::memory;
 class OptionMap;
 
 class OptionValueBase : public AurumObject<OptionValueBase>,
-                        public RefCountable,
+                        public RefCountable<OptionValueBase>,
                         public Downcastable<OptionValueBase>
 {
 protected:

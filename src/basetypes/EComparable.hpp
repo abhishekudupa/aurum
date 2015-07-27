@@ -81,7 +81,7 @@ public:
         } else {
             auto this_as_derived = static_cast<const Derived*>(this);
             auto other_as_derived = static_cast<const Derived*>(&other);
-            return this_as_derived->equal_to(other);
+            return this_as_derived->equal_to(*other_as_derived);
         }
     }
 

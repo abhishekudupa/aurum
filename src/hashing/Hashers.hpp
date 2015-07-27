@@ -73,14 +73,14 @@ inline u64 aurum_hash(const T& object)
 {
     static_assert(IsHashable<T>::value,
                   "Attempted to compute hash of unhashable type");
-    return compute_aurum_hash_(object);
+    return detail_::compute_aurum_hash_(object);
 }
 
 #define MAKE_PRIMITIVE_INTEGER_HASH_(TYPENAME__)                              \
     template <>                                                               \
     inline u64 aurum_hash<TYPENAME__>(const TYPENAME__& object)               \
     {                                                                         \
-        return hashing::integer_identity_hash((u64)object);                       \
+        return hashing::integer_identity_hash((u64)object);                   \
     }
 
 

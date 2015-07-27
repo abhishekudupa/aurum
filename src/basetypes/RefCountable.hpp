@@ -48,7 +48,17 @@
 
 namespace aurum {
 
-class RefCountable
+namespace detail_ {
+
+class RefCountableEBC
+{
+    // Empty base class
+};
+
+} /* end namespace detail_ */
+
+template <typename DerivedClass>
+class RefCountable : public detail_::RefCountableEBC
 {
 private:
     mutable i64 m_ref_count_;
@@ -60,7 +70,7 @@ public:
         // Nothing here
     }
 
-    virtual ~RefCountable()
+    inline ~RefCountable()
     {
         // Nothing here
     }
@@ -74,7 +84,8 @@ public:
     {
         m_ref_count_--;
         if (m_ref_count_ <= 0) {
-            delete this;
+            auto this_as_derived = static_cast<const DerivedClass*>(this);
+            delete this_as_derived;
         }
     }
 

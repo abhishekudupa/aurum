@@ -47,16 +47,12 @@ namespace aurum {
 
 namespace detail_ {
 
-struct TrueStruct
+struct TrueStruct : public std::true_type
 {
-    typedef typename std::true_type type;
-    static constexpr bool value = true;
 };
 
-struct FalseStruct
+struct FalseStruct : public std::false_type
 {
-    typedef typename std::false_type type;
-    static constexpr bool value = false;
 };
 
 template <template <class> class Tester, typename CurType, typename... RestTypes>
@@ -121,7 +117,7 @@ struct IsStringifiable<std::tuple<TupleTypes...> >
 template <typename T>
 struct IsHashable
     : std::conditional<std::is_base_of<detail_::HashableEBC, T>::value,
-                       detail_::TrueStruct, detail_::FalseStruct>
+                       detail_::TrueStruct, detail_::FalseStruct>::type
 {};
 
 MARK_PRIMITIVE_TYPE_AS_STRUCT_(bool, IsHashable);
@@ -154,7 +150,7 @@ struct IsHashable<std::tuple<ArgTypes...> > : detail_::AllStruct<IsHashable, Arg
 template <typename T>
 struct IsEComparable
     : std::conditional<std::is_base_of<detail_::EComparableEBC, T>::value,
-                       detail_::TrueStruct, detail_::FalseStruct>
+                       detail_::TrueStruct, detail_::FalseStruct>::type
 {};
 
 MARK_PRIMITIVE_TYPE_AS_STRUCT_(bool, IsEComparable);
@@ -189,7 +185,7 @@ struct IsEComparable<std::tuple<ArgTypes...> >
 template <typename T>
 struct IsComparable
     : std::conditional<std::is_base_of<detail_::ComparableEBC, T>::value,
-                       detail_::TrueStruct, detail_::FalseStruct>
+                       detail_::TrueStruct, detail_::FalseStruct>::type
 {};
 
 MARK_PRIMITIVE_TYPE_AS_STRUCT_(bool, IsComparable);
@@ -305,7 +301,7 @@ struct RemovePointer<memory::ManagedConstPointer<T> >
 
 template <typename T>
 struct IsRefCountable
-    : std::conditional<std::is_base_of<RefCountable, T>::value,
+    : std::conditional<std::is_base_of<detail_::RefCountableEBC, T>::value,
                        detail_::TrueStruct, detail_::FalseStruct>::type
 {};
 

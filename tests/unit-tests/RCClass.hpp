@@ -42,26 +42,26 @@
 
 using aurum::RefCountable;
 
-class RCClass : public RefCountable
+class RCClass : public RefCountable<RCClass>
 {
 private:
     int m_data;
 
 public:
     RCClass()
-        : RefCountable(), m_data(0)
+        : m_data(0)
     {
         // nothing here
     }
 
     RCClass(int data)
-        : RefCountable(), m_data(data)
+        : m_data(data)
     {
         // nothing here
     }
 
-    RCClass(const RCClass& Other)
-        : RefCountable(), m_data(Other.m_data)
+    RCClass(const RCClass& other)
+        : m_data(other.m_data)
     {
         // nothing here
     }
