@@ -156,8 +156,8 @@ set_target_properties(aurum-static PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${AURUM_LIB_DIR}"
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${AURUM_BIN_DIR}")
 
-add_dependencies(aurum-static libxz libbz2)
-add_dependencies(aurum-shared libxz libbz2)
+add_dependencies(aurum-static libxz libbz2 zlib)
+add_dependencies(aurum-shared libxz libbz2 zlib)
 
 # testing
 if(AURUM_BUILD_TEST_CASES)
@@ -214,7 +214,7 @@ include(ExternalProject)
 ExternalProject_Add(
   libxz
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/xz-5.2.1
-  CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/xz-5.2.1/configure --prefix=${CMAKE_BINARY_DIR}/ --libdir=${CMAKE_BINARY_DIR}/lib CFLAGS=-O3
+  CONFIGURE_COMMAND CFLAGS=-O3 ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/xz-5.2.1/configure --prefix=${CMAKE_BINARY_DIR}/ --libdir=${CMAKE_BINARY_DIR}/lib
   BUILD_COMMAND ${MAKE}
   INSTALL_COMMAND make install
 )
@@ -228,6 +228,14 @@ ExternalProject_Add(
   INSTALL_COMMAND make install PREFIX=${CMAKE_BINARY_DIR}/ && make clean
 )
 
+ExternalProject_Add(
+  zlib
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/zlib-1.2.8
+  BUILD_IN_SOURCE 1
+  CONFIGURE_COMMAND CFLAGS=-O3 ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/zlib-1.2.8/configure --prefix=${CMAKE_BINARY_DIR}/ --libdir=${CMAKE_BINARY_DIR}/lib
+  BUILD_COMMAND ${MAKE}
+  INSTALL_COMMAND make install && make clean && rm configure.log && rm zlib.pc && rm Makefile && rm zconf.h
+)
 
 install(FILES ${CMAKE_BINARY_DIR}/AurumConfig.h
   DESTINATION ${AURUM_INC_DIR}
