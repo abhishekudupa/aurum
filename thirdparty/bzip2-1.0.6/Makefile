@@ -5,7 +5,7 @@
 # bzip2/libbzip2 version 1.0.6 of 6 September 2010
 # Copyright (C) 1996-2010 Julian Seward <jseward@bzip.org>
 #
-# Please read the WARNING, DISCLAIMER and PATENTS sections in the 
+# Please read the WARNING, DISCLAIMER and PATENTS sections in the
 # README file.
 #
 # This program is released under the terms of the license contained
@@ -21,7 +21,7 @@ RANLIB=ranlib
 LDFLAGS=
 
 BIGFILES=-D_FILE_OFFSET_BITS=64
-CFLAGS=-Wall -Winline -O2 -g $(BIGFILES)
+CFLAGS=-Wall -Winline -O3 -fPIC $(BIGFILES)
 
 # Where you want it installed when you do 'make install'
 PREFIX=/usr/local
@@ -35,10 +35,10 @@ OBJS= blocksort.o  \
       decompress.o \
       bzlib.o
 
-all: libbz2.a bzip2 bzip2recover test
+all: libbz2.a libbz2.so bzip2 bzip2recover test
 
 bzip2: libbz2.a bzip2.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o bzip2 bzip2.o -L. -lbz2
+	$(CC) $(CFLAGS) $(LDFLAGS) -o bzip2 bzip2.o -L. -Wl,-Bstatic -lbz2 -Wl,-Bdynamic
 
 bzip2recover: bzip2recover.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o bzip2recover bzip2recover.o
@@ -52,6 +52,10 @@ libbz2.a: $(OBJS)
 		$(RANLIB) libbz2.a ; \
 	fi
 
+libbz2.so: $(OBJS)
+	rm -rf libbz2.so
+	$(CXX) $(CFLAGS) -shared -o $@ $(OBJS)
+
 check: test
 test: bzip2
 	@cat words1
@@ -61,7 +65,7 @@ test: bzip2
 	./bzip2 -d  < sample1.bz2 > sample1.tst
 	./bzip2 -d  < sample2.bz2 > sample2.tst
 	./bzip2 -ds < sample3.bz2 > sample3.tst
-	cmp sample1.bz2 sample1.rb2 
+	cmp sample1.bz2 sample1.rb2
 	cmp sample2.bz2 sample2.rb2
 	cmp sample3.bz2 sample3.rb2
 	cmp sample1.tst sample1.ref
@@ -89,6 +93,8 @@ install: bzip2 bzip2recover
 	chmod a+r $(PREFIX)/include/bzlib.h
 	cp -f libbz2.a $(PREFIX)/lib
 	chmod a+r $(PREFIX)/lib/libbz2.a
+	cp -f libbz2.so $(PREFIX)/lib
+	chmod a+r $(PREFIX)/lib/libbz2.so
 	cp -f bzgrep $(PREFIX)/bin/bzgrep
 	ln -s -f $(PREFIX)/bin/bzgrep $(PREFIX)/bin/bzegrep
 	ln -s -f $(PREFIX)/bin/bzgrep $(PREFIX)/bin/bzfgrep
@@ -108,8 +114,8 @@ install: bzip2 bzip2recover
 	echo ".so man1/bzmore.1" > $(PREFIX)/man/man1/bzless.1
 	echo ".so man1/bzdiff.1" > $(PREFIX)/man/man1/bzcmp.1
 
-clean: 
-	rm -f *.o libbz2.a bzip2 bzip2recover \
+clean:
+	rm -f *.o libbz2.a libbz2.so bzip2 bzip2recover \
 	sample1.rb2 sample2.rb2 sample3.rb2 \
 	sample1.tst sample2.tst sample3.tst
 
@@ -203,7 +209,7 @@ dist: check manual
 # For rebuilding the manual from sources on my SuSE 9.1 box
 
 MANUAL_SRCS= 	bz-common.xsl bz-fo.xsl bz-html.xsl bzip.css \
-		entities.xml manual.xml 
+		entities.xml manual.xml
 
 manual: manual.html manual.ps manual.pdf
 

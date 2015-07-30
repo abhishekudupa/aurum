@@ -156,8 +156,8 @@ set_target_properties(aurum-static PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${AURUM_LIB_DIR}"
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${AURUM_BIN_DIR}")
 
-add_dependencies(aurum-static libxz)
-add_dependencies(aurum-shared libxz)
+add_dependencies(aurum-static libxz libbz2)
+add_dependencies(aurum-shared libxz libbz2)
 
 # testing
 if(AURUM_BUILD_TEST_CASES)
@@ -218,6 +218,16 @@ ExternalProject_Add(
   BUILD_COMMAND ${MAKE}
   INSTALL_COMMAND make install
 )
+
+ExternalProject_Add(
+  libbz2
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/bzip2-1.0.6
+  BUILD_IN_SOURCE 1
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ${MAKE}
+  INSTALL_COMMAND make install PREFIX=${CMAKE_BINARY_DIR}/ && make clean
+)
+
 
 install(FILES ${CMAKE_BINARY_DIR}/AurumConfig.h
   DESTINATION ${AURUM_INC_DIR}
