@@ -156,6 +156,9 @@ set_target_properties(aurum-static PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${AURUM_LIB_DIR}"
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${AURUM_BIN_DIR}")
 
+add_dependencies(aurum-static libxz)
+add_dependencies(aurum-shared libxz)
+
 # testing
 if(AURUM_BUILD_TEST_CASES)
   add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/thirdparty/google-test")
@@ -206,6 +209,15 @@ install(DIRECTORY
   DESTINATION ${AURUM_INC_DIR}
   COMPONENT dev
   FILES_MATCHING PATTERN "*.hpp")
+
+include(ExternalProject)
+ExternalProject_Add(
+  libxz
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/xz-5.2.1
+  CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/xz-5.2.1/configure --prefix=${CMAKE_BINARY_DIR}/ --libdir=${CMAKE_BINARY_DIR}/lib CFLAGS=-O3
+  BUILD_COMMAND ${MAKE}
+  INSTALL_COMMAND make install
+)
 
 install(FILES ${CMAKE_BINARY_DIR}/AurumConfig.h
   DESTINATION ${AURUM_INC_DIR}
