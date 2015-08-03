@@ -108,6 +108,8 @@ set(AURUM_CXX_SOURCE_FILES
   src/hashing/MurmurHash.cpp
   src/hashing/SpookyHash.cpp
 
+  src/io/FilterBase.cpp
+
   src/logging/LogManager.cpp
 
   src/plugins/PluginLoader.cpp
@@ -197,6 +199,7 @@ install(DIRECTORY
   src/comparisons
   src/containers
   src/hashing
+  src/io
   src/logging
   src/memory
   src/plugins

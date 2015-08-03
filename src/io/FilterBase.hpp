@@ -47,64 +47,56 @@
 namespace aurum {
 namespace io {
 
-template <typename DerivedType>
-class FilterBase : public AurumObject<aurum::io::FilterBase<DerivedType> >
+class FilterBase : public AurumObject<FilterBase>,
+                   public std::streambuf
 {
-    static_assert(std::is_base_of<std::streambuf, DerivedType>::value,
-                  "FilterBase<> can only be subclassed by classes "
-                  "which derive from std::streambuf<>");
-
 protected:
-    std::streambuf* m_downstream_buffer;
+    std::streambuf* m_piped_buffer;
 
 public:
-    inline FilterBase()
-        : m_downstream_buffer(nullptr)
-    {
-        // Nothing here
-    }
+    FilterBase(std::streambuf* piped_buffer);
+    FilterBase(const FilterBase& other);
+    FilterBase(FilterBase&& other);
+    virtual ~FilterBase();
 
-    inline FilterBase(std::streambuf* downstream_buffer)
-        : m_downstream_buffer(downstream_buffer)
-    {
-        // Nothing here
-    }
+    FilterBase& operator = (const FilterBase& other);
+    FilterBase& operator = (FilterBase&& other);
 
-    inline FilterBase(const FilterBase& other)
-        : m_downstream_buffer(other.m_downstream_buffer)
-    {
-        // Nothing here
-    }
+    std::streambuf* get_piped_buffer() const;
 
-    inline FilterBase(FilterBase&& other)
-        : FilterBase()
-    {
-        std::swap(m_downstream_buffer, other.m_downstream_buffer);
-    }
+    // the protected functions are as in std::streambuf
+};
 
-    inline ~FilterBase()
-    {
-        // Nothing here
-    }
+class CheckedFilterBase : public FilterBase
+{
+private:
+    inline void throw_unsupported_op_exception(const std::string& op_name) const;
 
-    inline FilterBase& operator = (const FilterBase& other)
-    {
-        if (&other == this) {
-            return *this;
-        }
-        m_downstream_buffer = other.m_downstream_buffer;
-        return *this;
-    }
+public:
+    using FilterBase::FilterBase;
+    virtual ~CheckedFilterBase();
 
-    inline FilterBase& operator = (FilterBase&& other)
-    {
-        if (&other == this) {
-            return *this;
-        }
-        m_downstream_buffer = other.m_downstream_buffer;
-        other.m_downstream_buffer = nullptr;
-        return *this;
-    }
+    CheckedFilterBase& operator = (const CheckedFilterBase& other);
+    CheckedFilterBase& operator = (CheckedFilterBase&& other);
+
+    // calling any of these overrides results in an exception being
+    // thrown unless further overriden by a subclass
+    virtual void imbue(const std::locale& loc) override;
+    virtual std::streambuf* setbuf(char_type* s, std::streamsize n) override;
+    virtual pos_type seekoff(off_type offset, std::ios_base::seekdir dir,
+                             std::ios_base::openmode which =
+                             std::ios_base::in | std::ios_base::out) override;
+    virtual pos_type seekpos(pos_type pos,
+                             std::ios_base::openmode which =
+                             std::ios_base::in | std::ios_base::out) override;
+    virtual int sync() override;
+    virtual std::streamsize showmanyc() override;
+    virtual int_type underflow() override;
+    virtual int_type uflow() override;
+    virtual std::streamsize xsgetn(char_type* s, std::streamsize count) override;
+    virtual std::streamsize xsputn(const char_type* s, std::streamsize count) override;
+    virtual int_type overflow(int_type ch = traits_type::eof());
+    virtual int_type pbackfail(int_type c = traits_type::eof());
 };
 
 } /* end namespace io */
