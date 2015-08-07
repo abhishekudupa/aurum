@@ -47,56 +47,89 @@
 namespace aurum {
 namespace io {
 
-class FilterBase : public AurumObject<FilterBase>,
-                   public std::streambuf
+struct IOCategoryBase
+{};
+
+struct Input : IOCategoryBase
+{};
+
+struct Output : IOCategoryBase
+{};
+
+struct AccessCategoryBase
+{};
+
+struct Sequential
+{};
+
+struct RandomAccess
+{};
+
+namespace detail_ {
+
+class IOFilterBase : public AurumObject<FilterBase>,
+                     public std::streambuf
 {
 protected:
     std::streambuf* m_piped_buffer;
 
+    inline void throw_on_unsupported_operation(const std::string& operation_name) const;
+
 public:
-    FilterBase(std::streambuf* piped_buffer);
-    FilterBase(const FilterBase& other);
-    FilterBase(FilterBase&& other);
+    IOFilterBase(std::streambuf* piped_buffer);
+    IOFilterBase(const FilterBase& other);
+    IOFilterBase(FilterBase&& other);
+    virtual ~IOFilterBase();
+
+    IOFilterBase& operator = (const IOFilterBase& other);
+    IOFilterBase& operator = (IOFilterBase&& other);
+
+    std::streambuf* get_piped_buffer() const;
+    void set_piped_buffer(std::streambuf* buffer);
+
+    // the protected functions are as in std::streambuf
+};
+
+} /* end namespace detail_ */
+
+// selectively disable some overloads
+// this class should never be instantiated,
+// because we provide specializations for all the relevant
+// instantiations
+template <typename IOCategory, typename AccessCategory>
+class FilterBase : public detail_::IOFilterBase
+{
+    static_assert(((std::is_same<IOCategory, Input>::value ||
+                    std::is_same<IOCategory, Output>::value) ||
+                   (!std::is_same<IOCategory, Input>::value &&
+                    !std::is_same<IOCategory, Output>::value)),
+                  "Attempted to instantiate FilterBase with unsupported IOCategory");
+    static_assert(((std::is_same<AccessCategory, Sequential>::value ||
+                    std::is_same<AccessCategory, RandomAccess>::value) ||
+                   (!std::is_same<AccessCategory, Sequential>::value &&
+                    !std::is_same<AccessCategory, RandomAccess>::value)),
+                  "Attempted to instantiate FilterBase with unsupported AccessCategory");
+};
+
+template <>
+class FilterBase<Input, Sequential> : public detail_::IOFilterBase
+{
+private:
+    typedef detail_::IOFilterBase BaseType;
+
+public:
+    using BaseType::BaseType;
     virtual ~FilterBase();
 
     FilterBase& operator = (const FilterBase& other);
     FilterBase& operator = (FilterBase&& other);
 
-    std::streambuf* get_piped_buffer() const;
-
-    // the protected functions are as in std::streambuf
-};
-
-class CheckedFilterBase : public FilterBase
-{
-private:
-    inline void throw_unsupported_op_exception(const std::string& op_name) const;
-
-public:
-    using FilterBase::FilterBase;
-    virtual ~CheckedFilterBase();
-
-    CheckedFilterBase& operator = (const CheckedFilterBase& other);
-    CheckedFilterBase& operator = (CheckedFilterBase&& other);
-
-    // calling any of these overrides results in an exception being
-    // thrown unless further overriden by a subclass
+protected:
     virtual void imbue(const std::locale& loc) override;
     virtual std::streambuf* setbuf(char_type* s, std::streamsize n) override;
     virtual pos_type seekoff(off_type offset, std::ios_base::seekdir dir,
                              std::ios_base::openmode which =
                              std::ios_base::in | std::ios_base::out) override;
-    virtual pos_type seekpos(pos_type pos,
-                             std::ios_base::openmode which =
-                             std::ios_base::in | std::ios_base::out) override;
-    virtual int sync() override;
-    virtual std::streamsize showmanyc() override;
-    virtual int_type underflow() override;
-    virtual int_type uflow() override;
-    virtual std::streamsize xsgetn(char_type* s, std::streamsize count) override;
-    virtual std::streamsize xsputn(const char_type* s, std::streamsize count) override;
-    virtual int_type overflow(int_type ch = traits_type::eof());
-    virtual int_type pbackfail(int_type c = traits_type::eof());
 };
 
 } /* end namespace io */

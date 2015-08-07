@@ -1,8 +1,8 @@
-// ZLibFilter.hpp ---
+// AurumStreamBuffer.hpp ---
 //
-// Filename: ZLibFilter.hpp
+// Filename: AurumStreamBuffer.hpp
 // Author: Abhishek Udupa
-// Created: Mon Aug  3 18:42:44 2015 (-0400)
+// Created: Thu Aug  6 17:53:10 2015 (-0400)
 //
 //
 // Copyright (c) 2015, Abhishek Udupa, University of Pennsylvania
@@ -37,61 +37,43 @@
 
 // Code:
 
-#if !defined AURUM_IO_ZLIB_FILTER_HPP_
-#define AURUM_IO_ZLIB_FILTER_HPP_
+#if !defined AURUM_IO_AURUM_STREAM_BUFFER_HPP_
+#define AURUM_IO_AURUM_STREAM_BUFFER_HPP_
 
-#include <zlib.h>
+#include <streambuf>
 
-#include "FilterBase.hpp"
+#include "../basetypes/AurumTypes.hpp"
 
 namespace aurum {
 namespace io {
 
-class ZLibFilter : public CheckedFilterBase
+namespace detail_ {
+
+class AurumStreamBufferBase : public AurumObject<AurumStreamBufferBase>,
+                              public std::streambuf
 {
 private:
-    // constants governing buffer/chunk sizes
-    static constexpr u32 sc_default_chunk_size = 65536;
-    // constants affecting compression levels
-    static constexpr i32 sc_default_compression_level = Z_BEST_COMPRESSION;
-    static constexpr i32 sc_default_compression_method = Z_DEFLATED;
-    static constexpr i32 sc_default_compression_window_bits = 15;
-    static constexpr i32 sc_default_compression_memlevel = 9;
-    static constexpr i32 sc_default_compression_strategy = Z_DEFAULT_STRATEGY;
-
-    z_stream m_zlib_stream;
-    u08* m_scratch_buffer;
+    typedef std::streambuf BaseType;
 
 public:
-    ZLibFilter(std::streambuf* piped_buffer,
-               bool use_gzip_wrapper = true,
-               i32 compression_level = sc_default_compression_level);
+    using BaseType::BaseType;
+    virtual ~AurumStreamBufferBase();
 
-    // not copy constructible
-    ZLibFilter(const ZLibFilter& other) = delete;
-    // not move constructible
-    ZLibFilter(ZLibFilter&& other) = delete;
+    // everything else is as expected of a stream buffer
+};
 
-    virtual ~ZLibFilter();
+} /* end namespace detail_ */
 
-    // not assignable
-    ZLibFilter& operator = (const ZLibFilter& other) = delete;
-    ZLibFilter& operator = (ZLibFilter&& other) = delete;
+class AurumInputStream : public AurumStreamBufferBase
+{
+public:
 
-    // overrides
-    virtual int sync() override;
-    virtual std::streamsize showmanyc() override;
-    virtual int_type underflow() override;
-    virtual std::streamsize xsgetn(char_type* s, std::streamsize count) override;
-    virtual std::streamsize xsputn(const char_type* s, std::streamsize count) override;
-    virtual int_type overflow(int_type ch = traits_type::eof()) override;
-    virtual int_type pbackfail(int_type c = traits_type::eof()) override;
 };
 
 } /* end namespace io */
 } /* end namespace aurum */
 
-#endif /* AURUM_IO_ZLIB_FILTER_HPP_ */
+#endif /* AURUM_IO_AURUM_STREAM_BUFFER_HPP_ */
 
 //
-// ZLibFilter.hpp ends here
+// AurumStreamBuffer.hpp ends here
