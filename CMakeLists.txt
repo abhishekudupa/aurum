@@ -47,10 +47,6 @@ if(CMAKE_BUILDSYS_CONFIG_HAVE_GDB)
   set(AURUM_CFG_PATH_TO_GDB_ "\"${CMAKE_BUILDSYS_CONFIG_PATH_TO_GDB}\"")
 endif()
 
-configure_file(
-  "${CMAKE_CURRENT_LIST_DIR}/config-includes/AurumConfig.h.in"
-  "${CMAKE_BINARY_DIR}/AurumConfig.h")
-
 # build types
 set(CMAKE_CXX_FLAGS_RELEASE
   "${AURUM_DEFAULT_CXX_FLAGS} -O3"
@@ -139,6 +135,42 @@ target_link_libraries(aurum-static ${AURUM_LINK_LIBS})
 target_include_directories(aurum-shared PRIVATE ${CMAKE_BINARY_DIR})
 target_include_directories(aurum-static PRIVATE ${CMAKE_BINARY_DIR})
 
+# external deps
+find_package(BZip2)
+if(BZIP2_FOUND)
+  target_include_directories(aurum-shared PRIVATE ${BZIP_INCLUDE_DIRS})
+  target_include_directories(aurum-static PRIVATE ${BZIP_INCLUDE_DIRS})
+  set(AURUM_CFG_HAVE_BZIP2_ ON)
+endif (BZIP2_FOUND)
+
+find_package(ZLIB)
+if(ZLIB_FOUND)
+  target_include_directories(aurum-shared PRIVATE ${ZLIB_INCLUDE_DIRS})
+  target_include_directories(aurum-static PRIVATE ${ZLIB_INCLUDE_DIRS})
+  set(AURUM_CFG_HAVE_ZLIB_ ON)
+endif(ZLIB_FOUND)
+
+find_package(LibLZMA)
+if(LIBLZMA_FOUND)
+  target_include_directories(aurum-shared PRIVATE ${LIBLZMA_INCLUDE_DIRS})
+  target_include_directories(aurum-static PRIVATE ${LIBLZMA_INCLUDE_DIRS})
+  set(AURUM_CFG_HAVE_LZMA_ ON)
+endif(LIBLZMA_FOUND)
+
+# attempt to use own bzip2 if no system bzip2 found
+if(NOT BZIP2_FOUND)
+  message(STATUS "Using bundled version of bzip2.")
+  add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2)
+  target_include_directories(aurum-shared PRIVATE ${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2)
+  target_include_directories(aurum-static PRIVATE ${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2)
+  set(USING_LOCAL_BZIP2 ON)
+  set(AURUM_CFG_HAVE_BZIP2_ ON)
+endif()
+
+configure_file(
+  "${CMAKE_CURRENT_LIST_DIR}/config-includes/AurumConfig.h.in"
+  "${CMAKE_BINARY_DIR}/AurumConfig.h")
+
 # set the interface include directories for projects which include
 # this project as a subproject
 set_property(TARGET aurum-shared APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
@@ -209,6 +241,12 @@ install(DIRECTORY
   DESTINATION ${AURUM_INC_DIR}
   COMPONENT dev
   FILES_MATCHING PATTERN "*.hpp")
+
+if(USING_LOCAL_BZIP2)
+  install(FILES ${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2/src/bzlib.h
+    DESTINATION ${AURUM_INC_DIR}
+    COMPONENT dev)
+endif()
 
 install(FILES ${CMAKE_BINARY_DIR}/AurumConfig.h
   DESTINATION ${AURUM_INC_DIR}

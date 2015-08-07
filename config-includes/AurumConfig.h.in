@@ -46,6 +46,9 @@ static constexpr const char* AURUM_BUILD_TIME_ = __TIME__;
 #cmakedefine AURUM_CFG_HAVE_GDB_
 #cmakedefine AURUM_CFG_LOGGING_ENABLED_
 #cmakedefine AURUM_CFG_HAVE_LIBRT_
+#cmakedefine AURUM_CFG_HAVE_BZIP2_
+#cmakedefine AURUM_CFG_HAVE_ZLIB_
+#cmakedefine AURUM_CFG_HAVE_LZMA_
 
 #define AURUM_CFG_PATH_TO_GDB_ @AURUM_CFG_PATH_TO_GDB_@
 
