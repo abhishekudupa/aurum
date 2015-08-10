@@ -59,7 +59,7 @@ if(CMAKE_BUILDSYS_CONFIG_HAS_LTO_BUILDS)
 endif()
 
 set(CMAKE_CXX_FLAGS_DEBUG
-  "${AURUM_DEFAULT_CXX_FLAGS} -ggdb3 -fno-inline -DAURUM_CFG_ASSERTIONS_ENABLED_ -DAURUM_CFG_DEBUG_MODE_BUILD_"
+  "${AURUM_DEFAULT_CXX_FLAGS} -O0 -ggdb3 -fno-inline -DAURUM_CFG_ASSERTIONS_ENABLED_ -DAURUM_CFG_DEBUG_MODE_BUILD_"
   CACHE STRING "CXX COMPILER flags for debug build" FORCE)
 
 mark_as_advanced(CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_CXX_FLAGS_RELEASELTO)
@@ -170,8 +170,8 @@ if(NOT BZIP2_FOUND)
   add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2)
   target_include_directories(aurum-shared PRIVATE ${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2)
   target_include_directories(aurum-static PRIVATE ${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2)
-  target_link_libraries(aurum-shared "-lbz2")
-  target_link_libraries(aurum-static "-lbz2")
+  target_link_libraries(aurum-shared "${CMAKE_BINARY_DIR}/lib/libbzip2-shared.so")
+  target_link_libraries(aurum-static "${CMAKE_BINARY_DIR}/lib/libbzip2-shared.so")
   set(USING_LOCAL_BZIP2 ON)
   set(AURUM_CFG_HAVE_BZIP2_ ON)
 else()

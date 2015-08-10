@@ -79,12 +79,14 @@ protected:
     bool m_is_final_block;
     bool m_decompressing_block;
     bool m_compressing_block;
+    bool m_compressing_block_in_sync_mode;
     u32 m_scratch_buffer_size;
     u32 m_current_output_buffer_size;
     u08* m_scratch_buffer;
     u08* m_current_output_buffer;
 
     // initializes the stream
+    ZLibFilterBase() = delete;
     ZLibFilterBase(bool is_input, u32 chunk_size, bool use_gzip_wrapper,
                    i32 compression_level);
     virtual ~ZLibFilterBase();
@@ -92,7 +94,9 @@ protected:
     // compression
     // returns the number of bytes available in the scratch buffer
     // retval < m_buffer_size implies that we're done
-    u32 begin_block_compression(u08* input_block, u32 block_size, bool is_final_block = false);
+    u32 begin_block_compression(u08* input_block, u32 block_size,
+                                bool do_sync = false,
+                                bool is_final_block = false);
 
     // returns the number of bytes available for consumption in the scratch buffer
     // retval < m_buffer_size implies we're done
@@ -132,7 +136,53 @@ class ZLibInputFilter
     : public detail_::ZLibFilterBase,
       public SequentialInputFilterBase
 {
+public:
+    ZLibInputFilter(std::streambuf* chained_buffer,
+                    u64 buffer_size = sc_default_buffer_size);
+    ZLibInputFilter() = delete;
+    virtual ~ZLibInputFilter();
 
+protected:
+    virtual int_type underflow() override;
+    virtual std::streamsize xsgetn(char_type* s, std::streamsize count) override;
+    virtual int_type pbackfail(int_type c = traits_type::eof()) override;
+};
+
+class ZLibOutputFilter
+    : public detail_::ZLibFilterBase,
+      public SequentialOutputFilterBase
+{
+private:
+    inline void do_overflow(bool sync_compression = false, bool final_block = false);
+
+public:
+    ZLibOutputFilter(std::streambuf* chained_buffer,
+                     i32 compression_level = sc_default_compression_level,
+                     bool use_gzip_stream = true,
+                     u64 buffer_size = sc_default_buffer_size,
+                     u32 chunk_size = sc_default_chunk_size);
+    ZLibOutputFilter() = delete;
+    virtual ~ZLibOutputFilter();
+
+protected:
+    virtual std::streamsize xsputn(const char_type* s, std::streamsize n) override;
+    virtual int_type overflow(int_type ch = traits_type::eof()) override;
+    virtual int sync() override;
+    void finalize();
+};
+
+template <>
+class ZLibFilter<Input> : public ZLibInputFilter
+{
+public:
+    using ZLibInputFilter::ZLibInputFilter;
+};
+
+template <>
+class ZLibFilter<Output> : public ZLibOutputFilter
+{
+public:
+    using ZLibOutputFilter::ZLibOutputFilter;
 };
 
 } /* end namespace io */

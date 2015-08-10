@@ -45,26 +45,10 @@
 #include "../basetypes/AurumTypes.hpp"
 #include "../basetypes/AurumTraits.hpp"
 
+#include "Categories.hpp"
+
 namespace aurum {
 namespace io {
-
-struct IOCategoryBase
-{};
-
-struct Input : IOCategoryBase
-{};
-
-struct Output : IOCategoryBase
-{};
-
-struct AccessCategoryBase
-{};
-
-struct Sequential
-{};
-
-struct RandomAccess
-{};
 
 namespace detail_ {
 
@@ -74,7 +58,7 @@ class IOFilterBase : public AurumObject<IOFilterBase>,
 {
 protected:
     // some constants for default buffer sizes
-    static constexpr u64 sc_default_buffer_size = 16384;
+    static constexpr u64 sc_default_buffer_size = 65536;
 
     // variables
     const u64 m_buffer_size;
