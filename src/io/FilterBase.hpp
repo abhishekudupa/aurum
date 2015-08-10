@@ -40,9 +40,10 @@
 #if !defined AURUM_IO_FILTER_BASE_HPP_
 #define AURUM_IO_FILTER_BASE_HPP_
 
-#include <type_traits>
+#include <streambuf>
 
 #include "../basetypes/AurumTypes.hpp"
+#include "../basetypes/AurumTraits.hpp"
 
 namespace aurum {
 namespace io {
@@ -67,25 +68,27 @@ struct RandomAccess
 
 namespace detail_ {
 
-class IOFilterBase : public AurumObject<FilterBase>,
-                     public std::streambuf
+class IOFilterBase : public AurumObject<IOFilterBase>,
+                     public std::streambuf,
+                     public AurumNonCopyable
 {
 protected:
-    std::streambuf* m_piped_buffer;
+    // some constants for default buffer sizes
+    static constexpr u64 sc_default_buffer_size = 16384;
 
-    inline void throw_on_unsupported_operation(const std::string& operation_name) const;
+    // variables
+    const u64 m_buffer_size;
+    u08* m_buffer;
+    std::streambuf* m_chained_buffer;
+
+    void throw_on_unsupported_operation(const std::string& operation_name) const;
 
 public:
-    IOFilterBase(std::streambuf* piped_buffer);
-    IOFilterBase(const FilterBase& other);
-    IOFilterBase(FilterBase&& other);
+    IOFilterBase(std::streambuf* chained_buffer, u64 buffer_size = sc_default_buffer_size);
     virtual ~IOFilterBase();
 
-    IOFilterBase& operator = (const IOFilterBase& other);
-    IOFilterBase& operator = (IOFilterBase&& other);
-
-    std::streambuf* get_piped_buffer() const;
-    void set_piped_buffer(std::streambuf* buffer);
+    std::streambuf* get_chained_buffer() const;
+    void set_chained_buffer(std::streambuf* buffer);
 
     // the protected functions are as in std::streambuf
 };
@@ -118,11 +121,8 @@ private:
     typedef detail_::IOFilterBase BaseType;
 
 public:
-    using BaseType::BaseType;
+    FilterBase(std::streambuf* chained_buffer, u64 buffer_size = sc_default_buffer_size);
     virtual ~FilterBase();
-
-    FilterBase& operator = (const FilterBase& other);
-    FilterBase& operator = (FilterBase&& other);
 
 protected:
     virtual void imbue(const std::locale& loc) override;
@@ -130,7 +130,112 @@ protected:
     virtual pos_type seekoff(off_type offset, std::ios_base::seekdir dir,
                              std::ios_base::openmode which =
                              std::ios_base::in | std::ios_base::out) override;
+    virtual pos_type seekpos(pos_type pos,
+                             std::ios_base::openmode which =
+                             std::ios_base::in | std::ios_base::out) override;
+    virtual std::streamsize xsputn(const char_type* s, std::streamsize count) override;
+    virtual int_type overflow(int_type ch = traits_type::eof()) override;
 };
+
+template <>
+class FilterBase<Input, RandomAccess> : public detail_::IOFilterBase
+{
+private:
+    typedef detail_::IOFilterBase BaseType;
+
+public:
+    FilterBase(std::streambuf* chained_buffer, u64 buffer_size = sc_default_buffer_size);
+    virtual ~FilterBase();
+
+protected:
+    virtual void imbue(const std::locale& loc) override;
+    virtual std::streambuf* setbuf(char_type* s, std::streamsize n) override;
+    virtual std::streamsize xsputn(const char_type* s, std::streamsize count) override;
+    virtual int_type overflow(int_type ch = traits_type::eof()) override;
+};
+
+template <>
+class FilterBase<Output, Sequential> : public detail_::IOFilterBase
+{
+private:
+    typedef detail_::IOFilterBase BaseType;
+
+public:
+    FilterBase(std::streambuf* chained_buffer, u64 buffer_size = sc_default_buffer_size);
+    virtual ~FilterBase();
+
+protected:
+    virtual void imbue(const std::locale& loc) override;
+    virtual std::streambuf* setbuf(char_type* s, std::streamsize n) override;
+    virtual pos_type seekoff(off_type offset, std::ios_base::seekdir dir,
+                             std::ios_base::openmode which =
+                             std::ios_base::in | std::ios_base::out) override;
+    virtual pos_type seekpos(pos_type pos,
+                             std::ios_base::openmode which =
+                             std::ios_base::in | std::ios_base::out) override;
+
+    virtual std::streamsize showmanyc() override;
+
+    virtual std::streamsize xsgetn(char_type* s, std::streamsize count) override;
+    virtual int_type underflow() override;
+    virtual int_type uflow() override;
+};
+
+template <>
+class FilterBase<Output, RandomAccess> : public detail_::IOFilterBase
+{
+private:
+    typedef detail_::IOFilterBase BaseType;
+
+public:
+    FilterBase(std::streambuf* chained_buffer, u64 buffer_size = sc_default_buffer_size);
+    virtual ~FilterBase();
+
+protected:
+    virtual void imbue(const std::locale& loc) override;
+    virtual std::streambuf* setbuf(char_type* s, std::streamsize n) override;
+
+    virtual std::streamsize showmanyc() override;
+
+    virtual std::streamsize xsgetn(char_type* s, std::streamsize count) override;
+    virtual int_type underflow() override;
+    virtual int_type uflow() override;
+};
+
+typedef FilterBase<Input, Sequential> SequentialInputFilterBase;
+typedef FilterBase<Input, RandomAccess> RandomAccessInputFilterBase;
+
+typedef FilterBase<Output, Sequential> SequentialOutputFilterBase;
+typedef FilterBase<Output, RandomAccess> RandomAccessOutputFilterBase;
+
+// type traits
+template <typename T>
+struct IsInputFilter
+    : std::conditional<(std::is_base_of<SequentialInputFilterBase, T>::value ||
+                        std::is_base_of<RandomAccessInputFilterBase, T>::value),
+                       aurum::detail_::TrueStruct, aurum::detail_::FalseStruct>::type
+{};
+
+template <typename T>
+struct IsOutputFilter
+    : std::conditional<(std::is_base_of<SequentialOutputFilterBase, T>::value ||
+                        std::is_base_of<RandomAccessOutputFilterBase, T>::value),
+                       typename aurum::detail_::TrueStruct, aurum::detail_::FalseStruct>::type
+{};
+
+template <typename T>
+struct IsSequentialFilter
+    : std::conditional<(std::is_base_of<SequentialInputFilterBase, T>::value ||
+                        std::is_base_of<SequentialOutputFilterBase, T>::value),
+                       aurum::detail_::TrueStruct, aurum::detail_::FalseStruct>::type
+{};
+
+template <typename T>
+struct IsRandomAccessFilter
+    : std::conditional<(std::is_base_of<RandomAccessInputFilterBase, T>::value ||
+                        std::is_base_of<RandomAccessOutputFilterBase, T>::value),
+                       typename aurum::detail_::TrueStruct, aurum::detail_::FalseStruct>::type
+{};
 
 } /* end namespace io */
 } /* end namespace aurum */

@@ -37,151 +37,246 @@
 
 // Code:
 
+#include "../allocators/MemoryManager.hpp"
+
 #include "FilterBase.hpp"
 #include "AurumIOException.hpp"
 
 namespace aurum {
 namespace io {
 
-FilterBase::FilterBase(std::streambuf* piped_buffer)
-    : m_piped_buffer(piped_buffer)
+namespace aa = aurum::allocators;
+
+namespace detail_ {
+
+IOFilterBase::IOFilterBase(std::streambuf* chained_buffer, u64 buffer_size)
+    : std::streambuf(), m_buffer_size(buffer_size),
+      m_buffer(buffer_size == 0 ? nullptr : (u08*)aa::allocate_raw(buffer_size)),
+      m_chained_buffer(chained_buffer)
 {
     // Nothing here
 }
 
-FilterBase::FilterBase(const FilterBase& other)
-    : m_piped_buffer(other.m_piped_buffer)
+IOFilterBase::~IOFilterBase()
 {
-    // Nothing here
-}
-
-FilterBase::FilterBase(FilterBase&& other)
-    : FilterBase()
-{
-    std::swap(m_piped_buffer, other.m_piped_buffer);
-}
-
-FilterBase& FilterBase::operator = (const FilterBase& other)
-{
-    if (&other == this) {
-        return *this;
+    // delete the buffer that we've allocated
+    if (m_buffer != nullptr) {
+        aa::deallocate_raw(m_buffer, m_buffer_size);
     }
-
-    m_piped_buffer = other.m_piped_buffer;
-    return *this;
 }
 
-FilterBase& FilterBase::operator = (FilterBase&& other)
+std::streambuf* IOFilterBase::get_chained_buffer() const
 {
-    if (&other == this) {
-        return *this;
-    }
-
-    m_piped_buffer = other.m_piped_buffer;
-    other.m_piped_buffer = nullptr;
-    return *this;
+    return m_chained_buffer;
 }
 
-std::streambuf* FilterBase::get_piped_buffer() const
+void IOFilterBase::set_chained_buffer(std::streambuf* buffer)
 {
-    return m_piped_buffer;
+    m_chained_buffer = buffer;
 }
 
-
-// Implementation of CheckedFilterBase
-inline void
-CheckedFilterBase::throw_unsupported_op_exception(const std::string& op_name) const
+void IOFilterBase::throw_on_unsupported_operation(const std::string& operation_name) const
 {
-    throw AurumIOException((std::string)"Filter does not support operation: " + op_name);
+    throw AurumIOException((std::string)"operation " + operation_name +
+                           " not supported on filter.");
 }
 
-CheckedFilterBase::~CheckedFilterBase()
+} /* end namespace detail_ */
+
+SequentialInputFilterBase::FilterBase(std::streambuf* chained_buffer, u64 buffer_size)
+    : BaseType(chained_buffer, buffer_size)
+{
+    setg((char_type*)m_buffer, (char_type*)(m_buffer + m_buffer_size),
+         (char_type*)(m_buffer + m_buffer_size));
+}
+
+SequentialInputFilterBase::~FilterBase()
 {
     // Nothing here
 }
 
-CheckedFilterBase& CheckedFilterBase::operator = (const CheckedFilterBase& other)
+void SequentialInputFilterBase::imbue(const std::locale& loc)
 {
-    return static_cast<CheckedFilterBase&>(FilterBase::operator=(other));
+    throw_on_unsupported_operation("imbue()");
 }
 
-CheckedFilterBase& CheckedFilterBase::operator=(CheckedFilterBase&& other)
+std::streambuf* SequentialInputFilterBase::setbuf(char_type* s, std::streamsize n)
 {
-    return static_cast<CheckedFilterBase&>(FilterBase::operator=(std::move(other)));
-}
-
-void CheckedFilterBase::imbue(const std::locale& loc)
-{
-    throw_unsupported_op_exception("imbue()");
-}
-
-std::streambuf* CheckedFilterBase::setbuf(char_type* s, std::streamsize n)
-{
-    throw_unsupported_op_exception("setbuf()");
+    throw_on_unsupported_operation("setbuf()");
     return nullptr;
 }
 
-CheckedFilterBase::pos_type CheckedFilterBase::seekoff(off_type offset,
-                                                       std::ios_base::seekdir dir,
-                                                       std::ios_base::openmode which)
+SequentialInputFilterBase::pos_type
+SequentialInputFilterBase::seekoff(off_type offset,
+                                   std::ios_base::seekdir dir,
+                                   std::ios_base::openmode which)
 {
-    throw_unsupported_op_exception("seekoff()");
+    throw_on_unsupported_operation("seekoff()");
     return pos_type();
 }
 
-CheckedFilterBase::pos_type CheckedFilterBase::seekpos(pos_type pos,
-                                                       std::ios_base::openmode which)
+SequentialInputFilterBase::pos_type
+SequentialInputFilterBase::seekpos(pos_type pos,
+                                   std::ios_base::openmode which)
 {
-    throw_unsupported_op_exception("seekpos()");
+    throw_on_unsupported_operation("seekpos()");
     return pos_type();
 }
 
-int CheckedFilterBase::sync()
+std::streamsize SequentialInputFilterBase::xsputn(const char_type* s, std::streamsize count)
 {
-    throw_unsupported_op_exception("sync()");
-    return 0;
+    throw_on_unsupported_operation("xsputn()");
+    return std::streamsize();
 }
 
-std::streamsize CheckedFilterBase::showmanyc()
+SequentialInputFilterBase::int_type SequentialInputFilterBase::overflow(int_type ch)
 {
-    throw_unsupported_op_exception("showmanyc()");
-    return 0;
+    throw_on_unsupported_operation("overflow()");
+    return int_type();
 }
 
-CheckedFilterBase::int_type CheckedFilterBase::underflow()
+RandomAccessInputFilterBase::FilterBase(std::streambuf* chained_buffer, u64 buffer_size)
+    : BaseType(chained_buffer, buffer_size)
 {
-    throw_unsupported_op_exception("underflow()");
-    return 0;
+    setg((char_type*)m_buffer, (char_type*)(m_buffer + m_buffer_size),
+         (char_type*)(m_buffer + m_buffer_size));
 }
 
-CheckedFilterBase::int_type CheckedFilterBase::uflow()
+RandomAccessInputFilterBase::~FilterBase()
 {
-    throw_unsupported_op_exception("uflow()");
-    return 0;
+    // Nothing here
 }
 
-std::streamsize CheckedFilterBase::xsgetn(char_type* s, std::streamsize count)
+void RandomAccessInputFilterBase::imbue(const std::locale& loc)
 {
-    throw_unsupported_op_exception("xsgetn()");
-    return 0;
+    throw_on_unsupported_operation("imbue()");
 }
 
-std::streamsize CheckedFilterBase::xsputn(const char_type* s, std::streamsize count)
+std::streambuf* RandomAccessInputFilterBase::setbuf(char_type* s, std::streamsize n)
 {
-    throw_unsupported_op_exception("xsputn()");
-    return 0;
+    throw_on_unsupported_operation("setbuf()");
+    return nullptr;
 }
 
-CheckedFilterBase::int_type CheckedFilterBase::overflow(int_type ch)
+std::streamsize RandomAccessInputFilterBase::xsputn(const char_type* s, std::streamsize count)
 {
-    throw_unsupported_op_exception("overflow()");
-    return 0;
+    throw_on_unsupported_operation("xsputn()");
+    return std::streamsize();
 }
 
-CheckedFilterBase::int_type CheckedFilterBase::pbackfail(int_type c)
+RandomAccessInputFilterBase::int_type RandomAccessInputFilterBase::overflow(int_type ch)
 {
-    throw_unsupported_op_exception("pbackfail()");
-    return 0;
+    throw_on_unsupported_operation("overflow()");
+    return int_type();
+}
+
+SequentialOutputFilterBase::FilterBase(std::streambuf* chained_buffer, u64 buffer_size)
+    : BaseType(chained_buffer, buffer_size)
+{
+    setp((char_type*)m_buffer, (char_type*)(m_buffer + m_buffer_size));
+}
+
+SequentialOutputFilterBase::~FilterBase()
+{
+    // Nothing here
+}
+
+void SequentialOutputFilterBase::imbue(const std::locale& loc)
+{
+    throw_on_unsupported_operation("imbue()");
+}
+
+std::streambuf* SequentialOutputFilterBase::setbuf(char_type* s, std::streamsize n)
+{
+    throw_on_unsupported_operation("setbuf()");
+    return nullptr;
+}
+
+SequentialOutputFilterBase::pos_type
+SequentialOutputFilterBase::seekoff(off_type offset,
+                                    std::ios_base::seekdir dir,
+                                    std::ios_base::openmode which)
+{
+    throw_on_unsupported_operation("seekoff()");
+    return pos_type();
+}
+
+SequentialOutputFilterBase::pos_type
+SequentialOutputFilterBase::seekpos(pos_type pos,
+                                    std::ios_base::openmode which)
+{
+    throw_on_unsupported_operation("seekpos()");
+    return pos_type();
+}
+
+std::streamsize SequentialOutputFilterBase::showmanyc()
+{
+    throw_on_unsupported_operation("showmanyc()");
+    return std::streamsize();
+}
+
+std::streamsize SequentialOutputFilterBase::xsgetn(char_type* s, std::streamsize count)
+{
+    throw_on_unsupported_operation("xsgetn()");
+    return std::streamsize();
+}
+
+SequentialOutputFilterBase::int_type SequentialOutputFilterBase::underflow()
+{
+    throw_on_unsupported_operation("underflow()");
+    return int_type();
+}
+
+SequentialOutputFilterBase::int_type SequentialOutputFilterBase::uflow()
+{
+    throw_on_unsupported_operation("uflow()");
+    return int_type();
+}
+
+RandomAccessOutputFilterBase::FilterBase(std::streambuf* chained_buffer, u64 buffer_size)
+    : BaseType(chained_buffer, buffer_size)
+{
+    setp((char_type*)m_buffer, (char_type*)(m_buffer + m_buffer_size));
+}
+
+RandomAccessOutputFilterBase::~FilterBase()
+{
+    // Nothing here
+}
+
+void RandomAccessOutputFilterBase::imbue(const std::locale& loc)
+{
+    throw_on_unsupported_operation("imbue()");
+}
+
+std::streambuf* RandomAccessOutputFilterBase::setbuf(char_type* s, std::streamsize n)
+{
+    throw_on_unsupported_operation("setbuf()");
+    return nullptr;
+}
+
+std::streamsize RandomAccessOutputFilterBase::showmanyc()
+{
+    throw_on_unsupported_operation("showmanyc()");
+    return std::streamsize();
+}
+
+std::streamsize RandomAccessOutputFilterBase::xsgetn(char_type* s, std::streamsize count)
+{
+    throw_on_unsupported_operation("xsgetn()");
+    return std::streamsize();
+}
+
+RandomAccessOutputFilterBase::int_type RandomAccessOutputFilterBase::underflow()
+{
+    throw_on_unsupported_operation("underflow()");
+    return int_type();
+}
+
+RandomAccessOutputFilterBase::int_type RandomAccessOutputFilterBase::uflow()
+{
+    throw_on_unsupported_operation("uflow()");
+    return int_type();
 }
 
 } /* end namespace io */

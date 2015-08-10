@@ -16,7 +16,7 @@ set(BZLIB_C_SRC_FILES
 )
 
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_C_FLAGS_RELEASE "-O3")
+set(CMAKE_C_FLAGS_RELEASE "-O3 -D_FILE_OFFSET_BITS=64")
 
 add_library(bzip2-shared SHARED ${BZLIB_C_SRC_FILES})
 add_library(bzip2-static STATIC ${BZLIB_C_SRC_FILES})

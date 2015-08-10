@@ -104,7 +104,8 @@ set(AURUM_CXX_SOURCE_FILES
   src/hashing/MurmurHash.cpp
   src/hashing/SpookyHash.cpp
 
-#  src/io/FilterBase.cpp
+  src/io/FilterBase.cpp
+  src/io/ZLibFilter.cpp
 
   src/logging/LogManager.cpp
 
@@ -140,6 +141,8 @@ find_package(BZip2)
 if(BZIP2_FOUND)
   target_include_directories(aurum-shared PRIVATE ${BZIP_INCLUDE_DIRS})
   target_include_directories(aurum-static PRIVATE ${BZIP_INCLUDE_DIRS})
+  target_link_libraries(aurum-shared ${BZIP2_LIBRARIES})
+  target_link_libraries(aurum-static ${BZIP2_LIBRARIES})
   set(AURUM_CFG_HAVE_BZIP2_ ON)
 endif (BZIP2_FOUND)
 
@@ -147,6 +150,8 @@ find_package(ZLIB)
 if(ZLIB_FOUND)
   target_include_directories(aurum-shared PRIVATE ${ZLIB_INCLUDE_DIRS})
   target_include_directories(aurum-static PRIVATE ${ZLIB_INCLUDE_DIRS})
+  target_link_libraries(aurum-shared ${ZLIB_LIBRARIES})
+  target_link_libraries(aurum-static ${ZLIB_LIBRARIES})
   set(AURUM_CFG_HAVE_ZLIB_ ON)
 endif(ZLIB_FOUND)
 
@@ -154,6 +159,8 @@ find_package(LibLZMA)
 if(LIBLZMA_FOUND)
   target_include_directories(aurum-shared PRIVATE ${LIBLZMA_INCLUDE_DIRS})
   target_include_directories(aurum-static PRIVATE ${LIBLZMA_INCLUDE_DIRS})
+  target_link_libraries(aurum-shared ${LIBLZMA_LIBRARIES})
+  target_link_libraries(aurum-static ${LIBLZMA_LIBRARIES})
   set(AURUM_CFG_HAVE_LZMA_ ON)
 endif(LIBLZMA_FOUND)
 
@@ -163,8 +170,12 @@ if(NOT BZIP2_FOUND)
   add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2)
   target_include_directories(aurum-shared PRIVATE ${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2)
   target_include_directories(aurum-static PRIVATE ${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2)
+  target_link_libraries(aurum-shared "-lbz2")
+  target_link_libraries(aurum-static "-lbz2")
   set(USING_LOCAL_BZIP2 ON)
   set(AURUM_CFG_HAVE_BZIP2_ ON)
+else()
+  message(STATUS "Using system version of bzip2.")
 endif()
 
 configure_file(

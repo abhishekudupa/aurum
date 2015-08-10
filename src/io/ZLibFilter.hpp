@@ -47,11 +47,14 @@
 namespace aurum {
 namespace io {
 
-class ZLibFilter : public CheckedFilterBase
+namespace detail_ {
+
+class ZLibFilterBase
 {
-private:
+protected:
     // constants governing buffer/chunk sizes
     static constexpr u32 sc_default_chunk_size = 65536;
+    static constexpr u32 sc_min_chunk_size = 4096;
     // constants affecting compression levels
     static constexpr i32 sc_default_compression_level = Z_BEST_COMPRESSION;
     static constexpr i32 sc_default_compression_method = Z_DEFLATED;
@@ -59,33 +62,77 @@ private:
     static constexpr i32 sc_default_compression_memlevel = 9;
     static constexpr i32 sc_default_compression_strategy = Z_DEFAULT_STRATEGY;
 
+private:
+    // the stream is private
     z_stream m_zlib_stream;
+
+    // helpers
+    inline void check_input() const;
+    inline void check_output() const;
+    inline void check_continue_decompression() const;
+    inline void check_continue_compression() const;
+    inline void check_begin_decompression() const;
+    inline void check_begin_compression() const;
+
+protected:
+    bool m_is_input;
+    bool m_is_final_block;
+    bool m_decompressing_block;
+    bool m_compressing_block;
+    u32 m_scratch_buffer_size;
+    u32 m_current_output_buffer_size;
     u08* m_scratch_buffer;
+    u08* m_current_output_buffer;
 
-public:
-    ZLibFilter(std::streambuf* piped_buffer,
-               bool use_gzip_wrapper = true,
-               i32 compression_level = sc_default_compression_level);
+    // initializes the stream
+    ZLibFilterBase(bool is_input, u32 chunk_size, bool use_gzip_wrapper,
+                   i32 compression_level);
+    virtual ~ZLibFilterBase();
 
-    // not copy constructible
-    ZLibFilter(const ZLibFilter& other) = delete;
-    // not move constructible
-    ZLibFilter(ZLibFilter&& other) = delete;
+    // compression
+    // returns the number of bytes available in the scratch buffer
+    // retval < m_buffer_size implies that we're done
+    u32 begin_block_compression(u08* input_block, u32 block_size, bool is_final_block = false);
 
-    virtual ~ZLibFilter();
+    // returns the number of bytes available for consumption in the scratch buffer
+    // retval < m_buffer_size implies we're done
+    // requires: input_block not be modified since last invocation of begin_block_compression
+    u32 continue_block_compression();
 
-    // not assignable
-    ZLibFilter& operator = (const ZLibFilter& other) = delete;
-    ZLibFilter& operator = (ZLibFilter&& other) = delete;
+    // decompression
+    // pushes data into output block from scratch buffer
+    // retval < block_size implies that scratch buffer is completely decompressed
+    // and can be filled with new data.
+    u32 begin_block_decompression(u08* output_block, u32 block_size, u32 avail_in_scratch_buffer);
 
-    // overrides
-    virtual int sync() override;
-    virtual std::streamsize showmanyc() override;
-    virtual int_type underflow() override;
-    virtual std::streamsize xsgetn(char_type* s, std::streamsize count) override;
-    virtual std::streamsize xsputn(const char_type* s, std::streamsize count) override;
-    virtual int_type overflow(int_type ch = traits_type::eof()) override;
-    virtual int_type pbackfail(int_type c = traits_type::eof()) override;
+    // continues the decompression of scratch buffer
+    // requires: scratch buffer not modified since last invocation of begin_block_decompression
+    // retval < block_size implies that scratch buffer is completely decompressed
+    // and can be filled with new data.
+    u32 continue_block_decompression();
+
+    void finalize();
+};
+
+} /* end namespace detail_ */
+
+template <typename IOCategory>
+class ZLibFilter
+    : public detail_::ZLibFilterBase,
+      public std::conditional<std::is_same<IOCategory, Input>::value,
+                              SequentialInputFilterBase, SequentialOutputFilterBase>::type
+{
+    static_assert(!(std::is_same<IOCategory, Input>::value ||
+                    std::is_same<IOCategory, Output>::value),
+                  "class ZLibFilter can only be instantiated with Input or Output as template "
+                  "arguments!");
+};
+
+class ZLibInputFilter
+    : public detail_::ZLibFilterBase,
+      public SequentialInputFilterBase
+{
+
 };
 
 } /* end namespace io */

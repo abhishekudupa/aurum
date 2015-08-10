@@ -183,6 +183,7 @@ public:
 class AurumNonCopyable
 {
 public:
+    AurumNonCopyable() {}
     AurumNonCopyable(const AurumNonCopyable& other) = delete;
     AurumNonCopyable(AurumNonCopyable&& other) = delete;
     AurumNonCopyable& operator = (const AurumNonCopyable& other) = delete;
