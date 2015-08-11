@@ -254,6 +254,11 @@ void* allocate_fun_for_compression64(void* opaque, u64 num_items, u64 item_size)
     return aurum::allocators::allocate(num_items * item_size);
 }
 
+void* allocate_fun_for_compressioni32(void* opaque, i32 num_items, i32 item_size)
+{
+    return aurum::allocators::allocate(num_items * item_size);
+}
+
 void deallocate_fun_for_compression(void* opaque, void* block_ptr)
 {
     aurum::allocators::deallocate(block_ptr);

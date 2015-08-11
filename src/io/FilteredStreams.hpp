@@ -140,6 +140,18 @@ public:
         this->set_rdbuf(m_chain);
     }
 
+    // for dual-use filters
+    template <template <typename> class FilterTemplate, typename... ArgTypes>
+    inline void push(ArgTypes&&... args)
+    {
+        static_assert(FilterTypeChecker<FilterTemplate<IOCategory> >::value,
+                      "Wrong type of filter pushed onto a FilteredStream");
+
+        auto new_filter = new FilterTemplate<IOCategory>(m_chain, std::forward<ArgTypes>(args)...);
+        m_chain = new_filter;
+        this->set_rdbuf(m_chain);
+    }
+
     std::streambuf* get_root() const
     {
         return m_chain_root;

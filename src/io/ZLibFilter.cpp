@@ -49,6 +49,59 @@ namespace aa = aurum::allocators;
 
 namespace detail_ {
 
+ZLibFilterBase::ZLibFilterBase(bool is_input, std::streambuf* io_buffer,
+                               bool use_gzip_wrapper, u32 chunk_size,
+                               i32 compression_level)
+    : m_is_input(is_input), m_stream_finished(false),
+      m_io_buffer(io_buffer),
+      m_scratch_buffer_size(chunk_size > sc_min_chunk_size ? chunk_size : sc_min_chunk_size),
+      m_scratch_buffer((u08*)aa::allocate_raw(m_scratch_buffer_size))
+{
+    m_zlib_stream.zalloc = aa::allocate_fun_for_compression32;
+    m_zlib_stream.zfree = aa::deallocate_fun_for_compression;
+    m_zlib_stream.opaque = nullptr;
+    m_zlib_stream.next_in = nullptr;
+    m_zlib_stream.next_out = nullptr;
+    m_zlib_stream.avail_in = 0;
+    m_zlib_stream.avail_out = 0;
+
+    int status;
+
+    if (m_is_input) {
+        status = inflateInit2(&m_zlib_stream, 47);
+    } else {
+        status = deflateInit2(&m_zlib_stream, compression_level, sc_default_compression_method,
+                              sc_default_compression_window_bits + (use_gzip_wrapper ? 16 : 0),
+                              sc_default_compression_memlevel, sc_default_compression_strategy);
+    }
+    if (status != Z_OK) {
+        throw AurumIOException((std::string)"Failed to initialize ZLib structures!");
+    }
+}
+
+ZLibFilterBase::~ZLibFilterBase()
+{
+    // TODO: Implement me
+}
+
+inline void ZLibFilterBase::check_input() const
+{
+    if (!m_is_input) {
+        throw AurumIOException((std::string)"Attempted to perform input on an " +
+                               "output ZLib Stream");
+    }
+}
+
+inline void ZLibFilterBase::check_output() const
+{
+    if (m_is_input) {
+        throw AurumIOException((std::string)"Attempted to perform output on an " +
+                               "input ZLib Stream");
+    }
+}
+
+u64 ZLibFilterBase::read_bytes
+
 ZLibFilterBase::ZLibFilterBase(bool is_input,
                                u32 chunk_size = sc_default_chunk_size,
                                bool use_gzip_wrapper = false,
@@ -245,6 +298,7 @@ u32 ZLibFilterBase::continue_block_decompression()
     }
     if (status == Z_STREAM_END) {
         m_is_final_block = true;
+        m_decompressing_block = false;
     }
 
     auto have_in_output_buffer = m_current_output_buffer_size - m_zlib_stream.avail_out;
@@ -283,25 +337,22 @@ ZLibInputFilter::int_type ZLibInputFilter::underflow()
         return traits_type::eof();
     }
 
+    u64 avail_in_scratch_buffer = 0;
     u64 num_available = 0;
     // gptr() == egptr(), we need to refill the buffer
-    if (m_decompressing_block) {
-        num_available = continue_block_decompression();
-    } else {
-        // fill the scratch buffer from the underlying streambuffer
-        auto const avail_in_scratch_buffer =
-            m_chained_buffer->sgetn((char_type*)m_scratch_buffer, m_scratch_buffer_size);
-        num_available = begin_block_decompression(m_buffer, m_buffer_size,
-                                                  avail_in_scratch_buffer);
-    }
-    setg((char_type*)m_buffer, (char_type*)m_buffer,
-         (char_type*)(m_buffer + num_available));
+    do {
+        if (m_decompressing_block) {
+            num_available = continue_block_decompression();
+        } else {
+            // fill the scratch buffer from the underlying streambuffer
+            avail_in_scratch_buffer =
+                m_chained_buffer->sgetn((char_type*)m_scratch_buffer, m_scratch_buffer_size);
+            num_available = begin_block_decompression(m_buffer, m_buffer_size,
+                                                      avail_in_scratch_buffer);
+        }
+    } while (avail_in_scratch_buffer > 0 && num_available == 0);
 
-    if (num_available == 0) {
-        return traits_type::eof();
-    } else {
-        return *(gptr());
-    }
+    if (num_available == 0 && avail_in_scratch_buffer == 0)
 }
 
 std::streamsize ZLibInputFilter::xsgetn(char_type* s, std::streamsize count)

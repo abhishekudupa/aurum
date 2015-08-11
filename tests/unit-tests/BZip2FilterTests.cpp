@@ -42,7 +42,7 @@
 #include <string>
 #include <random>
 
-#include "../../src/io/ZLibFilter.hpp"
+#include "../../src/io/BZip2Filter.hpp"
 
 #include <gtest/gtest.h>
 
@@ -52,12 +52,12 @@ using aurum::i32;
 using aurum::i64;
 using aurum::u08;
 
-namespace zlib_testing {
+namespace bzip2_testing {
 
-static const char* test_file_name = "zlib_test.gz";
+static const char* test_file_name = "bzip2_test.bz2";
 
 static constexpr u32 max_test_string_len = 128;
-static constexpr u32 max_num_strings = 65536;
+static constexpr u32 max_num_strings = 128;
 
 std::default_random_engine random_generator;
 std::uniform_int_distribution<u08> alpha_distribution(0, 25);
@@ -78,8 +78,8 @@ static inline void make_test_file(std::ostringstream& sstr)
 {
     std::filebuf fbuf;
     fbuf.open(test_file_name, std::ios_base::out | std::ios_base::trunc);
-    aurum::io::ZLibOutputFilter zlib_filter(&fbuf);
-    std::ostream fstr(&zlib_filter);
+    aurum::io::BZip2OutputFilter bzip2_filter(&fbuf);
+    std::ostream fstr(&bzip2_filter);
 
     for (u32 i = 0; i < max_num_strings; ++i) {
         auto&& cur_string = generate_random_string();
@@ -94,30 +94,32 @@ static inline void read_test_file(std::ostringstream& sstr)
 {
     std::filebuf fbuf;
     fbuf.open(test_file_name, std::ios_base::in);
-    aurum::io::ZLibInputFilter zlib_filter(&fbuf);
-    std::istream fstr(&zlib_filter);
+    aurum::io::BZip2InputFilter bzip2_filter(&fbuf);
+    std::istream fstr(&bzip2_filter);
     char temp_buffer[2 * max_test_string_len];
 
     while(true) {
         fstr.getline(temp_buffer, 2 * max_test_string_len);
-        if (fstr.eof() && fstr.gcount() == 0) {
+        if (fstr.eof()) {
             break;
         } else {
-            sstr << temp_buffer << std::endl;
+            if (fstr.gcount() > 0) {
+                sstr << temp_buffer << std::endl;
+            }
         }
     }
 
     // let the destruction sequence do its thing
 }
 
-} /* end namespace zlib_testing */
+} /* end namespace bzip2_testing */
 
-TEST(ZLibFilter, Functional)
+TEST(BZip2Filter, Functional)
 {
     std::ostringstream sstr;
     std::ostringstream cmpstr;
-    zlib_testing::make_test_file(sstr);
-    zlib_testing::read_test_file(cmpstr);
+    bzip2_testing::make_test_file(sstr);
+    bzip2_testing::read_test_file(cmpstr);
 
     EXPECT_EQ(sstr.str(), cmpstr.str());
 }

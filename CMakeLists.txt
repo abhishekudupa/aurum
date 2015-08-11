@@ -106,6 +106,7 @@ set(AURUM_CXX_SOURCE_FILES
 
   src/io/FilterBase.cpp
   src/io/ZLibFilter.cpp
+  src/io/BZip2Filter.cpp
   src/io/FilteredStreams.cpp
 
   src/logging/LogManager.cpp
@@ -169,10 +170,12 @@ endif(LIBLZMA_FOUND)
 if(NOT BZIP2_FOUND)
   message(STATUS "Using bundled version of bzip2.")
   add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2)
-  target_include_directories(aurum-shared PRIVATE ${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2)
-  target_include_directories(aurum-static PRIVATE ${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2)
-  target_link_libraries(aurum-shared "${CMAKE_BINARY_DIR}/lib/libbzip2-shared.so")
-  target_link_libraries(aurum-static "${CMAKE_BINARY_DIR}/lib/libbzip2-shared.so")
+  target_include_directories(aurum-shared PRIVATE ${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2/src)
+  target_include_directories(aurum-static PRIVATE ${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2/src)
+  target_include_directories(aurum-shared INTERFACE ${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2/src)
+  target_include_directories(aurum-static INTERFACE ${CMAKE_CURRENT_LIST_DIR}/thirdparty/bzip2/src)
+  target_link_libraries(aurum-shared bzip2-shared)
+  target_link_libraries(aurum-static bzip2-static)
   set(USING_LOCAL_BZIP2 ON)
   set(AURUM_CFG_HAVE_BZIP2_ ON)
 else()

@@ -63,6 +63,49 @@ protected:
     static constexpr i32 sc_default_compression_strategy = Z_DEFAULT_STRATEGY;
 
 private:
+    bool m_is_input;
+    bool m_stream_finished;
+    z_stream m_zlib_stream;
+    std::streambuf* m_io_buffer;
+    u32 m_scratch_buffer_size;
+    u08* m_scratch_buffer;
+
+    inline void check_input() const;
+    inline void check_output() const;
+
+protected:
+    ZLibFilterBase(bool is_input, std::streambuf* io_buffer,
+                   bool use_gzip_wrapper = false,
+                   u32 chunk_size = sc_default_chunk_size,
+                   i32 compression_level = sc_default_compression_level);
+
+    ZLibFilterBase() = delete;
+    ZLibFilterBase(const ZLibFilterBase& other) = delete;
+    ZLibFilterBase(ZLibFilterBase&& other) = delete;
+    ZLibFilterBase& operator = (const ZLibFilterBase& other) = delete;
+    ZLibFilterBase& operator = (ZLibFilterBase&& other) = delete;
+
+    virtual ~ZLibFilterBase();
+
+    u64 read_bytes(u08* output_buffer, u64 output_buffer_size);
+    u64 write_bytes(u08* input_buffer, u64 input_buffer_size, bool flush_stream = false);
+    inline void finalize();
+};
+
+class ZLibFilterBase
+{
+protected:
+    // constants governing buffer/chunk sizes
+    static constexpr u32 sc_default_chunk_size = 65536;
+    static constexpr u32 sc_min_chunk_size = 4096;
+    // constants affecting compression levels
+    static constexpr i32 sc_default_compression_level = Z_BEST_COMPRESSION;
+    static constexpr i32 sc_default_compression_method = Z_DEFLATED;
+    static constexpr i32 sc_default_compression_window_bits = 15;
+    static constexpr i32 sc_default_compression_memlevel = 9;
+    static constexpr i32 sc_default_compression_strategy = Z_DEFAULT_STRATEGY;
+
+private:
     // the stream is private
     z_stream m_zlib_stream;
 

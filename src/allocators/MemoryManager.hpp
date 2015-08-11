@@ -284,6 +284,7 @@ static inline void deallocate_object_raw(const T* object_ptr, u64 size)
 extern void* allocate_fun_for_compression32(void* opaque, u32 num_items, u32 item_size);
 extern void* allocate_fun_for_compression64(void* opaque, u64 num_items, u64 item_size);
 extern void deallocate_fun_for_compression(void* opaque, void* block_ptr);
+extern void* allocate_fun_for_compressioni32(void* opaque, i32 num_items, i32 item_size);
 
 } /* end namespace allocators */
 } /* end namespace aurum */
