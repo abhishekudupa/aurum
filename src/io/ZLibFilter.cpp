@@ -61,8 +61,8 @@ ZLibFilterBase::ZLibFilterBase(bool is_input,
       m_scratch_buffer((u08*)aa::allocate_raw(m_scratch_buffer_size)),
       m_current_output_buffer(nullptr)
 {
-    m_zlib_stream.zalloc = nullptr;
-    m_zlib_stream.zfree = nullptr;
+    m_zlib_stream.zalloc = aa::allocate_fun_for_compression32;
+    m_zlib_stream.zfree = aa::deallocate_fun_for_compression;
     m_zlib_stream.opaque = nullptr;
     m_zlib_stream.next_in = nullptr;
     m_zlib_stream.next_out = nullptr;

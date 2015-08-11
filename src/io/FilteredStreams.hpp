@@ -55,87 +55,107 @@ namespace io {
 
 namespace detail_ {
 
-class FilteredInputStreamBase
-    : public AurumObject<FilteredInputStreamBase>,
-      public std::istream
-
+template <typename IOCategory>
+class FilteredStreamBase
+    : public AurumObject<FilteredStreamBase<IOCategory> >,
+      public std::conditional<std::is_same<IOCategory, Input>::value,
+                              std::istream, std::ostream>::type
 {
+    static_assert(std::is_same<IOCategory, Input>::value ||
+                  std::is_same<IOCategory, Output>::value,
+                  "FilteredStreamBase can only be instantiated with Input or Output "
+                  "as the IOCategory!");
+
 protected:
+    typedef FilteredStreamBase<IOCategory> FilteredStreamBaseType;
+
+    template <typename T>
+    using FilterTypeChecker =
+        typename std::conditional<std::is_same<IOCategory, Input>::value,
+                                  IsInputFilter<T>, IsOutputFilter<T> >::type;
+
     std::streambuf* m_chain;
     std::streambuf* m_chain_root;
     bool m_chain_root_owned;
 
-    FilteredInputStreamBase();
+    FilteredStreamBase()
+        : m_chain(nullptr)
+    {
+        // Nothing here
+    }
 
 public:
-    FilteredInputStreamBase(std::streambuf* chain_root);
-    FilteredInputStreamBase(const FilteredInputStreamBase& other) = delete;
-    FilteredInputStreamBase(FilteredInputStreamBase&& other);
+    FilteredStreamBase(std::streambuf* chain_root)
+        : m_chain(chain_root), m_chain_root(chain_root), m_chain_root_owned(false)
+    {
+        // Nothing here
+    }
 
-    virtual ~FilteredInputStreamBase();
+    FilteredStreamBase(const FilteredStreamBase& other) = delete;
 
-    FilteredInputStreamBase& operator = (const FilteredInputStreamBase& other) = delete;
-    FilteredInputStreamBase& operator = (FilteredInputStreamBase&& other);
+    FilteredStreamBase(FilteredStreamBase&& other)
+        : FilteredStreamBase()
+    {
+        std::swap(m_chain, other.m_chain);
+        std::swap(m_chain_root, other.m_chain_root);
+        std::swap(m_chain_root_owned, other.m_chain_root_owned);
+    }
 
-    // Do NOT include chained filter in the args!
+    FilteredStreamBase& operator = (const FilteredStreamBase& other) = delete;
+
+    FilteredStreamBase& operator = (FilteredStreamBase&& other)
+    {
+        if (&other == this) {
+            return *this;
+        }
+        std::swap(m_chain, other.m_chain);
+        std::swap(m_chain_root, other.m_chain_root);
+        std::swap(m_chain_root_owned, other.m_chain_root_owned);
+        return *this;
+    }
+
+    std::streambuf* peek() const
+    {
+        return m_chain;
+    }
+
+    std::streambuf* pop()
+    {
+        if (m_chain == m_chain_root) {
+            return nullptr;
+        }
+        auto to_pop = m_chain;
+        m_chain = static_cast<IOFilterBase*>(m_chain)->get_chained_buffer();
+        return to_pop;
+    }
+
     template <typename FilterType, typename... ArgTypes>
     inline void push(ArgTypes&&... args)
     {
-        static_assert(IsInputFilter<FilterType>::value,
-                      "Only input filters can be pushed onto FilteredInputStreams!");
+        static_assert(FilterTypeChecker<FilterType>::value,
+                      "Wrong type of filter pushed onto a FilteredStream");
+
         auto new_filter = new FilterType(m_chain, std::forward<ArgTypes>(args)...);
         m_chain = new_filter;
-        set_rdbuf(m_chain);
+        this->set_rdbuf(m_chain);
     }
 
-    std::streambuf* peek() const;
-    std::streambuf* pop();
-    std::streambuf* get_root() const;
-};
-
-class FilteredOutputStreamBase
-    : public AurumObject<FilteredOutputStreamBase>,
-      public std::ostream
-
-{
-protected:
-    std::streambuf* m_chain;
-    std::streambuf* m_chain_root;
-    bool m_chain_root_owned;
-
-    FilteredOutputStreamBase();
-
-public:
-    FilteredOutputStreamBase(std::streambuf* chain_root);
-    FilteredOutputStreamBase(const FilteredOutputStreamBase& other) = delete;
-    FilteredOutputStreamBase(FilteredOutputStreamBase&& other);
-
-    virtual ~FilteredOutputStreamBase();
-
-    FilteredOutputStreamBase& operator = (const FilteredOutputStreamBase& other) = delete;
-    FilteredOutputStreamBase& operator = (FilteredOutputStreamBase&& other);
-
-    // Do NOT include chained filter in the args!
-    template <typename FilterType, typename... ArgTypes>
-    inline void push(ArgTypes&&... args)
+    std::streambuf* get_root() const
     {
-        static_assert(IsOutputFilter<FilterType>::value,
-                      "Only output filters can be pushed onto FilteredOutputStreams!");
-        auto new_filter = new FilterType(m_chain, std::forward<ArgTypes>(args)...);
-        m_chain = new_filter;
-        set_rdbuf(m_chain);
+        return m_chain_root;
     }
-
-    std::streambuf* peek() const;
-    std::streambuf* pop();
-    std::streambuf* get_root() const;
 };
+
+typedef FilteredStreamBase<Input> FilteredInputStreamBase;
+typedef FilteredStreamBase<Output> FilteredOutputStreamBase;
 
 } /* end namespace detail_ */
 
-class FilteredIStream
-    : public detail_::FilteredInputStreamBase
+class FilteredIStream : public detail_::FilteredInputStreamBase
 {
+private:
+    typedef detail_::FilteredInputStreamBase FilteredInputStreamBase;
+
 protected:
     FilteredIStream();
 
@@ -154,9 +174,10 @@ public:
     FilteredIStream& operator = (FilteredIStream&& other);
 };
 
-class FilteredOStream
-    : public detail_::FilteredOutputStreamBase
+class FilteredOStream : public detail_::FilteredOutputStreamBase
 {
+private:
+    typedef detail_::FilteredOutputStreamBase FilteredOutputStreamBase;
 protected:
     FilteredOStream();
 

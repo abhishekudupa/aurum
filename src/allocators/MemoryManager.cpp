@@ -244,6 +244,21 @@ bool MemoryManager::is_out_of_memory()
     return (total_bytes_allocated() >= memory_allocation_limit());
 }
 
+void* allocate_fun_for_compression32(void* opaque, u32 num_items, u32 item_size)
+{
+    return aurum::allocators::allocate(num_items * item_size);
+}
+
+void* allocate_fun_for_compression64(void* opaque, u64 num_items, u64 item_size)
+{
+    return aurum::allocators::allocate(num_items * item_size);
+}
+
+void deallocate_fun_for_compression(void* opaque, void* block_ptr)
+{
+    aurum::allocators::deallocate(block_ptr);
+}
+
 } /* end namespace allocators */
 } /* end namespace aurum */
 
