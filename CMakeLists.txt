@@ -106,6 +106,7 @@ set(AURUM_CXX_SOURCE_FILES
 
   src/io/FilterBase.cpp
   src/io/ZLibFilter.cpp
+  src/io/FilteredStreams.cpp
 
   src/logging/LogManager.cpp
 

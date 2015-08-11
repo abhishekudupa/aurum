@@ -55,22 +55,27 @@ namespace io {
 
 namespace detail_ {
 
-template <typename StreamType>
 class FilteredInputStreamBase
     : public AurumObject<FilteredInputStreamBase>,
-      public StreamType
+      public std::istream
 
 {
-    static_assert(std::is_base_of<std::istream, StreamType>::value,
-                  "FilteredInputStreamBase<> can only be instantiated "
-                  "with types which are (subclasses of) std::istream!");
+protected:
+    std::streambuf* m_chain;
+    std::streambuf* m_chain_root;
+    bool m_chain_root_owned;
 
-private:
-    std::istream* m_chain;
+    FilteredInputStreamBase();
 
 public:
-    FilteredInputStreamBase(std::istream* chain_root);
+    FilteredInputStreamBase(std::streambuf* chain_root);
+    FilteredInputStreamBase(const FilteredInputStreamBase& other) = delete;
+    FilteredInputStreamBase(FilteredInputStreamBase&& other);
+
     virtual ~FilteredInputStreamBase();
+
+    FilteredInputStreamBase& operator = (const FilteredInputStreamBase& other) = delete;
+    FilteredInputStreamBase& operator = (FilteredInputStreamBase&& other);
 
     // Do NOT include chained filter in the args!
     template <typename FilterType, typename... ArgTypes>
@@ -78,31 +83,37 @@ public:
     {
         static_assert(IsInputFilter<FilterType>::value,
                       "Only input filters can be pushed onto FilteredInputStreams!");
-        auto new_filter = new T(m_chain, std::forward<ArgTypes>(args)...);
+        auto new_filter = new FilterType(m_chain, std::forward<ArgTypes>(args)...);
         m_chain = new_filter;
         set_rdbuf(m_chain);
     }
 
-    std::istream* peek() const;
-    std::istream* pop();
+    std::streambuf* peek() const;
+    std::streambuf* pop();
+    std::streambuf* get_root() const;
 };
 
-template <typename StreamType>
 class FilteredOutputStreamBase
-    : public AurumObject<FilteredInputStreamBase>,
-      public StreamType
+    : public AurumObject<FilteredOutputStreamBase>,
+      public std::ostream
 
 {
-    static_assert(std::is_base_of<std::ostream, StreamType>::value,
-                  "FilteredInputStreamBase<> can only be instantiated "
-                  "with types which are (subclasses of) std::ostream!");
+protected:
+    std::streambuf* m_chain;
+    std::streambuf* m_chain_root;
+    bool m_chain_root_owned;
 
-private:
-    std::ostream* m_chain;
+    FilteredOutputStreamBase();
 
 public:
-    FilteredOutputStreamBase(std::ostream* chain_root);
+    FilteredOutputStreamBase(std::streambuf* chain_root);
+    FilteredOutputStreamBase(const FilteredOutputStreamBase& other) = delete;
+    FilteredOutputStreamBase(FilteredOutputStreamBase&& other);
+
     virtual ~FilteredOutputStreamBase();
+
+    FilteredOutputStreamBase& operator = (const FilteredOutputStreamBase& other) = delete;
+    FilteredOutputStreamBase& operator = (FilteredOutputStreamBase&& other);
 
     // Do NOT include chained filter in the args!
     template <typename FilterType, typename... ArgTypes>
@@ -110,24 +121,32 @@ public:
     {
         static_assert(IsOutputFilter<FilterType>::value,
                       "Only output filters can be pushed onto FilteredOutputStreams!");
-        auto new_filter = new T(m_chain, std::forward<ArgTypes>(args)...);
+        auto new_filter = new FilterType(m_chain, std::forward<ArgTypes>(args)...);
         m_chain = new_filter;
         set_rdbuf(m_chain);
     }
 
-    std::ostream* peek() const;
-    std::ostream* pop();
+    std::streambuf* peek() const;
+    std::streambuf* pop();
+    std::streambuf* get_root() const;
 };
 
 } /* end namespace detail_ */
 
 class FilteredIStream
-    : public detail_::FilteredInputStreamBase<std::istream>
+    : public detail_::FilteredInputStreamBase
 {
+protected:
+    FilteredIStream();
+
 public:
     FilteredIStream(const FilteredIStream& other) = delete;
 
     explicit FilteredIStream(std::streambuf* stream_buffer);
+    // for files
+    explicit FilteredIStream(const char* filename);
+    explicit FilteredIStream(const std::string& filename);
+
     FilteredIStream(FilteredIStream&& other);
     virtual ~FilteredIStream();
 
@@ -136,57 +155,24 @@ public:
 };
 
 class FilteredOStream
-    : public detail_::FilteredOutputStreamBase<std::ostream>
+    : public detail_::FilteredOutputStreamBase
 {
+protected:
+    FilteredOStream();
+
 public:
     FilteredOStream(const FilteredOStream& other) = delete;
 
     explicit FilteredOStream(std::streambuf* stream_buffer);
+    // for files
+    explicit FilteredOStream(const char* filename);
+    explicit FilteredOStream(const std::string& filename);
     FilteredOStream(FilteredOStream&& other);
 
     virtual ~FilteredOStream();
     FilteredOStream& operator = (const FilteredOStream& other) = delete;
     FilteredOStream& operator = (FilteredOStream&& other);
 };
-
-class FilteredIFStream
-    : public detail_::FilteredInputStreamBase<std::ifstream>
-{
-public:
-    FilteredIFStream(const FilteredIFStream& other) = delete;
-
-    explicit FilteredIFStream(const char* filename,
-                              std::ios_base::openmode mode = std::ios_base::in);
-    explicit FilteredIFStream(const std::string& filename,
-                              std::ios_base::openmode mode = std::ios_base::in);
-    FilteredIFStream(FilteredIFStream&& other);
-    FilteredIFStream();
-
-    virtual ~FilteredIFStream();
-
-    FilteredIFStream& operator = (const FilteredIFStream& other) = delete;
-    FilteredIFStream& operator = (FilteredIFStream&& other);
-}
-
-class FilteredOFStream
-    : public detail_::FilteredOutputStreamBase<std::ofstream>
-{
-public:
-    FilteredOFStream(const FilteredOFStream& other) = delete;
-
-    explicit FilteredOFStream(const char* filename,
-                              std::ios_base::openmode = std::ios_base::out);
-    explicit FilteredOFStream(const std::string& filename,
-                              std::ios_base::openmode = std::ios_base::out);
-    FilteredOFStream(FilteredOFStream&& other);
-    FilteredOFStream();
-
-    virtual ~FilteredOFStream();
-
-    FilteredOFStream& operator = (const FilteredOFStream& other) = delete;
-    FilteredOFStream&& operator = (FilteredOFStream&& other);
-}
-
 
 
 } /* end namespace io */
