@@ -101,6 +101,21 @@ public:
         std::swap(m_chain_root_owned, other.m_chain_root_owned);
     }
 
+    virtual ~FilteredStreamBase()
+    {
+        auto cur_filter = m_chain;
+        while (cur_filter != m_chain_root) {
+            auto to_delete = cur_filter;
+            cur_filter =
+                static_cast<detail_::IOFilterBase*>(cur_filter)->get_chained_buffer();
+            delete to_delete;
+        }
+
+        if (m_chain_root_owned) {
+            delete cur_filter;
+        }
+    }
+
     FilteredStreamBase& operator = (const FilteredStreamBase& other) = delete;
 
     FilteredStreamBase& operator = (FilteredStreamBase&& other)

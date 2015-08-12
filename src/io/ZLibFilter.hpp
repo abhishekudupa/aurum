@@ -49,123 +49,31 @@ namespace io {
 
 namespace detail_ {
 
-class ZLibFilterBase
+// class for common defaults and common data for input and output zlib filters
+class ZLibFilterData
 {
 protected:
-    // constants governing buffer/chunk sizes
-    static constexpr u32 sc_default_chunk_size = 65536;
-    static constexpr u32 sc_min_chunk_size = 4096;
-    // constants affecting compression levels
+    static constexpr u32 sc_default_scratch_buffer_size = 262144;
+    static constexpr u32 sc_min_scratch_buffer_size = 65536;
     static constexpr i32 sc_default_compression_level = Z_BEST_COMPRESSION;
     static constexpr i32 sc_default_compression_method = Z_DEFLATED;
-    static constexpr i32 sc_default_compression_window_bits = 15;
+    static constexpr i32 sc_default_compression_windows_bits = 15;
     static constexpr i32 sc_default_compression_memlevel = 9;
     static constexpr i32 sc_default_compression_strategy = Z_DEFAULT_STRATEGY;
 
-private:
-    bool m_is_input;
-    bool m_stream_finished;
     z_stream m_zlib_stream;
-    std::streambuf* m_io_buffer;
     u32 m_scratch_buffer_size;
     u08* m_scratch_buffer;
 
-    inline void check_input() const;
-    inline void check_output() const;
-
-protected:
-    ZLibFilterBase(bool is_input, std::streambuf* io_buffer,
-                   bool use_gzip_wrapper = false,
-                   u32 chunk_size = sc_default_chunk_size,
-                   i32 compression_level = sc_default_compression_level);
-
-    ZLibFilterBase() = delete;
-    ZLibFilterBase(const ZLibFilterBase& other) = delete;
-    ZLibFilterBase(ZLibFilterBase&& other) = delete;
-    ZLibFilterBase& operator = (const ZLibFilterBase& other) = delete;
-    ZLibFilterBase& operator = (ZLibFilterBase&& other) = delete;
-
-    virtual ~ZLibFilterBase();
-
-    u64 read_bytes(u08* output_buffer, u64 output_buffer_size);
-    u64 write_bytes(u08* input_buffer, u64 input_buffer_size, bool flush_stream = false);
-    inline void finalize();
-};
-
-class ZLibFilterBase
-{
-protected:
-    // constants governing buffer/chunk sizes
-    static constexpr u32 sc_default_chunk_size = 65536;
-    static constexpr u32 sc_min_chunk_size = 4096;
-    // constants affecting compression levels
-    static constexpr i32 sc_default_compression_level = Z_BEST_COMPRESSION;
-    static constexpr i32 sc_default_compression_method = Z_DEFLATED;
-    static constexpr i32 sc_default_compression_window_bits = 15;
-    static constexpr i32 sc_default_compression_memlevel = 9;
-    static constexpr i32 sc_default_compression_strategy = Z_DEFAULT_STRATEGY;
-
-private:
-    // the stream is private
-    z_stream m_zlib_stream;
-
-    // helpers
-    inline void check_input() const;
-    inline void check_output() const;
-    inline void check_continue_decompression() const;
-    inline void check_continue_compression() const;
-    inline void check_begin_decompression() const;
-    inline void check_begin_compression() const;
-
-protected:
-    bool m_is_input;
-    bool m_is_final_block;
-    bool m_decompressing_block;
-    bool m_compressing_block;
-    bool m_compressing_block_in_sync_mode;
-    u32 m_scratch_buffer_size;
-    u32 m_current_output_buffer_size;
-    u08* m_scratch_buffer;
-    u08* m_current_output_buffer;
-
-    // initializes the stream
-    ZLibFilterBase() = delete;
-    ZLibFilterBase(bool is_input, u32 chunk_size, bool use_gzip_wrapper,
-                   i32 compression_level);
-    virtual ~ZLibFilterBase();
-
-    // compression
-    // returns the number of bytes available in the scratch buffer
-    // retval < m_buffer_size implies that we're done
-    u32 begin_block_compression(u08* input_block, u32 block_size,
-                                bool do_sync = false,
-                                bool is_final_block = false);
-
-    // returns the number of bytes available for consumption in the scratch buffer
-    // retval < m_buffer_size implies we're done
-    // requires: input_block not be modified since last invocation of begin_block_compression
-    u32 continue_block_compression();
-
-    // decompression
-    // pushes data into output block from scratch buffer
-    // retval < block_size implies that scratch buffer is completely decompressed
-    // and can be filled with new data.
-    u32 begin_block_decompression(u08* output_block, u32 block_size, u32 avail_in_scratch_buffer);
-
-    // continues the decompression of scratch buffer
-    // requires: scratch buffer not modified since last invocation of begin_block_decompression
-    // retval < block_size implies that scratch buffer is completely decompressed
-    // and can be filled with new data.
-    u32 continue_block_decompression();
-
-    void finalize();
+    ZLibFilterData(u32 scratch_buffer_size = sc_default_scratch_buffer_size);
+    ~ZLibFilterData();
 };
 
 } /* end namespace detail_ */
 
 template <typename IOCategory>
 class ZLibFilter
-    : public detail_::ZLibFilterBase,
+    : public detail_::ZLibFilterData,
       public std::conditional<std::is_same<IOCategory, Input>::value,
                               SequentialInputFilterBase, SequentialOutputFilterBase>::type
 {
@@ -176,9 +84,13 @@ class ZLibFilter
 };
 
 class ZLibInputFilter
-    : public detail_::ZLibFilterBase,
+    : public detail_::ZLibFilterData,
       public SequentialInputFilterBase
 {
+private:
+    // helper routines
+    inline u64 refill_buffer();
+
 public:
     ZLibInputFilter(std::streambuf* chained_buffer,
                     u64 buffer_size = sc_default_buffer_size);
@@ -192,18 +104,20 @@ protected:
 };
 
 class ZLibOutputFilter
-    : public detail_::ZLibFilterBase,
+    : public detail_::ZLibFilterData,
       public SequentialOutputFilterBase
 {
 private:
-    inline void do_overflow(bool sync_compression = false, bool final_block = false);
+    inline void drain_buffer(bool sync = false, bool last_block = false);
 
 public:
     ZLibOutputFilter(std::streambuf* chained_buffer,
+                     bool use_gzip_stream = false,
                      i32 compression_level = sc_default_compression_level,
-                     bool use_gzip_stream = true,
-                     u64 buffer_size = sc_default_buffer_size,
-                     u32 chunk_size = sc_default_chunk_size);
+                     u32 buffer_size = sc_default_buffer_size,
+                     u32 scratch_buffer_size = sc_default_scratch_buffer_size,
+                     u32 mem_level = sc_default_compression_memlevel);
+
     ZLibOutputFilter() = delete;
     virtual ~ZLibOutputFilter();
 
@@ -211,7 +125,6 @@ protected:
     virtual std::streamsize xsputn(const char_type* s, std::streamsize n) override;
     virtual int_type overflow(int_type ch = traits_type::eof()) override;
     virtual int sync() override;
-    void finalize();
 };
 
 template <>

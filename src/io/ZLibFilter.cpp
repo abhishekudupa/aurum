@@ -45,284 +45,80 @@
 namespace aurum {
 namespace io {
 
-namespace aa = aurum::allocators;
-
 namespace detail_ {
 
-ZLibFilterBase::ZLibFilterBase(bool is_input, std::streambuf* io_buffer,
-                               bool use_gzip_wrapper, u32 chunk_size,
-                               i32 compression_level)
-    : m_is_input(is_input), m_stream_finished(false),
-      m_io_buffer(io_buffer),
-      m_scratch_buffer_size(chunk_size > sc_min_chunk_size ? chunk_size : sc_min_chunk_size),
+ZLibFilterData::ZLibFilterData(u32 scratch_buffer_size)
+    : m_scratch_buffer_size(scratch_buffer_size > sc_min_scratch_buffer_size ?
+                            scratch_buffer_size : sc_min_scratch_buffer_size),
       m_scratch_buffer((u08*)aa::allocate_raw(m_scratch_buffer_size))
 {
+    m_zlib_stream.opaque = nullptr;
     m_zlib_stream.zalloc = aa::allocate_fun_for_compression32;
     m_zlib_stream.zfree = aa::deallocate_fun_for_compression;
-    m_zlib_stream.opaque = nullptr;
-    m_zlib_stream.next_in = nullptr;
-    m_zlib_stream.next_out = nullptr;
     m_zlib_stream.avail_in = 0;
-    m_zlib_stream.avail_out = 0;
-
-    int status;
-
-    if (m_is_input) {
-        status = inflateInit2(&m_zlib_stream, 47);
-    } else {
-        status = deflateInit2(&m_zlib_stream, compression_level, sc_default_compression_method,
-                              sc_default_compression_window_bits + (use_gzip_wrapper ? 16 : 0),
-                              sc_default_compression_memlevel, sc_default_compression_strategy);
-    }
-    if (status != Z_OK) {
-        throw AurumIOException((std::string)"Failed to initialize ZLib structures!");
-    }
-}
-
-ZLibFilterBase::~ZLibFilterBase()
-{
-    // TODO: Implement me
-}
-
-inline void ZLibFilterBase::check_input() const
-{
-    if (!m_is_input) {
-        throw AurumIOException((std::string)"Attempted to perform input on an " +
-                               "output ZLib Stream");
-    }
-}
-
-inline void ZLibFilterBase::check_output() const
-{
-    if (m_is_input) {
-        throw AurumIOException((std::string)"Attempted to perform output on an " +
-                               "input ZLib Stream");
-    }
-}
-
-u64 ZLibFilterBase::read_bytes
-
-ZLibFilterBase::ZLibFilterBase(bool is_input,
-                               u32 chunk_size = sc_default_chunk_size,
-                               bool use_gzip_wrapper = false,
-                               i32 compression_level = sc_default_compression_level)
-    : m_is_input(is_input), m_is_final_block(false),
-      m_decompressing_block(false), m_compressing_block(false),
-      m_compressing_block_in_sync_mode(false),
-      m_scratch_buffer_size(chunk_size < sc_min_chunk_size ? sc_min_chunk_size : chunk_size),
-      m_current_output_buffer_size(0),
-      m_scratch_buffer((u08*)aa::allocate_raw(m_scratch_buffer_size)),
-      m_current_output_buffer(nullptr)
-{
-    m_zlib_stream.zalloc = aa::allocate_fun_for_compression32;
-    m_zlib_stream.zfree = aa::deallocate_fun_for_compression;
-    m_zlib_stream.opaque = nullptr;
     m_zlib_stream.next_in = nullptr;
-    m_zlib_stream.next_out = nullptr;
-    m_zlib_stream.avail_in = 0;
     m_zlib_stream.avail_out = 0;
-
-    int status;
-
-    if (m_is_input) {
-        status = inflateInit2(&m_zlib_stream, 47);
-    } else {
-        status = deflateInit2(&m_zlib_stream, compression_level, sc_default_compression_method,
-                              sc_default_compression_window_bits + (use_gzip_wrapper ? 16 : 0),
-                              sc_default_compression_memlevel, sc_default_compression_strategy);
-    }
-    if (status != Z_OK) {
-        throw AurumIOException((std::string)"Failed to initialize ZLib structures!");
-    }
+    m_zlib_stream.next_out = nullptr;
 }
 
-ZLibFilterBase::~ZLibFilterBase()
+ZLibFilterData::~ZLibFilterData()
 {
-    finalize();
-}
-
-void ZLibFilterBase::finalize()
-{
-    if (m_is_input) {
-        inflateEnd(&m_zlib_stream);
-    } else {
-        deflateEnd(&m_zlib_stream);
-    }
-    m_is_final_block = true;
-}
-
-// helpers
-
-inline void ZLibFilterBase::check_input() const
-{
-    if (!m_is_input) {
-        throw AurumIOException((std::string)"Attempted to perform input on a ZLib output filter!");
-    }
-}
-
-inline void ZLibFilterBase::check_output() const
-{
-    if (m_is_input) {
-        throw AurumIOException((std::string)"Attempted to perform output on a ZLib input filter!");
-    }
-}
-
-inline void ZLibFilterBase::check_begin_compression() const
-{
-    check_output();
-
-    if (m_compressing_block) {
-        throw AurumIOException((std::string)"Attempted to begin block compression on " +
-                               "ZLib output filter, but previous block has not completed " +
-                               "compression!");
-    }
-
-    if (m_is_final_block) {
-        throw AurumIOException((std::string)"Attempted to perform output on a ZLib output " +
-                               "filter that has already encoded its final block!");
-    }
-}
-
-inline void ZLibFilterBase::check_begin_decompression() const
-{
-    check_input();
-
-    if (m_decompressing_block) {
-        throw AurumIOException((std::string)"Attempted to begin block decompression on " +
-                               "ZLib input filter, but previous block has not completed " +
-                               "decompression!");
-    }
-
-    if (m_is_final_block) {
-        throw AurumIOException((std::string)"Attempted to perform input on a ZLib input " +
-                               "filter that has already decoded its final block!");
-    }
-}
-
-inline void ZLibFilterBase::check_continue_compression() const
-{
-    check_output();
-
-    if (!m_compressing_block) {
-        throw AurumIOException((std::string)"Attempted to continue compression on ZLib " +
-                               "output filter, but no block is currently being compressed!");
-    }
-}
-
-inline void ZLibFilterBase::check_continue_decompression() const
-{
-    check_input();
-
-    if (!m_decompressing_block) {
-        throw AurumIOException((std::string)"Attempted to continue decompression on ZLib " +
-                               "input filter, but no block is currently being decompressed!");
-    }
-}
-
-u32 ZLibFilterBase::begin_block_compression(u08* input_block, u32 block_size,
-                                            bool do_sync,
-                                            bool is_final_block)
-{
-    check_begin_compression();
-
-    m_compressing_block = true;
-    m_is_final_block = is_final_block;
-
-    m_zlib_stream.next_in = input_block;
-    m_zlib_stream.avail_in = block_size;
-    m_compressing_block_in_sync_mode = do_sync;
-
-    return continue_block_compression();
-}
-
-u32 ZLibFilterBase::continue_block_compression()
-{
-    check_continue_compression();
-
-    m_zlib_stream.next_out = m_scratch_buffer;
-    m_zlib_stream.avail_out = m_scratch_buffer_size;
-
-    i32 flush_mode = Z_NO_FLUSH;
-    if (m_is_final_block) {
-        flush_mode = Z_FINISH;
-    } else if (m_compressing_block_in_sync_mode) {
-        flush_mode = Z_SYNC_FLUSH;
-    }
-
-    auto status = deflate(&m_zlib_stream, flush_mode);
-
-    if (status == Z_STREAM_ERROR) {
-        throw AurumIOException((std::string)"Error while compressing ZLib stream!");
-    }
-
-    auto have_in_scratch_buffer = m_scratch_buffer_size - m_zlib_stream.avail_out;
-    if (have_in_scratch_buffer < m_scratch_buffer_size) {
-        m_compressing_block = false;
-        m_compressing_block_in_sync_mode = false;
-    }
-
-    return have_in_scratch_buffer;
-}
-
-u32 ZLibFilterBase::begin_block_decompression(u08* output_block, u32 block_size,
-                                              u32 avail_in_scratch_buffer)
-{
-    check_begin_decompression();
-
-    m_decompressing_block = true;
-
-    m_zlib_stream.next_in = m_scratch_buffer;
-    m_zlib_stream.avail_in = avail_in_scratch_buffer;
-
-    m_current_output_buffer = output_block;
-    m_current_output_buffer_size = block_size;
-
-    return continue_block_decompression();
-}
-
-u32 ZLibFilterBase::continue_block_decompression()
-{
-    check_continue_decompression();
-
-    m_zlib_stream.next_out = m_current_output_buffer;
-    m_zlib_stream.avail_out = m_current_output_buffer_size;
-
-    auto status = inflate(&m_zlib_stream, Z_NO_FLUSH);
-
-    if (status == Z_STREAM_ERROR) {
-        throw AurumIOException((std::string)"Error while decompressing ZLib stream!");
-    }
-    if (status == Z_DATA_ERROR) {
-        throw AurumIOException((std::string)"Data error while decompressing ZLib stream! " +
-                               "Perhaps the file is corrupted?");
-    }
-    if (status == Z_STREAM_END) {
-        m_is_final_block = true;
-        m_decompressing_block = false;
-    }
-
-    auto have_in_output_buffer = m_current_output_buffer_size - m_zlib_stream.avail_out;
-    if (have_in_output_buffer < m_current_output_buffer_size) {
-        m_decompressing_block = false;
-        m_current_output_buffer = nullptr;
-        m_current_output_buffer_size = 0;
-    }
-
-    return have_in_output_buffer;
+    aa::deallocate_raw(m_scratch_buffer, m_scratch_buffer_size);
 }
 
 } /* end namespace detail_ */
 
-// implementation of ZLibInputFilter
+namespace aa = aurum::allocators;
+
 ZLibInputFilter::ZLibInputFilter(std::streambuf* chained_buffer, u64 buffer_size)
-    : ZLibFilterBase(true), SequentialInputFilterBase(chained_buffer, buffer_size)
+    : ZLibFilterData(), SequentialInputFilterBase(chained_buffer, buffer_size)
 {
-    // Nothing here
+    auto status = inflateInit2(&m_zlib_stream, sc_default_compression_windows_bits + 32);
+    if (status != Z_OK) {
+        throw AurumIOException((std::string)"Error initializing ZLib stream!");
+    }
 }
 
 ZLibInputFilter::~ZLibInputFilter()
 {
-    // Nothing here
+    inflateEnd(&m_zlib_stream);
+}
+
+inline u64 ZLibInputFilter::refill_buffer()
+{
+    u64 bytes_from_chained_buf = 0;
+    int inflate_status;
+
+    while (true) {
+        if (m_zlib_stream.avail_in <= 0) {
+            bytes_from_chained_buf =
+                m_chained_buffer->sgetn((char_type*)m_scratch_buffer, m_scratch_buffer_size);
+            if (bytes_from_chained_buf == 0) {
+                return 0;
+            }
+            m_zlib_stream.next_in = m_scratch_buffer;
+            m_zlib_stream.avail_in = bytes_from_chained_buf;
+        }
+
+        // we're now guaranteed to have some data for the
+        // decompressor to process
+        m_zlib_stream.next_out = m_buffer;
+        m_zlib_stream.avail_out = m_buffer_size;
+
+        inflate_status = inflate(&m_zlib_stream, Z_NO_FLUSH);
+
+        if (m_zlib_stream.avail_out < m_buffer_size) {
+            if (inflate_status == Z_OK || inflate_status == Z_STREAM_END) {
+                return (m_buffer_size - m_zlib_stream.avail_out);
+            } else {
+                throw AurumIOException((std::string)"Error when decompressing ZLib stream!");
+            }
+        } else if (inflate_status == Z_BUF_ERROR) {
+            continue;
+        } else {
+            throw AurumIOException((std::string)"Error when decompressing ZLib stream!");
+        }
+    }
 }
 
 ZLibInputFilter::int_type ZLibInputFilter::underflow()
@@ -331,28 +127,15 @@ ZLibInputFilter::int_type ZLibInputFilter::underflow()
         return *(gptr());
     }
 
-    // are we finished with the stream?
-    if (m_is_final_block && !m_decompressing_block) {
+    auto refilled_bytes = refill_buffer();
+    if (refilled_bytes == 0) {
         setg((char_type*)m_buffer, (char_type*)m_buffer, (char_type*)m_buffer);
         return traits_type::eof();
+    } else {
+        setg((char_type*)m_buffer, (char_type*)m_buffer,
+             (char_type*)(m_buffer + refilled_bytes));
+        return (*(gptr()));
     }
-
-    u64 avail_in_scratch_buffer = 0;
-    u64 num_available = 0;
-    // gptr() == egptr(), we need to refill the buffer
-    do {
-        if (m_decompressing_block) {
-            num_available = continue_block_decompression();
-        } else {
-            // fill the scratch buffer from the underlying streambuffer
-            avail_in_scratch_buffer =
-                m_chained_buffer->sgetn((char_type*)m_scratch_buffer, m_scratch_buffer_size);
-            num_available = begin_block_decompression(m_buffer, m_buffer_size,
-                                                      avail_in_scratch_buffer);
-        }
-    } while (avail_in_scratch_buffer > 0 && num_available == 0);
-
-    if (num_available == 0 && avail_in_scratch_buffer == 0)
 }
 
 std::streamsize ZLibInputFilter::xsgetn(char_type* s, std::streamsize count)
@@ -391,36 +174,59 @@ ZLibInputFilter::int_type ZLibInputFilter::pbackfail(int_type c)
 }
 
 // implementation of ZLibOutputFilter
-ZLibOutputFilter::ZLibOutputFilter(std::streambuf* chained_buffer, i32 compression_level,
-                                   bool use_gzip_stream, u64 buffer_size, u32 chunk_size)
-    : ZLibFilterBase(false, chunk_size, use_gzip_stream, compression_level),
+ZLibOutputFilter::ZLibOutputFilter(std::streambuf* chained_buffer, bool use_gzip_stream,
+                                   i32 compression_level, u32 buffer_size,
+                                   u32 scratch_buffer_size, u32 mem_level)
+    : ZLibFilterData(scratch_buffer_size),
       SequentialOutputFilterBase(chained_buffer, buffer_size)
 {
-    // Nothing here
+    // initialize the z_stream for compression
+    auto status = deflateInit2(&m_zlib_stream, compression_level,
+                               sc_default_compression_method,
+                               sc_default_compression_windows_bits +
+                               (use_gzip_stream ? 16 : 0),
+                               mem_level, sc_default_compression_strategy);
+    if (status != Z_OK) {
+        throw AurumIOException((std::string)"Error initializing ZLib stream!");
+    }
 }
 
 ZLibOutputFilter::~ZLibOutputFilter()
 {
-    if (!m_is_final_block) {
-        finalize();
-    }
+    drain_buffer(false, true);
+    deflateEnd(&m_zlib_stream);
 }
 
-inline void ZLibOutputFilter::do_overflow(bool sync_compression,
-                                          bool final_block)
+inline void ZLibOutputFilter::drain_buffer(bool sync, bool final_block)
 {
-    auto available_in_buffer = pptr() - (char_type*)m_buffer;
-    auto available_in_scratch = begin_block_compression(m_buffer, available_in_buffer,
-                                                        sync_compression, final_block);
+    m_zlib_stream.avail_in = pptr() - (char_type*)m_buffer;
+    m_zlib_stream.next_in = m_buffer;
 
-    while (available_in_scratch == m_scratch_buffer_size) {
-        // push out the scratch buffer into the underlying stream
-        m_chained_buffer->sputn((char_type*)m_scratch_buffer, available_in_scratch);
-        available_in_scratch = continue_block_compression();
+    int flush_mode = Z_NO_FLUSH;
+    if (final_block) {
+        flush_mode = Z_FINISH;
+    } else if (sync) {
+        flush_mode = Z_SYNC_FLUSH;
     }
 
-    // push out the last few bytes
-    m_chained_buffer->sputn((char_type*)m_scratch_buffer, available_in_scratch);
+    int deflate_status;
+
+    while (m_zlib_stream.avail_in > 0) {
+        m_zlib_stream.next_out = m_scratch_buffer;
+        m_zlib_stream.avail_out = m_scratch_buffer_size;
+
+        deflate_status = deflate(&m_zlib_stream, flush_mode);
+
+        if (deflate_status != Z_OK && deflate_status != Z_STREAM_END &&
+            deflate_status != Z_BUF_ERROR) {
+            throw AurumIOException((std::string)"Error while compressing ZLib stream!");
+        }
+
+        auto available_in_scratch = m_scratch_buffer_size - m_zlib_stream.avail_out;
+        if (available_in_scratch > 0) {
+            m_chained_buffer->sputn((char_type*)m_scratch_buffer, available_in_scratch);
+        }
+    }
 
     // reset the put area
     setp((char_type*)m_buffer, (char_type*)(m_buffer + m_buffer_size));
@@ -437,13 +243,7 @@ ZLibOutputFilter::int_type ZLibOutputFilter::overflow(int_type ch)
         }
     }
 
-    // has the stream already been finished
-    if (m_is_final_block) {
-        setp((char_type*)m_buffer, (char_type*)m_buffer);
-        return traits_type::eof();
-    }
-
-    do_overflow();
+    drain_buffer();
 
     // push out the entire put buffer into the chained streambuf
     // after compressing
@@ -472,15 +272,9 @@ std::streamsize ZLibOutputFilter::xsputn(const char_type* s, std::streamsize n)
     return bytes_put;
 }
 
-void ZLibOutputFilter::finalize()
-{
-    do_overflow(false, true);
-    ZLibFilterBase::finalize();
-}
-
 ZLibOutputFilter::int_type ZLibOutputFilter::sync()
 {
-    do_overflow(true, false);
+    drain_buffer(true, false);
     return m_chained_buffer->pubsync();
 }
 

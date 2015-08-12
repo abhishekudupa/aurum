@@ -41,6 +41,7 @@
 #include <sstream>
 #include <string>
 #include <random>
+#include <unistd.h>
 
 #include "../../src/io/ZLibFilter.hpp"
 
@@ -78,7 +79,7 @@ static inline void make_test_file(std::ostringstream& sstr)
 {
     std::filebuf fbuf;
     fbuf.open(test_file_name, std::ios_base::out | std::ios_base::trunc);
-    aurum::io::ZLibOutputFilter zlib_filter(&fbuf);
+    aurum::io::ZLibOutputFilter zlib_filter(&fbuf, true);
     std::ostream fstr(&zlib_filter);
 
     for (u32 i = 0; i < max_num_strings; ++i) {
@@ -96,15 +97,12 @@ static inline void read_test_file(std::ostringstream& sstr)
     fbuf.open(test_file_name, std::ios_base::in);
     aurum::io::ZLibInputFilter zlib_filter(&fbuf);
     std::istream fstr(&zlib_filter);
-    char temp_buffer[2 * max_test_string_len];
+    char temp_buffer[1025];
 
-    while(true) {
-        fstr.getline(temp_buffer, 2 * max_test_string_len);
-        if (fstr.eof() && fstr.gcount() == 0) {
-            break;
-        } else {
-            sstr << temp_buffer << std::endl;
-        }
+    while(!fstr.eof()) {
+        fstr.read(temp_buffer, 1024);
+        temp_buffer[fstr.gcount()] = '\0';
+        sstr << temp_buffer;
     }
 
     // let the destruction sequence do its thing
@@ -120,6 +118,7 @@ TEST(ZLibFilter, Functional)
     zlib_testing::read_test_file(cmpstr);
 
     EXPECT_EQ(sstr.str(), cmpstr.str());
+    unlink(zlib_testing::test_file_name);
 }
 
 //

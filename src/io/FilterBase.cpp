@@ -50,9 +50,9 @@ namespace aa = aurum::allocators;
 namespace detail_ {
 
 IOFilterBase::IOFilterBase(std::streambuf* chained_buffer, u64 buffer_size)
-    : std::streambuf(), m_buffer_size(buffer_size),
-      m_buffer(buffer_size == 0 ? nullptr : (u08*)aa::allocate_raw(buffer_size)),
-      m_chained_buffer(chained_buffer)
+    : std::streambuf(),
+      m_buffer_size(buffer_size > sc_min_buffer_size ? buffer_size : sc_min_buffer_size),
+      m_buffer((u08*)aa::allocate_raw(m_buffer_size)), m_chained_buffer(chained_buffer)
 {
     // Nothing here
 }
@@ -60,9 +60,7 @@ IOFilterBase::IOFilterBase(std::streambuf* chained_buffer, u64 buffer_size)
 IOFilterBase::~IOFilterBase()
 {
     // delete the buffer that we've allocated
-    if (m_buffer != nullptr) {
-        aa::deallocate_raw(m_buffer, m_buffer_size);
-    }
+    aa::deallocate_raw(m_buffer, m_buffer_size);
 }
 
 std::streambuf* IOFilterBase::get_chained_buffer() const

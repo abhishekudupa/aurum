@@ -51,229 +51,74 @@ namespace aa = aurum::allocators;
 
 namespace detail_ {
 
-BZip2FilterBase::BZip2FilterBase(bool is_input,
-                                 u32 chunk_size,
-                                 u32 compression_work_factor,
-                                 u32 compression_block_size)
-    : m_is_input(is_input), m_is_final_block(false),
-      m_decompressing_block(false), m_compressing_block(false),
-      m_compressing_block_in_sync_mode(false),
-      m_scratch_buffer_size(chunk_size > sc_min_chunk_size ? chunk_size : sc_min_chunk_size),
-      m_current_output_buffer_size(0),
-      m_scratch_buffer((u08*)aa::allocate_raw(m_scratch_buffer_size)),
-      m_current_output_buffer(nullptr)
+BZip2FilterData::BZip2FilterData(u32 scratch_buffer_size)
+    : m_scratch_buffer_size(scratch_buffer_size > sc_min_scratch_buffer_size ?
+                            scratch_buffer_size : sc_min_scratch_buffer_size),
+      m_scratch_buffer((u08*)aa::allocate_raw(m_scratch_buffer_size))
 {
     m_bzip_stream.bzalloc = aa::allocate_fun_for_compressioni32;
     m_bzip_stream.bzfree = aa::deallocate_fun_for_compression;
     m_bzip_stream.opaque = nullptr;
-
-    i32 status;
-    if (m_is_input) {
-        status = BZ2_bzDecompressInit(&m_bzip_stream, 0, 0);
-    } else {
-        status = BZ2_bzCompressInit(&m_bzip_stream, compression_block_size, 0,
-                                    compression_work_factor);
-    }
-
-    if (status != BZ_OK) {
-        throw AurumIOException((std::string)"Error initializing BZip2 data structures!");
-    }
+    m_bzip_stream.next_in = nullptr;
+    m_bzip_stream.avail_in = 0;
+    m_bzip_stream.next_out = nullptr;
+    m_bzip_stream.avail_out = 0;
 }
 
-BZip2FilterBase::~BZip2FilterBase()
+BZip2FilterData::~BZip2FilterData()
 {
-    finalize();
-}
-
-void BZip2FilterBase::finalize()
-{
-    if (m_is_input) {
-        BZ2_bzDecompressEnd(&m_bzip_stream);
-    } else {
-        BZ2_bzCompressEnd(&m_bzip_stream);
-    }
-    m_is_final_block = true;
-}
-
-// helpers
-inline void BZip2FilterBase::check_input() const
-{
-    if (!m_is_input) {
-        throw AurumIOException((std::string)"Attempted to perform input on a BZip2 output filter!");
-    }
-}
-
-inline void BZip2FilterBase::check_output() const
-{
-    if (m_is_input) {
-        throw AurumIOException((std::string)"Attempted to perform output on a BZip2 input filter!");
-    }
-}
-
-inline void BZip2FilterBase::check_begin_compression() const
-{
-    check_output();
-
-    if (m_compressing_block) {
-        throw AurumIOException((std::string)"Attempted to begin block compression on " +
-                               "BZip2 output filter, but previous block has not completed " +
-                               "compression!");
-    }
-    if (m_is_final_block) {
-        throw AurumIOException((std::string)"Attempted to perform output on a BZip2 output " +
-                               "filter that has already encoded its final block!");
-    }
-}
-
-inline void BZip2FilterBase::check_begin_decompression() const
-{
-    check_input();
-
-    if (m_decompressing_block) {
-        throw AurumIOException((std::string)"Attempted to begin block decompression on " +
-                               "BZip2 input filter, but previous block has not completed " +
-                               "decompression!");
-    }
-
-    if (m_is_final_block) {
-        throw AurumIOException((std::string)"Attempted to perform input on a BZip2 input " +
-                               "filter that has already decoded its final block!");
-    }
-}
-
-inline void BZip2FilterBase::check_continue_compression() const
-{
-    check_output();
-
-    if (!m_compressing_block) {
-        throw AurumIOException((std::string)"Attempted to continue compression on BZip2 " +
-                               "output filter, but no block is currently being compressed!");
-    }
-}
-
-inline void BZip2FilterBase::check_continue_decompression() const
-{
-    check_input();
-
-    if (!m_decompressing_block) {
-        throw AurumIOException((std::string)"Attempted to continue decompression on BZip2 " +
-                               "input filter, but no block is currently being decompressed!");
-    }
-}
-
-u64 BZip2FilterBase::begin_block_compression(u08 *input_block, u64 block_size,
-                                             bool do_sync, bool is_final_block)
-{
-    check_begin_compression();
-
-    m_compressing_block = true;
-    m_is_final_block = is_final_block;
-    m_compressing_block_in_sync_mode = do_sync;
-
-    m_bzip_stream.next_in = (char*)input_block;
-    m_bzip_stream.avail_in = block_size;
-
-    return continue_block_compression();
-}
-
-u64 BZip2FilterBase::continue_block_compression()
-{
-    check_continue_compression();
-
-    m_bzip_stream.next_out = (char*)m_scratch_buffer;
-    m_bzip_stream.avail_out = m_scratch_buffer_size;
-
-    i32 action = BZ_RUN;
-
-    if (m_is_final_block) {
-        action = BZ_FINISH;
-    } else if (m_compressing_block_in_sync_mode) {
-        action = BZ_FLUSH;
-    }
-
-    auto status = BZ2_bzCompress(&m_bzip_stream, action);
-
-    if (m_compressing_block_in_sync_mode) {
-        if (status == BZ_RUN_OK) {
-            m_compressing_block_in_sync_mode = false;
-            m_compressing_block = false;
-        } else if (status != BZ_FLUSH_OK) {
-            throw AurumIOException((std::string)"Error while compressing BZip2 stream!");
-        }
-    } else if (m_is_final_block) {
-        if (status == BZ_STREAM_END) {
-            m_compressing_block = false;
-        } else if (status != BZ_FINISH_OK) {
-            throw AurumIOException((std::string)"Error while compressing BZip2 stream!");
-        }
-    } else {
-        if (status == BZ_RUN_OK) {
-            if (m_bzip_stream.avail_out > 0) {
-                m_compressing_block = false;
-            }
-        } else {
-            throw AurumIOException((std::string)"Error while compressing BZip2 stream!");
-        }
-    }
-
-    auto have_in_scratch_buffer = m_scratch_buffer_size - m_bzip_stream.avail_out;
-    return have_in_scratch_buffer;
-}
-
-u64 BZip2FilterBase::begin_block_decompression(u08* output_block, u32 block_size,
-                                               u32 avail_in_scratch_buffer)
-{
-    check_begin_decompression();
-
-    m_decompressing_block = true;
-
-    m_bzip_stream.next_in = (char*)m_scratch_buffer;
-    m_bzip_stream.avail_in = avail_in_scratch_buffer;
-
-    m_current_output_buffer = output_block;
-    m_current_output_buffer_size = block_size;
-
-    return continue_block_decompression();
-}
-
-u64 BZip2FilterBase::continue_block_decompression()
-{
-    check_continue_decompression();
-
-    m_bzip_stream.next_out = (char*)m_current_output_buffer;
-    m_bzip_stream.avail_out = m_current_output_buffer_size;
-
-    auto status = BZ2_bzDecompress(&m_bzip_stream);
-
-    if (status == BZ_STREAM_END) {
-        m_decompressing_block = false;
-        m_is_final_block = true;
-    } else if (status == BZ_OK) {
-        if (m_bzip_stream.avail_in == 0) {
-            m_decompressing_block = false;
-            m_current_output_buffer = nullptr;
-            m_current_output_buffer_size = 0;
-        }
-    } else {
-        throw AurumIOException((std::string)"Error while decompressing BZip2 stream!");
-    }
-
-    auto have_in_output_buffer = m_bzip_stream.avail_out;
-    return have_in_output_buffer;
+    aa::deallocate_raw(m_scratch_buffer, m_scratch_buffer_size);
 }
 
 } /* end namespace detail_ */
 
 // implementation of BZip2InputFilter
 BZip2InputFilter::BZip2InputFilter(std::streambuf* chained_buffer, u64 buffer_size)
-    : BZip2FilterBase(true), SequentialInputFilterBase(chained_buffer, buffer_size)
+    : BZip2FilterData(), SequentialInputFilterBase(chained_buffer, buffer_size)
 {
-    // Nothing here
+    auto status = BZ2_bzDecompressInit(&m_bzip_stream, 0, 0);
+    if (status != BZ_OK) {
+        throw AurumIOException((std::string)"Error initializing BZip2 stream!");
+    }
 }
 
 BZip2InputFilter::~BZip2InputFilter()
 {
-    // Nothing here
+    BZ2_bzDecompressEnd(&m_bzip_stream);
+}
+
+inline u64 BZip2InputFilter::refill_buffer()
+{
+    u64 bytes_from_chained_buf = 0;
+    int inflate_status;
+
+    while (true) {
+        if (m_bzip_stream.avail_in <= 0) {
+            bytes_from_chained_buf =
+                m_chained_buffer->sgetn((char_type*)m_scratch_buffer, m_scratch_buffer_size);
+            if (bytes_from_chained_buf == 0) {
+                return 0;
+            }
+            m_bzip_stream.next_in = (char*)m_scratch_buffer;
+            m_bzip_stream.avail_in = bytes_from_chained_buf;
+        }
+
+        // we now have data
+        m_bzip_stream.next_out = (char*)m_buffer;
+        m_bzip_stream.avail_out = m_buffer_size;
+
+        inflate_status = BZ2_bzDecompress(&m_bzip_stream);
+
+        if (m_bzip_stream.avail_out < m_buffer_size) {
+            if (inflate_status == BZ_OK || inflate_status == BZ_STREAM_END) {
+                return (m_buffer_size - m_bzip_stream.avail_out);
+            } else {
+                throw AurumIOException((std::string)"Error when decompressing BZip2 stream!");
+            }
+        } else {
+            continue;
+        }
+    }
 }
 
 BZip2InputFilter::int_type BZip2InputFilter::underflow()
@@ -282,27 +127,13 @@ BZip2InputFilter::int_type BZip2InputFilter::underflow()
         return (*(gptr()));
     }
 
-    // are we finished with the stream?
-    if (m_is_final_block && !m_decompressing_block) {
+    auto refilled_bytes = refill_buffer();
+    if (refilled_bytes == 0) {
         setg((char_type*)m_buffer, (char_type*)m_buffer, (char_type*)m_buffer);
         return traits_type::eof();
-    }
-
-    u64 num_available = 0;
-    // gptr >= egptr(), so we need to refill the buffer
-    if (m_decompressing_block) {
-        num_available = continue_block_decompression();
     } else {
-        auto const avail_in_scratch_buffer =
-            m_chained_buffer->sgetn((char_type*)m_scratch_buffer, m_scratch_buffer_size);
-        num_available = begin_block_decompression(m_buffer, m_buffer_size,
-                                                  avail_in_scratch_buffer);
-    }
-
-    setg((char_type*)m_buffer, (char_type*)m_buffer, (char_type*)(m_buffer + num_available));
-    if (num_available == 0) {
-        return traits_type::eof();
-    } else {
+        setg((char_type*)m_buffer, (char_type*)m_buffer,
+             (char_type*)(m_buffer + refilled_bytes));
         return (*(gptr()));
     }
 }
@@ -326,6 +157,8 @@ std::streamsize BZip2InputFilter::xsgetn(char_type* s, std::streamsize count)
 
         num_left -= num_to_copy;
         num_available -= num_to_copy;
+        s_offset += num_to_copy;
+
         setg((char_type*)m_buffer, gptr() + num_to_copy, egptr());
 
         if (num_available == 0) {
@@ -344,47 +177,89 @@ BZip2InputFilter::int_type BZip2InputFilter::pbackfail(int_type c)
 
 // implementation of BZip2OutputFilter
 BZip2OutputFilter::BZip2OutputFilter(std::streambuf* chained_buffer,
-                                     u64 buffer_size, u32 chunk_size,
+                                     u32 buffer_size,
+                                     u32 scratch_buffer_size,
                                      u32 compression_work_factor,
                                      u32 compression_block_size)
-    : BZip2FilterBase(false, chunk_size, compression_work_factor, compression_block_size),
+    : BZip2FilterData(scratch_buffer_size),
       SequentialOutputFilterBase(chained_buffer, buffer_size)
 {
-    // Nothing here
+    auto status = BZ2_bzCompressInit(&m_bzip_stream, compression_block_size,
+                                     0, compression_work_factor);
+    if (status != BZ_OK) {
+        throw AurumIOException((std::string)"Error initializing BZip2 stream");
+    }
 }
 
 BZip2OutputFilter::~BZip2OutputFilter()
 {
-    if (!m_is_final_block) {
-        finalize();
-    }
+    drain_buffer(false, true);
+    BZ2_bzCompressEnd(&m_bzip_stream);
 }
 
-inline void BZip2OutputFilter::do_overflow(bool sync_compression, bool final_block)
+inline void BZip2OutputFilter::drain_buffer(bool sync, bool final_block)
 {
-    auto available_in_buffer = pptr() - (char_type*)m_buffer;
-    auto available_in_scratch = begin_block_compression(m_buffer, available_in_buffer,
-                                                        sync_compression, final_block);
+    m_bzip_stream.avail_in = pptr() - (char_type*)m_buffer;
+    m_bzip_stream.next_in = (char*)m_buffer;
 
-    while (available_in_scratch == m_scratch_buffer_size) {
-        m_chained_buffer->sputn((char_type*)m_scratch_buffer, available_in_scratch);
-        available_in_scratch = continue_block_compression();
+    int flush_mode = BZ_RUN;
+
+    if (final_block) {
+        flush_mode = BZ_FINISH;
+    } else if (sync) {
+        flush_mode = BZ_FLUSH;
     }
 
-    m_chained_buffer->sputn((char_type*)m_scratch_buffer, available_in_scratch);
+    while (true) {
+        m_bzip_stream.next_out = (char*)m_scratch_buffer;
+        m_bzip_stream.avail_out = m_scratch_buffer_size;
 
+        auto status = BZ2_bzCompress(&m_bzip_stream, flush_mode);
+
+        if (flush_mode == BZ_RUN) {
+            if (status != BZ_RUN_OK) {
+                throw AurumIOException((std::string)"Error while compressing BZip2 stream!");
+            }
+            auto avail_in_scratch = m_scratch_buffer_size - m_bzip_stream.avail_out;
+            m_chained_buffer->sputn((char_type*)m_scratch_buffer, avail_in_scratch);
+            if (m_bzip_stream.avail_in == 0) {
+                break;
+            } else {
+                continue;
+            }
+        } else if (flush_mode == BZ_FINISH) {
+            if (status != BZ_FINISH_OK && status != BZ_STREAM_END) {
+                throw AurumIOException((std::string)"Error while compressing BZip2 stream!");
+            }
+            auto avail_in_scratch = m_scratch_buffer_size - m_bzip_stream.avail_out;
+            m_chained_buffer->sputn((char_type*)m_scratch_buffer, avail_in_scratch);
+
+            if (status == BZ_STREAM_END) {
+                break;
+            } else {
+                continue;
+            }
+        } else if (flush_mode == BZ_FLUSH) {
+            if (status != BZ_RUN_OK && status != BZ_FLUSH_OK) {
+                throw AurumIOException((std::string)"Error while compressing BZip2 stream!");
+            }
+            auto avail_in_scratch = m_scratch_buffer_size - m_bzip_stream.avail_out;
+            m_chained_buffer->sputn((char_type*)m_scratch_buffer, avail_in_scratch);
+
+            if (status == BZ_RUN_OK) {
+                break;
+            } else {
+                continue;
+            }
+        }
+    }
+
+    // reset the put area
     setp((char_type*)m_buffer, (char_type*)(m_buffer + m_buffer_size));
 }
 
 BZip2OutputFilter::int_type BZip2OutputFilter::overflow(int_type ch)
 {
-
-    // has the stream already been finished?
-    if (m_is_final_block) {
-        setp((char_type*)m_buffer, (char_type*)m_buffer);
-        return traits_type::eof();
-    }
-
     if (pptr() < epptr()) {
         if (!traits_type::eq_int_type(ch, traits_type::eof())) {
             sputc((char_type)ch);
@@ -394,7 +269,7 @@ BZip2OutputFilter::int_type BZip2OutputFilter::overflow(int_type ch)
         }
     }
 
-    do_overflow();
+    drain_buffer();
 
     if (!traits_type::eq_int_type(ch, traits_type::eof())) {
         sputc((char_type)ch);
@@ -421,15 +296,9 @@ std::streamsize BZip2OutputFilter::xsputn(const char_type* s, std::streamsize n)
     return bytes_put;
 }
 
-void BZip2OutputFilter::finalize()
-{
-    do_overflow(false, true);
-    BZip2FilterBase::finalize();
-}
-
 BZip2OutputFilter::int_type BZip2OutputFilter::sync()
 {
-    do_overflow(true, false);
+    drain_buffer(true, false);
     return m_chained_buffer->pubsync();
 }
 

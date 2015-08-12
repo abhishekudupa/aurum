@@ -59,6 +59,7 @@ class IOFilterBase : public AurumObject<IOFilterBase>,
 protected:
     // some constants for default buffer sizes
     static constexpr u64 sc_default_buffer_size = 65536;
+    static constexpr u64 sc_min_buffer_size = 16384;
 
     // variables
     const u64 m_buffer_size;

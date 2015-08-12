@@ -41,6 +41,7 @@
 #include <sstream>
 #include <string>
 #include <random>
+#include <unistd.h>
 
 #include "../../src/io/BZip2Filter.hpp"
 
@@ -57,7 +58,7 @@ namespace bzip2_testing {
 static const char* test_file_name = "bzip2_test.bz2";
 
 static constexpr u32 max_test_string_len = 128;
-static constexpr u32 max_num_strings = 128;
+static constexpr u32 max_num_strings = 65536;
 
 std::default_random_engine random_generator;
 std::uniform_int_distribution<u08> alpha_distribution(0, 25);
@@ -96,17 +97,12 @@ static inline void read_test_file(std::ostringstream& sstr)
     fbuf.open(test_file_name, std::ios_base::in);
     aurum::io::BZip2InputFilter bzip2_filter(&fbuf);
     std::istream fstr(&bzip2_filter);
-    char temp_buffer[2 * max_test_string_len];
+    char temp_buffer[1025];
 
-    while(true) {
-        fstr.getline(temp_buffer, 2 * max_test_string_len);
-        if (fstr.eof()) {
-            break;
-        } else {
-            if (fstr.gcount() > 0) {
-                sstr << temp_buffer << std::endl;
-            }
-        }
+    while(!fstr.eof()) {
+        fstr.read(temp_buffer, 1024);
+        temp_buffer[fstr.gcount()] = '\0';
+        sstr << temp_buffer;
     }
 
     // let the destruction sequence do its thing
@@ -122,6 +118,8 @@ TEST(BZip2Filter, Functional)
     bzip2_testing::read_test_file(cmpstr);
 
     EXPECT_EQ(sstr.str(), cmpstr.str());
+
+    unlink(bzip2_testing::test_file_name);
 }
 
 //
