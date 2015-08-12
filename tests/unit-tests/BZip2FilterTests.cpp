@@ -42,6 +42,9 @@
 #include <string>
 #include <random>
 #include <unistd.h>
+#include <AurumConfig.h>
+
+#ifdef AURUM_CFG_HAVE_BZIP2_
 
 #include "../../src/io/BZip2Filter.hpp"
 
@@ -121,6 +124,8 @@ TEST(BZip2Filter, Functional)
 
     unlink(bzip2_testing::test_file_name);
 }
+
+#endif /* AURUM_CFG_HAVE_BZIP2_ */
 
 //
 // ZLibFilterTests.cpp ends here

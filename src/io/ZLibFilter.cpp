@@ -42,6 +42,8 @@
 #include "ZLibFilter.hpp"
 #include "AurumIOException.hpp"
 
+#ifdef AURUM_CFG_HAVE_ZLIB_
+
 namespace aurum {
 namespace io {
 
@@ -280,6 +282,8 @@ ZLibOutputFilter::int_type ZLibOutputFilter::sync()
 
 } /* end namespace io */
 } /* end namespace aurum */
+
+#endif /* AURUM_CFG_HAVE_ZLIB_ */
 
 //
 // ZLibFilter.cpp ends here

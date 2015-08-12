@@ -40,6 +40,10 @@
 #if !defined AURUM_IO_ZLIB_FILTER_HPP_
 #define AURUM_IO_ZLIB_FILTER_HPP_
 
+#include <AurumConfig.h>
+
+#ifdef AURUM_CFG_HAVE_ZLIB_
+
 #include <zlib.h>
 
 #include "FilterBase.hpp"
@@ -143,6 +147,8 @@ public:
 
 } /* end namespace io */
 } /* end namespace aurum */
+
+#endif /* AURUM_CFG_HAVE_ZLIB_ */
 
 #endif /* AURUM_IO_ZLIB_FILTER_HPP_ */
 

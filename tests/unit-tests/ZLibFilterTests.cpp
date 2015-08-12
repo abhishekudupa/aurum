@@ -42,6 +42,9 @@
 #include <string>
 #include <random>
 #include <unistd.h>
+#include <AurumConfig.h>
+
+#ifdef AURUM_CFG_HAVE_ZLIB_
 
 #include "../../src/io/ZLibFilter.hpp"
 
@@ -120,6 +123,8 @@ TEST(ZLibFilter, Functional)
     EXPECT_EQ(sstr.str(), cmpstr.str());
     unlink(zlib_testing::test_file_name);
 }
+
+#endif /* AURUM_CFG_HAVE_ZLIB_ */
 
 //
 // ZLibFilterTests.cpp ends here

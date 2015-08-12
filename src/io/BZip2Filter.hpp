@@ -40,6 +40,10 @@
 #if !defined AURUM_IO_BZIP2_FILTER_HPP_
 #define AURUM_IO_BZIP2_FILTER_HPP_
 
+#include <AurumConfig.h>
+
+#ifdef AURUM_CFG_HAVE_BZIP2_
+
 #include <bzlib.h>
 
 #include "FilterBase.hpp"
@@ -137,6 +141,8 @@ public:
 
 } /* end namespace io */
 } /* end namespace aurum */
+
+#endif /* AURUM_CFG_HAVE_BZIP2_ */
 
 #endif /* AURUM_IO_BZIP2_FILTER_HPP_ */
 

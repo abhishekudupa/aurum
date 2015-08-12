@@ -39,9 +39,6 @@
 #define AURUM_VERSION_MINOR_ @AURUM_VERSION_MINOR@
 #define AURUM_VERSION_PATCH_ @AURUM_VERSION_PATCH@
 
-static constexpr const char* AURUM_BUILD_DATE_ = __DATE__;
-static constexpr const char* AURUM_BUILD_TIME_ = __TIME__;
-
 #cmakedefine AURUM_CFG_ASSERTIONS_ENABLED_
 #cmakedefine AURUM_CFG_HAVE_GDB_
 #cmakedefine AURUM_CFG_LOGGING_ENABLED_

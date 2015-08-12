@@ -44,6 +44,8 @@
 #include "BZip2Filter.hpp"
 #include "AurumIOException.hpp"
 
+#ifdef AURUM_CFG_HAVE_BZIP2_
+
 namespace aurum {
 namespace io {
 
@@ -304,6 +306,8 @@ BZip2OutputFilter::int_type BZip2OutputFilter::sync()
 
 } /* end namespace io */
 } /* end namespace aurum */
+
+#endif /* AURUM_CFG_HAVE_BZIP2_ */
 
 //
 // BZip2Filter.cpp ends here
