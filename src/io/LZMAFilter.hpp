@@ -1,8 +1,8 @@
-// BZip2Filter.hpp ---
+// LZMAFilter.hpp ---
 //
-// Filename: BZip2Filter.hpp
+// Filename: LZMAFilter.hpp
 // Author: Abhishek Udupa
-// Created: Tue Aug 11 13:29:25 2015 (-0400)
+// Created: Wed Aug 12 14:47:36 2015 (-0400)
 //
 //
 // Copyright (c) 2015, Abhishek Udupa, University of Pennsylvania
@@ -37,14 +37,14 @@
 
 // Code:
 
-#if !defined AURUM_IO_BZIP2_FILTER_HPP_
-#define AURUM_IO_BZIP2_FILTER_HPP_
+#if !defined AURUM_IO_LZMA_FILTER_HPP_
+#define AURUM_IO_LZMA_FILTER_HPP_
 
 #include <AurumConfig.h>
 
-#ifdef AURUM_CFG_HAVE_BZIP2_
+#ifdef AURUM_CFG_HAVE_LZMA_
 
-#include <bzlib.h>
+#include <lzma.h>
 
 #include "FilterBase.hpp"
 
@@ -53,48 +53,51 @@ namespace io {
 
 namespace detail_ {
 
-class BZip2FilterData
+class LZMAFilterData
 {
 protected:
     static constexpr u32 sc_default_scratch_buffer_size = 262144;
     static constexpr u32 sc_min_scratch_buffer_size = 65536;
-    static constexpr u32 sc_default_compression_work_factor = 30;
-    static constexpr u32 sc_default_compression_block_size = 9;
+    // use upto 256 MB of memory
+    static constexpr u32 sc_default_compression_memory = (1 << 28);
+    static constexpr u32 sc_default_compression_preset_level = 9;
+    static constexpr bool sc_default_compression_use_extreme_preset = true;
 
-    bz_stream m_bzip_stream;
+    lzma_allocator m_lzma_allocators;
+    lzma_stream m_lzma_stream;
     u32 m_scratch_buffer_size;
     u08* m_scratch_buffer;
 
-    BZip2FilterData(u32 scratch_buffer_size = sc_default_scratch_buffer_size);
-    virtual ~BZip2FilterData();
+    LZMAFilterData(u32 scratch_buffer_size = sc_default_scratch_buffer_size);
+    virtual ~LZMAFilterData();
 };
 
 } /* end namespace detail_ */
 
 template <typename IOCategory>
-class BZip2Filter
-    : public detail_::BZip2FilterData,
+class LZMAFilter
+    : public detail_::LZMAFilterData,
       public std::conditional<std::is_same<IOCategory, Input>::value,
                               SequentialInputFilterBase, SequentialOutputFilterBase>::type
 {
     static_assert(std::is_same<IOCategory, Input>::value ||
                   std::is_same<IOCategory, Output>::value,
-                  "Class BZip2Filter can only be instantiated with Input or Output as "
+                  "Class LZMAFilter can only be instantiated with Input or Output as "
                   "the IOCategory argument!");
 };
 
-class BZip2InputFilter
-    : public detail_::BZip2FilterData,
+class LZMAInputFilter
+    : public detail_::LZMAFilterData,
       public SequentialInputFilterBase
 {
 private:
     inline u64 refill_buffer();
 
 public:
-    BZip2InputFilter(std::streambuf* chained_buffer,
-                     u64 buffer_size = sc_default_buffer_size);
-    BZip2InputFilter() = delete;
-    virtual ~BZip2InputFilter();
+    LZMAInputFilter(std::streambuf* chained_buffer, u64 buffer_size = sc_default_buffer_size,
+                    u64 mem_limit = sc_default_compression_memory);
+    LZMAInputFilter() = delete;
+    virtual ~LZMAInputFilter();
 
 protected:
     virtual int_type underflow() override;
@@ -102,21 +105,23 @@ protected:
     virtual int_type pbackfail(int_type c = traits_type::eof()) override;
 };
 
-class BZip2OutputFilter
-    : public detail_::BZip2FilterData,
+class LZMAOutputFilter
+    : public detail_::LZMAFilterData,
       public SequentialOutputFilterBase
 {
 private:
     inline void drain_buffer(bool sync = false, bool final_block = false);
 
 public:
-    BZip2OutputFilter(std::streambuf* chained_buffer,
-                      u32 buffer_size = sc_default_buffer_size,
-                      u32 scratch_buffer_size = sc_default_scratch_buffer_size,
-                      u32 compression_work_factor = sc_default_compression_work_factor,
-                      u32 compression_block_size = sc_default_compression_block_size);
-    BZip2OutputFilter() = delete;
-    virtual ~BZip2OutputFilter();
+    LZMAOutputFilter(std::streambuf* chained_buffer,
+                     u32 buffer_size = sc_default_buffer_size,
+                     u32 scratch_buffer_size = sc_default_scratch_buffer_size,
+                     u32 compression_memory = sc_default_compression_memory,
+                     u32 compression_preset_level = sc_default_compression_preset_level,
+                     bool compression_use_extreme_preset =
+                     sc_default_compression_use_extreme_preset);
+    LZMAOutputFilter() = delete;
+    virtual ~LZMAOutputFilter();
 
 protected:
     virtual std::streamsize xsputn(const char_type* s, std::streamsize n) override;
@@ -125,26 +130,25 @@ protected:
 };
 
 template <>
-class BZip2Filter<Input> : public BZip2InputFilter
+class LZMAFilter<Input> : public LZMAInputFilter
 {
 public:
-    using BZip2InputFilter::BZip2InputFilter;
+    using LZMAInputFilter::LZMAInputFilter;
 };
 
 template <>
-class BZip2Filter<Output> : public BZip2OutputFilter
+class LZMAFilter<Output> : public LZMAOutputFilter
 {
 public:
-    using BZip2OutputFilter::BZip2OutputFilter;
+    using LZMAOutputFilter::LZMAOutputFilter;
 };
 
 } /* end namespace io */
 } /* end namespace aurum */
 
-#endif /* AURUM_CFG_HAVE_BZIP2_ */
+#endif /* AURUM_CFG_HAVE_LZMA_ */
 
-#endif /* AURUM_IO_BZIP2_FILTER_HPP_ */
-
+#endif /* AURUM_IO_LZMA_FILTER_HPP_ */
 
 //
-// BZip2Filter.hpp ends here
+// LZMAFilter.hpp ends here

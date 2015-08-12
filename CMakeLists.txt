@@ -104,10 +104,11 @@ set(AURUM_CXX_SOURCE_FILES
   src/hashing/MurmurHash.cpp
   src/hashing/SpookyHash.cpp
 
-  src/io/FilterBase.cpp
-  src/io/ZLibFilter.cpp
   src/io/BZip2Filter.cpp
+  src/io/FilterBase.cpp
   src/io/FilteredStreams.cpp
+  src/io/LZMAFilter.cpp
+  src/io/ZLibFilter.cpp
 
   src/logging/LogManager.cpp
 
