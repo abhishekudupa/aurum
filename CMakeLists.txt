@@ -105,6 +105,8 @@ set(AURUM_CXX_SOURCE_FILES
   src/hashing/SpookyHash.cpp
 
   src/io/BZip2Filter.cpp
+  src/io/CodeFilter.cpp
+  src/io/CodeWriter.cpp
   src/io/FilterBase.cpp
   src/io/FilteredStreams.cpp
   src/io/LZMAFilter.cpp

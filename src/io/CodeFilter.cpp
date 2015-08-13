@@ -37,20 +37,22 @@
 
 // Code:
 
+#include "AurumIOException.hpp"
 #include "CodeFilter.hpp"
 
 namespace aurum {
 namespace io {
 
-CodeFilter::CodeFilter(std::streambuf* chained_buffer, u64 buffer_size)
+CodeFilter::CodeFilter(std::streambuf* chained_buffer, u64 buffer_size,
+                       u32 spaces_per_indent)
     : SequentialOutputFilterBase(chained_buffer, buffer_size),
-      m_spaces_per_indent(sc_default_num_spaces_per_indent),
+      m_spaces_per_indent(spaces_per_indent),
       m_indent_level(0), m_current_buffer_position(0),
-      m_indent_stack(), m_indentation_string(""), m_on_newline(true)
+      m_indent_stack(), m_on_newline(true)
 {
     // we'll manage our buffers ourselves, thank you very much!
     // just get sputc, etc to call overflow every single time.
-    setp(m_buffer, m_buffer);
+    setp((char_type*)m_buffer, (char_type*)m_buffer);
 }
 
 CodeFilter::~CodeFilter()
@@ -58,21 +60,46 @@ CodeFilter::~CodeFilter()
     // Nothing here
 }
 
-std::streamsize CodeFilter::xsputn(char_type* s, std::streamsize n)
+inline void CodeFilter::flush_and_write_indented_char(int_type ch)
 {
-    for (u64 i = 0; i < n; ++i) {
-        sputc(s[i]);
+    u32 num_spaces = m_indent_level * m_spaces_per_indent;
+    if (m_current_buffer_position + num_spaces + 1 <= m_buffer_size) {
+        memset(m_buffer + m_current_buffer_position, ' ', num_spaces);
+        m_current_buffer_position += num_spaces;
+        m_buffer[m_current_buffer_position++] = ch;
+    } else {
+        m_chained_buffer->sputn((char_type*)m_buffer, m_current_buffer_position);
+        memset(m_buffer, ' ', num_spaces);
+        m_current_buffer_position = num_spaces;
+        m_buffer[m_current_buffer_position++] = ch;
     }
 }
 
-// requires that there be enough space in the buffer
-inline void CodeFilter::make_indented_newline()
+inline void CodeFilter::flush_and_write_char(int_type ch)
 {
-    m_buffer[m_current_buffer_position++] = ch;
-    memcpy(m_buffer + m_current_buffer_position, m_indentation_string.c_str(),
-           m_indentation_string.length());
-    m_current_buffer_position += m_indentation_string.length();
-    return;
+    if (m_current_buffer_position + 1 <= m_buffer_size) {
+        m_buffer[m_current_buffer_position++] = ch;
+    } else {
+        m_chained_buffer->sputn((char_type*)m_buffer, m_current_buffer_position);
+        m_current_buffer_position = 0;
+        m_buffer[m_current_buffer_position++] = ch;
+    }
+}
+
+inline void CodeFilter::check_runaway_indent() const
+{
+    if ((u64)m_indent_level * (u64)m_spaces_per_indent > (u64)sc_max_indent_spaces) {
+        throw AurumIOException((std::string)"Exceeded maximum allowed indentation " +
+                               "in CodeFilter");
+    }
+}
+
+std::streamsize CodeFilter::xsputn(const char_type* s, std::streamsize n)
+{
+    for (u64 i = 0; i < (u64)n; ++i) {
+        sputc(s[i]);
+    }
+    return n;
 }
 
 CodeFilter::int_type CodeFilter::overflow(int_type ch)
@@ -82,25 +109,27 @@ CodeFilter::int_type CodeFilter::overflow(int_type ch)
             return 0;
         } else {
             m_chained_buffer->sputn((char_type*)m_buffer, m_current_buffer_position);
+            m_current_buffer_position = 0;
             return 0;
         }
     }
-    if (ch == '\n') {
-        if (m_current_buffer_position + m_indentation_string.length() + 1 < m_buffer_size) {
-            make_indented_newline();
+
+    if (ch != '\n') {
+        if (m_on_newline) {
+            flush_and_write_indented_char(ch);
+            m_on_newline = false;
         } else {
-            m_chained_buffer->sputn((char_type*)m_buffer, m_current_buffer_position);
-            m_current_buffer_position = 0;
-            make_indented_newline();
+            flush_and_write_char(ch);
         }
     } else {
-        if (m_current_buffer_position < m_buffer_size) {
-            m_buffer[m_current_buffer_position++] = ch;
+        // ch == '\n'
+        if (m_on_newline) {
+            flush_and_write_char(ch);
+            // leave m_on_newline set
         } else {
-            m_chained_buffer->sputn((char_type*)m_buffer, m_current_buffer_position);
-            m_current_buffer_position = 0;
-            m_buffer[m_current_buffer_position++] = ch;
+            flush_and_write_char(ch);
         }
+        m_on_newline = true;
     }
     return 0;
 }
@@ -109,6 +138,51 @@ int CodeFilter::sync()
 {
     m_chained_buffer->sputn((char_type*)m_buffer, m_current_buffer_position);
     m_current_buffer_position = 0;
+    return m_chained_buffer->pubsync();
+}
+
+u32 CodeFilter::get_spaces_per_indent() const
+{
+    return m_spaces_per_indent;
+}
+
+void CodeFilter::increment_indent()
+{
+    ++m_indent_level;
+    check_runaway_indent();
+}
+
+void CodeFilter::decrement_indent()
+{
+    --m_indent_level;
+    check_runaway_indent();
+}
+
+void CodeFilter::set_indent_level(u32 indent_level)
+{
+    m_indent_level = indent_level;
+    check_runaway_indent();
+}
+
+u32 CodeFilter::get_indent_level() const
+{
+    return m_indent_level;
+}
+
+u32 CodeFilter::get_indent_level_in_spaces() const
+{
+    return (m_indent_level * m_spaces_per_indent);
+}
+
+void CodeFilter::push_indent()
+{
+    m_indent_stack.push(m_indent_level);
+}
+
+void CodeFilter::pop_indent()
+{
+    m_indent_level = m_indent_stack.top();
+    m_indent_stack.pop();
 }
 
 } /* end namespace io */

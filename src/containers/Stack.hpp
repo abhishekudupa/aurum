@@ -49,10 +49,10 @@ class Stack final : public AurumObject<aurum::containers::Stack<T, ContainerType
 public:
     typedef T ValueType;
     typedef ContainerType_ ContainerType;
-    typedef ContainerType::RefType RefType;
-    typedef ContainerType::ConstRefType ConstRefType;
-    typedef ContainerType::PtrType PtrType;
-    typedef ContainerType::ConstPtrType ConstPtrType;
+    typedef typename ContainerType::RefType RefType;
+    typedef typename ContainerType::ConstRefType ConstRefType;
+    typedef typename ContainerType::PtrType PtrType;
+    typedef typename ContainerType::ConstPtrType ConstPtrType;
 
 private:
     ContainerType m_container;
@@ -83,7 +83,7 @@ public:
     }
 
     Stack(Stack&& other)
-        : m_container(std::move(other.m_container));
+        : m_container(std::move(other.m_container))
     {
         // Nothing here
     }
@@ -187,21 +187,6 @@ using PtrStack = Stack<T*>;
 
 template <typename T>
 using ConstPtrStack = Stack<const T*>;
-
-template <typename T>
-using MPtrStack =
-    Stack<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                    memory::ManagedPointer<T>, T*>::type>;
-
-template <typename T>
-using ConstMPtrStack =
-    Stack<typename std::conditional<std::is_base_of<memory::RefCountable, T>::value,
-                                    memory::ManagedConstPointer<T>,
-                                    const T*>::type>;
-
-class String;
-
-typedef Stack<String> StringStack;
 
 } /* end namespace containers */
 } /* end namespace aurum */

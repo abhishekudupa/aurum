@@ -84,6 +84,29 @@ protected:
         // Nothing here
     }
 
+    virtual void push_filter(detail_::IOFilterBase* filter)
+    {
+        m_chain->pubsync();
+        m_chain = filter;
+        this->set_rdbuf(m_chain);
+    }
+
+    virtual std::streambuf* pop_filter()
+    {
+        if (m_chain == m_chain_root) {
+            return nullptr;
+        }
+        m_chain->pubsync();
+        auto to_pop = m_chain;
+        m_chain = static_cast<IOFilterBase*>(m_chain)->get_chained_buffer();
+        return to_pop;
+    }
+
+    virtual std::streambuf* peek_filter() const
+    {
+        return m_chain;
+    }
+
 public:
     FilteredStreamBase(std::streambuf* chain_root)
         : m_chain(chain_root), m_chain_root(chain_root), m_chain_root_owned(false)
@@ -103,6 +126,8 @@ public:
 
     virtual ~FilteredStreamBase()
     {
+        m_chain->pubsync();
+
         auto cur_filter = m_chain;
         while (cur_filter != m_chain_root) {
             auto to_delete = cur_filter;
@@ -131,17 +156,13 @@ public:
 
     std::streambuf* peek() const
     {
-        return m_chain;
+        return this->peek_filter();
     }
 
-    std::streambuf* pop()
+    // a push or pop causes a sync of the buffers!
+    virtual std::streambuf* pop()
     {
-        if (m_chain == m_chain_root) {
-            return nullptr;
-        }
-        auto to_pop = m_chain;
-        m_chain = static_cast<IOFilterBase*>(m_chain)->get_chained_buffer();
-        return to_pop;
+        return this->pop_filter();
     }
 
     template <typename FilterType, typename... ArgTypes>
@@ -151,8 +172,7 @@ public:
                       "Wrong type of filter pushed onto a FilteredStream");
 
         auto new_filter = new FilterType(m_chain, std::forward<ArgTypes>(args)...);
-        m_chain = new_filter;
-        this->set_rdbuf(m_chain);
+        this->push_filter(new_filter);
     }
 
     // for dual-use filters
@@ -163,8 +183,7 @@ public:
                       "Wrong type of filter pushed onto a FilteredStream");
 
         auto new_filter = new FilterTemplate<IOCategory>(m_chain, std::forward<ArgTypes>(args)...);
-        m_chain = new_filter;
-        this->set_rdbuf(m_chain);
+        this->push_filter(new_filter);
     }
 
     std::streambuf* get_root() const

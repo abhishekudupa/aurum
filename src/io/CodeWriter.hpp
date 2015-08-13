@@ -1,8 +1,8 @@
-// CodeFilter.hpp ---
+// CodeWriter.hpp ---
 //
-// Filename: CodeFilter.hpp
+// Filename: CodeWriter.hpp
 // Author: Abhishek Udupa
-// Created: Wed Aug 12 17:39:06 2015 (-0400)
+// Created: Thu Aug 13 15:51:13 2015 (-0400)
 //
 //
 // Copyright (c) 2015, Abhishek Udupa, University of Pennsylvania
@@ -37,56 +37,49 @@
 
 // Code:
 
-#if !defined AURUM_IO_CODE_FILTER_HPP_
-#define AURUM_IO_CODE_FILTER_HPP_
-
-#include "../containers/Stack.hpp"
-
-#include "FilterBase.hpp"
+#include "FilteredStreams.hpp"
+#include "CodeFilter.hpp"
 
 namespace aurum {
 namespace io {
 
-namespace ac = aurum::containers;
-
-class CodeFilter
-    : public SequentialOutputFilterBase
+class CodeWriter : public FilteredOStream
 {
 private:
-    // constants
-    static constexpr u32 sc_default_num_spaces_per_indent = 4;
-    static constexpr u32 sc_max_indent_spaces = 4096;
+    static constexpr u32 sc_default_spaces_per_indent = 4;
+    static constexpr u32 sc_default_buffer_size = 65536;
 
-    const u32 m_spaces_per_indent;
-    u32 m_indent_level;
-    u32 m_current_buffer_position;
-    ac::Stack<u32> m_indent_stack;
-    bool m_on_newline;
-
-    inline void flush_and_write_indented_char(int_type ch);
-    inline void flush_and_write_char(int_type ch);
-    inline void check_runaway_indent() const;
-
-public:
-    CodeFilter(std::streambuf* chained_buffer, u64 buffer_size = sc_default_buffer_size,
-               u32 spaces_per_indent = sc_default_num_spaces_per_indent);
-    CodeFilter() = delete;
-    virtual ~CodeFilter();
+    inline CodeFilter* get_code_filter() const;
 
 protected:
-    virtual std::streamsize xsputn(const char_type* s, std::streamsize n) override;
-    virtual int_type overflow(int_type ch = traits_type::eof()) override;
-    virtual int sync() override;
+    CodeWriter();
 
-    // methods specific to code filter
+    // overrides
+    virtual std::streambuf* pop_filter() override;
+    virtual void push_filter(detail_::IOFilterBase* filter) override;
+    virtual std::streambuf* peek_filter() const override;
+
 public:
-    u32 get_spaces_per_indent() const;
+    CodeWriter(const CodeWriter& other) = delete;
+    explicit CodeWriter(std::streambuf* stream_buffer,
+                        u32 spaces_per_indent = sc_default_spaces_per_indent);
+    explicit CodeWriter(const char* filename,
+                        u32 spaces_per_indent = sc_default_spaces_per_indent);
+    explicit CodeWriter(const std::string& filename,
+                        u32 spaces_per_indent = sc_default_spaces_per_indent);
 
+    CodeWriter(CodeWriter&& other);
+    virtual ~CodeWriter();
+
+    CodeWriter& operator = (const CodeWriter& other) = delete;
+    CodeWriter& operator = (CodeWriter&& other);
+
+    // forwarded methods to codefilter
+    u32 get_spaces_per_indent() const;
     void increment_indent();
     void decrement_indent();
     void set_indent_level(u32 indent_level);
     u32 get_indent_level() const;
-
     u32 get_indent_level_in_spaces() const;
     void push_indent();
     void pop_indent();
@@ -95,7 +88,5 @@ public:
 } /* end namespace io */
 } /* end namespace aurum */
 
-#endif /* AURUM_IO_CODE_FILTER_HPP_ */
-
 //
-// CodeFilter.hpp ends here
+// CodeWriter.hpp ends here

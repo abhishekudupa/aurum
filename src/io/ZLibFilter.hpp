@@ -116,7 +116,7 @@ private:
 
 public:
     ZLibOutputFilter(std::streambuf* chained_buffer,
-                     bool use_gzip_stream = false,
+                     bool use_gzip_stream = true,
                      i32 compression_level = sc_default_compression_level,
                      u32 buffer_size = sc_default_buffer_size,
                      u32 scratch_buffer_size = sc_default_scratch_buffer_size,
