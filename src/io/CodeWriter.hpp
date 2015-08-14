@@ -51,9 +51,6 @@ private:
 
     inline CodeFilter* get_code_filter() const;
 
-protected:
-    CodeWriter();
-
     // overrides
     virtual std::streambuf* pop_filter() override;
     virtual void push_filter(detail_::IOFilterBase* filter) override;
@@ -68,11 +65,11 @@ public:
     explicit CodeWriter(const std::string& filename,
                         u32 spaces_per_indent = sc_default_spaces_per_indent);
 
-    CodeWriter(CodeWriter&& other);
+    CodeWriter(CodeWriter&& other) = delete;
     virtual ~CodeWriter();
 
     CodeWriter& operator = (const CodeWriter& other) = delete;
-    CodeWriter& operator = (CodeWriter&& other);
+    CodeWriter& operator = (CodeWriter&& other) = delete;
 
     // forwarded methods to codefilter
     u32 get_spaces_per_indent() const;

@@ -67,7 +67,9 @@ class FilteredStreamBase
                   "as the IOCategory!");
 
 protected:
-    typedef FilteredStreamBase<IOCategory> FilteredStreamBaseType;
+    typedef
+    typename std::conditional<std::is_same<IOCategory, Input>::value,
+                              std::istream, std::ostream>::type BaseStreamType;
 
     template <typename T>
     using FilterTypeChecker =
@@ -77,12 +79,6 @@ protected:
     std::streambuf* m_chain;
     std::streambuf* m_chain_root;
     bool m_chain_root_owned;
-
-    FilteredStreamBase()
-        : m_chain(nullptr)
-    {
-        // Nothing here
-    }
 
     virtual void push_filter(detail_::IOFilterBase* filter)
     {
@@ -109,20 +105,14 @@ protected:
 
 public:
     FilteredStreamBase(std::streambuf* chain_root)
-        : m_chain(chain_root), m_chain_root(chain_root), m_chain_root_owned(false)
+        : BaseStreamType(chain_root),
+          m_chain(chain_root), m_chain_root(chain_root), m_chain_root_owned(false)
     {
         this->set_rdbuf(chain_root);
     }
 
     FilteredStreamBase(const FilteredStreamBase& other) = delete;
-
-    FilteredStreamBase(FilteredStreamBase&& other)
-        : FilteredStreamBase()
-    {
-        std::swap(m_chain, other.m_chain);
-        std::swap(m_chain_root, other.m_chain_root);
-        std::swap(m_chain_root_owned, other.m_chain_root_owned);
-    }
+    FilteredStreamBase(FilteredStreamBase&& other) = delete;
 
     virtual ~FilteredStreamBase()
     {
@@ -142,17 +132,7 @@ public:
     }
 
     FilteredStreamBase& operator = (const FilteredStreamBase& other) = delete;
-
-    FilteredStreamBase& operator = (FilteredStreamBase&& other)
-    {
-        if (&other == this) {
-            return *this;
-        }
-        std::swap(m_chain, other.m_chain);
-        std::swap(m_chain_root, other.m_chain_root);
-        std::swap(m_chain_root_owned, other.m_chain_root_owned);
-        return *this;
-    }
+    FilteredStreamBase& operator = (FilteredStreamBase&& other) = delete;
 
     std::streambuf* peek() const
     {
@@ -202,9 +182,6 @@ class FilteredIStream : public detail_::FilteredInputStreamBase
 private:
     typedef detail_::FilteredInputStreamBase FilteredInputStreamBase;
 
-protected:
-    FilteredIStream();
-
 public:
     FilteredIStream(const FilteredIStream& other) = delete;
 
@@ -213,19 +190,17 @@ public:
     explicit FilteredIStream(const char* filename);
     explicit FilteredIStream(const std::string& filename);
 
-    FilteredIStream(FilteredIStream&& other);
+    FilteredIStream(FilteredIStream&& other) = delete;
     virtual ~FilteredIStream();
 
     FilteredIStream& operator = (const FilteredIStream& other) = delete;
-    FilteredIStream& operator = (FilteredIStream&& other);
+    FilteredIStream& operator = (FilteredIStream&& other) = delete;
 };
 
 class FilteredOStream : public detail_::FilteredOutputStreamBase
 {
 private:
     typedef detail_::FilteredOutputStreamBase FilteredOutputStreamBase;
-protected:
-    FilteredOStream();
 
 public:
     FilteredOStream(const FilteredOStream& other) = delete;
@@ -234,11 +209,11 @@ public:
     // for files
     explicit FilteredOStream(const char* filename, bool append = false);
     explicit FilteredOStream(const std::string& filename, bool append = false);
-    FilteredOStream(FilteredOStream&& other);
+    FilteredOStream(FilteredOStream&& other) = delete;
 
     virtual ~FilteredOStream();
     FilteredOStream& operator = (const FilteredOStream& other) = delete;
-    FilteredOStream& operator = (FilteredOStream&& other);
+    FilteredOStream& operator = (FilteredOStream&& other) = delete;
 };
 
 

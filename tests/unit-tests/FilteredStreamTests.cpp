@@ -137,16 +137,11 @@ static inline std::string generate_random_string()
 template <template <typename> class FilterType>
 static inline void make_test_file(std::ostringstream& sstr)
 {
+    random_generator.seed(random_generator.default_seed);
     auto filename = FileNameStruct<FilterType>::file_name;
     aio::FilteredOStream fstr(filename);
 
-    auto before = fstr.rdbuf();
-    std::cout << "rdbuf before push: " << before << std::endl;
-    std::cout.flush();
-    fstr.push<FilterType>();
-    auto after = fstr.rdbuf();
-    std::cout << "rdbuf after push: " << after << std::endl;
-    std::cout.flush();
+    fstr.push<FilterType>(true);
 
     for (u32 i = 0; i < max_num_strings; ++i) {
         auto&& cur_string = generate_random_string();

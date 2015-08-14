@@ -44,12 +44,6 @@ namespace io {
 
 constexpr u32 CodeWriter::sc_default_buffer_size;
 
-CodeWriter::CodeWriter()
-    : FilteredOStream()
-{
-    // Nothing here
-}
-
 CodeWriter::CodeWriter(std::streambuf* stream_buffer, u32 spaces_per_indent)
     : FilteredOStream(stream_buffer)
 {
@@ -69,20 +63,9 @@ CodeWriter::CodeWriter(const std::string& filename, u32 spaces_per_indent)
     // Nothing here
 }
 
-CodeWriter::CodeWriter(CodeWriter&& other)
-    : FilteredOStream(std::move(other))
-{
-    // Nothing here
-}
-
 CodeWriter::~CodeWriter()
 {
     // Nothing here
-}
-
-CodeWriter& CodeWriter::operator = (CodeWriter&& other)
-{
-    return static_cast<CodeWriter&>(FilteredOStream::operator=(std::move(other)));
 }
 
 // overrides

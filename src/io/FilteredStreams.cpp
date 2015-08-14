@@ -41,12 +41,6 @@
 namespace aurum {
 namespace io {
 
-FilteredIStream::FilteredIStream()
-    : FilteredInputStreamBase()
-{
-    // Nothing here
-}
-
 FilteredIStream::FilteredIStream(std::streambuf* stream_buffer)
     : FilteredInputStreamBase(stream_buffer)
 {
@@ -73,24 +67,7 @@ FilteredIStream::FilteredIStream(const std::string& filename)
     // Nothing here
 }
 
-FilteredIStream::FilteredIStream(FilteredIStream&& other)
-    : FilteredInputStreamBase(std::move(other))
-{
-    // Nothing here
-}
-
-FilteredIStream& FilteredIStream::operator = (FilteredIStream&& other)
-{
-    return static_cast<FilteredIStream&>(FilteredInputStreamBase::operator=(std::move(other)));
-}
-
 FilteredIStream::~FilteredIStream()
-{
-    // Nothing here
-}
-
-FilteredOStream::FilteredOStream()
-    : FilteredOutputStreamBase()
 {
     // Nothing here
 }
@@ -125,17 +102,6 @@ FilteredOStream::FilteredOStream(const std::string& filename, bool append)
     : FilteredOStream(filename.c_str(), append)
 {
     // Nothing here
-}
-
-FilteredOStream::FilteredOStream(FilteredOStream&& other)
-    : FilteredOutputStreamBase(std::move(other))
-{
-    // Nothing here
-}
-
-FilteredOStream& FilteredOStream::operator = (FilteredOStream&& other)
-{
-    return static_cast<FilteredOStream&>(FilteredOutputStreamBase::operator=(std::move(other)));
 }
 
 FilteredOStream::~FilteredOStream()

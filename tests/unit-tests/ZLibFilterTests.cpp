@@ -121,7 +121,7 @@ TEST(ZLibFilter, Functional)
     zlib_testing::read_test_file(cmpstr);
 
     EXPECT_EQ(sstr.str(), cmpstr.str());
-    unlink(zlib_testing::test_file_name);
+    // unlink(zlib_testing::test_file_name);
 }
 
 #endif /* AURUM_CFG_HAVE_ZLIB_ */
