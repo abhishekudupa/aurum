@@ -111,7 +111,7 @@ public:
     FilteredStreamBase(std::streambuf* chain_root)
         : m_chain(chain_root), m_chain_root(chain_root), m_chain_root_owned(false)
     {
-        // Nothing here
+        this->set_rdbuf(chain_root);
     }
 
     FilteredStreamBase(const FilteredStreamBase& other) = delete;
@@ -232,8 +232,8 @@ public:
 
     explicit FilteredOStream(std::streambuf* stream_buffer);
     // for files
-    explicit FilteredOStream(const char* filename);
-    explicit FilteredOStream(const std::string& filename);
+    explicit FilteredOStream(const char* filename, bool append = false);
+    explicit FilteredOStream(const std::string& filename, bool append = false);
     FilteredOStream(FilteredOStream&& other);
 
     virtual ~FilteredOStream();

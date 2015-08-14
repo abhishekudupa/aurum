@@ -101,12 +101,18 @@ FilteredOStream::FilteredOStream(std::streambuf* stream_buffer)
     // Nothing here
 }
 
-FilteredOStream::FilteredOStream(const char* filename)
+FilteredOStream::FilteredOStream(const char* filename, bool append)
     : FilteredOutputStreamBase(new std::filebuf())
 {
     auto as_file_buf = static_cast<std::filebuf*>(m_chain_root);
     m_chain_root_owned = true;
-    auto stat = as_file_buf->open(filename, ios_base::in);
+
+    auto mode = ios_base::out;
+    if (!append) {
+        mode = mode | ios_base::trunc;
+    }
+
+    auto stat = as_file_buf->open(filename, mode);
 
     if (stat == nullptr) {
         throw AurumIOException((std::string)"Error opening file: " + filename +
@@ -115,8 +121,8 @@ FilteredOStream::FilteredOStream(const char* filename)
     return;
 }
 
-FilteredOStream::FilteredOStream(const std::string& filename)
-    : FilteredOStream(filename.c_str())
+FilteredOStream::FilteredOStream(const std::string& filename, bool append)
+    : FilteredOStream(filename.c_str(), append)
 {
     // Nothing here
 }
