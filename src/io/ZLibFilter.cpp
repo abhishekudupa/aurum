@@ -213,7 +213,7 @@ inline void ZLibOutputFilter::drain_buffer(bool sync, bool final_block)
 
     int deflate_status;
 
-    while (m_zlib_stream.avail_in > 0) {
+    do {
         m_zlib_stream.next_out = m_scratch_buffer;
         m_zlib_stream.avail_out = m_scratch_buffer_size;
 
@@ -228,7 +228,8 @@ inline void ZLibOutputFilter::drain_buffer(bool sync, bool final_block)
         if (available_in_scratch > 0) {
             m_chained_buffer->sputn((char_type*)m_scratch_buffer, available_in_scratch);
         }
-    }
+    } while (m_zlib_stream.avail_in > 0 ||
+             (flush_mode == Z_FINISH && deflate_status != Z_STREAM_END));
 
     // reset the put area
     setp((char_type*)m_buffer, (char_type*)(m_buffer + m_buffer_size));
