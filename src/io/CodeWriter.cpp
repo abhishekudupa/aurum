@@ -48,13 +48,15 @@ CodeWriter::CodeWriter(std::streambuf* stream_buffer, u32 spaces_per_indent)
     : FilteredOStream(stream_buffer)
 {
     // push a formatting filter on top of the filterchain
-    FilteredOStream::push<CodeFilter>(sc_default_buffer_size, spaces_per_indent);
+    auto code_filter = new CodeFilter(stream_buffer, sc_default_buffer_size, spaces_per_indent);
+    FilteredOStream::push_filter(code_filter);
 }
 
 CodeWriter::CodeWriter(const char* filename, u32 spaces_per_indent)
     : FilteredOStream(filename)
 {
-    FilteredOStream::push<CodeFilter>(sc_default_buffer_size, spaces_per_indent);
+    auto code_filter = new CodeFilter(m_chain, sc_default_buffer_size, spaces_per_indent);
+    FilteredOStream::push_filter(code_filter);
 }
 
 CodeWriter::CodeWriter(const std::string& filename, u32 spaces_per_indent)
@@ -72,28 +74,38 @@ CodeWriter::~CodeWriter()
 std::streambuf* CodeWriter::pop_filter()
 {
     // do not allow the CodeFilter to be popped
-    CodeFilter* code_filter = static_cast<CodeFilter*>(FilteredOStream::pop());
-    auto retval = FilteredOStream::pop();
-    FilteredOStream::push_filter(code_filter);
-    return retval;
+    CodeFilter* code_filter = static_cast<CodeFilter*>(FilteredOStream::pop_filter());
+    auto retval = FilteredOStream::pop_filter();
+    detail_::IOFilterBase* retval_as_filter = static_cast<detail_::IOFilterBase*>(nullptr);
+
+    if (retval_as_filter == nullptr) {
+        FilteredOStream::push_filter(code_filter);
+        return nullptr;
+    } else {
+        code_filter->set_chained_buffer(retval_as_filter->get_chained_buffer());
+        FilteredOStream::push_filter(code_filter);
+        return retval;
+    }
 }
 
 std::streambuf* CodeWriter::peek_filter() const
 {
-    auto top_filter = static_cast<detail_::IOFilterBase*>(FilteredOStream::peek());
+    auto top_filter = static_cast<detail_::IOFilterBase*>(FilteredOStream::peek_filter());
     return top_filter->get_chained_buffer();
 }
 
 void CodeWriter::push_filter(detail_::IOFilterBase* filter)
 {
-    CodeFilter* code_filter = static_cast<CodeFilter*>(FilteredOStream::pop());
+    CodeFilter* code_filter = static_cast<CodeFilter*>(FilteredOStream::pop_filter());
+    filter->set_chained_buffer(code_filter->get_chained_buffer());
+    code_filter->set_chained_buffer(filter);
     FilteredOStream::push_filter(filter);
     FilteredOStream::push_filter(code_filter);
 }
 
 inline CodeFilter* CodeWriter::get_code_filter() const
 {
-    return static_cast<CodeFilter*>(FilteredOStream::peek());
+    return static_cast<CodeFilter*>(FilteredOStream::peek_filter());
 }
 
 u32 CodeWriter::get_spaces_per_indent() const

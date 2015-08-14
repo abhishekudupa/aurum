@@ -39,6 +39,7 @@
 
 #include <AurumConfig.h>
 #include <random>
+#include <unistd.h>
 
 #include "../../src/io/FilteredStreams.hpp"
 #include "../../src/io/ZLibFilter.hpp"
@@ -141,7 +142,7 @@ static inline void make_test_file(std::ostringstream& sstr)
     auto filename = FileNameStruct<FilterType>::file_name;
     aio::FilteredOStream fstr(filename);
 
-    fstr.push<FilterType>(true);
+    fstr.push<FilterType>();
 
     for (u32 i = 0; i < max_num_strings; ++i) {
         auto&& cur_string = generate_random_string();
@@ -187,6 +188,8 @@ TYPED_TEST_P(CompressionFilterTest, Functional)
     filtered_stream_tests::read_test_file<TypeParam::template FilterType>(read_str);
 
     EXPECT_EQ(sstr.str(), read_str.str());
+
+    unlink(filtered_stream_tests::FileNameStruct<TypeParam::template FilterType>::file_name);
 }
 
 REGISTER_TYPED_TEST_CASE_P(CompressionFilterTest,
