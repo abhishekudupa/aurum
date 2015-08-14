@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.2.0)
 project(aurum)
 
-set(AURUM_VERSION_MAJOR 1)
+set(AURUM_VERSION_MAJOR 2)
 set(AURUM_VERSION_MINOR 0)
 set(AURUM_VERSION_PATCH 0)
 set(AURUM_VERSION
